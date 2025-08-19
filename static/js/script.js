@@ -1,3 +1,4 @@
+// script.js
 document.addEventListener('DOMContentLoaded', function () {
     const pages = document.querySelectorAll('.page-content');
     const navLinks = document.querySelectorAll('.nav-item');
@@ -5,10 +6,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const menuButton = document.getElementById('menu-button');
     const sidebar = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebar-overlay');
+    const mainAppContainer = document.getElementById('main-app-container');
+
+    const authModal = document.getElementById('auth-modal');
+    const authTitle = document.getElementById('auth-title');
+    const authMessage = document.getElementById('auth-message');
+    const loginForm = document.getElementById('login-form');
+    const signupForm = document.getElementById('signup-form');
+    const toggleAuthButton = document.getElementById('toggle-auth-button');
+    const toggleAuthText = document.getElementById('toggle-auth-text');
+    const closeAuthButton = document.getElementById('close-auth-button');
+    const headerAuthButton = document.getElementById('header-auth-button');
+    const logoutButton = document.getElementById('logout-button');
+    const userLevelXp = document.getElementById('user-level-xp');
 
     const chatbotButton = document.getElementById('chatbot-button');
     const chatbotModal = document.getElementById('chatbot-modal');
     const closeChatbotButton = document.getElementById('close-chatbot-button');
+
+    let isLoggedIn = false; // Initial state: not logged in
 
     const data = {
         transactions: [
@@ -35,6 +51,122 @@ document.addEventListener('DOMContentLoaded', function () {
             { name: 'Trivia Whiz', icon: '🧠' },
         ]
     };
+
+    function showAuthMessage(message, isError = true) {
+        authMessage.textContent = message;
+        authMessage.classList.remove('hidden');
+        if (isError) {
+            authMessage.classList.add('text-red-500');
+            authMessage.classList.remove('text-green-500');
+        } else {
+            authMessage.classList.add('text-green-500');
+            authMessage.classList.remove('text-red-500');
+        }
+    }
+
+    function handleLogin(e) {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+
+        if (email && password) {
+            isLoggedIn = true;
+            showAuthMessage('Login successful!', false);
+            updateAuthUI();
+            setTimeout(() => {
+                hideAuthModal();
+                navigateTo(window.location.hash || '#dashboard');
+            }, 1500);
+        } else {
+            showAuthMessage('Please enter both email and password.');
+        }
+    }
+
+    function handleSignup(e) {
+        e.preventDefault();
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        const confirmPassword = document.getElementById('signup-confirm-password').value;
+
+        if (email && password && confirmPassword) {
+            if (password === confirmPassword) {
+                isLoggedIn = true;
+                showAuthMessage('Signup successful!', false);
+                updateAuthUI();
+                setTimeout(() => {
+                    hideAuthModal();
+                    navigateTo(window.location.hash || '#dashboard');
+                }, 1500);
+            } else {
+                showAuthMessage('Passwords do not match.');
+            }
+        } else {
+            showAuthMessage('Please fill in all fields.');
+        }
+    }
+
+    function handleLogout() {
+        isLoggedIn = false;
+        updateAuthUI();
+        navigateTo('#dashboard'); // Go back to dashboard after logout
+    }
+
+    function updateAuthUI() {
+        if (isLoggedIn) {
+            headerAuthButton.classList.add('hidden');
+            logoutButton.classList.remove('hidden');
+            userLevelXp.classList.remove('hidden'); // Show XP/Level
+        } else {
+            headerAuthButton.classList.remove('hidden');
+            logoutButton.classList.add('hidden');
+            userLevelXp.classList.add('hidden'); // Hide XP/Level for guest
+        }
+    }
+
+    function showAuthModal() {
+        authModal.classList.remove('hidden');
+        setTimeout(() => authModal.classList.remove('opacity-0'), 10);
+        showLoginPage(); // Always show login form first when modal opens
+    }
+
+    function hideAuthModal() {
+        authModal.classList.add('opacity-0');
+        setTimeout(() => authModal.classList.add('hidden'), 300);
+    }
+
+    function showLoginPage() {
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+        authTitle.textContent = 'Login';
+        toggleAuthText.textContent = "Don't have an account?";
+        toggleAuthButton.textContent = "Sign Up";
+        authMessage.classList.add('hidden');
+    }
+
+    function showSignupPage() {
+        loginForm.classList.add('hidden');
+        signupForm.classList.remove('hidden');
+        authTitle.textContent = 'Sign Up';
+        toggleAuthText.textContent = "Already have an account?";
+        toggleAuthButton.textContent = "Login";
+        authMessage.classList.add('hidden');
+    }
+
+    // Event Listeners for Auth
+    toggleAuthButton.addEventListener('click', () => {
+        if (loginForm.classList.contains('hidden')) {
+            showLoginPage();
+        } else {
+            showSignupPage();
+        }
+    });
+
+    loginForm.addEventListener('submit', handleLogin);
+    signupForm.addEventListener('submit', handleSignup);
+    closeAuthButton.addEventListener('click', hideAuthModal);
+    headerAuthButton.addEventListener('click', showAuthModal); // New button in header
+    logoutButton.addEventListener('click', handleLogout); // Logout button on profile page
+
 
     function navigateTo(hash) {
         const targetPageId = hash.substring(1) + '-page';
@@ -96,8 +228,9 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => chatbotModal.classList.add('hidden'), 300);
     });
 
-    // Initial Load
-    navigateTo(window.location.hash || '#dashboard');
+    // Initial Load and UI Update
+    updateAuthUI(); // Set initial button visibility based on isLoggedIn
+    navigateTo(window.location.hash || '#dashboard'); // Always start on dashboard
 
     // Chart.js Initializations
     function createDoughnutChart() {
@@ -226,7 +359,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Call population functions
+    // Call population functions (these are called on DOMContentLoaded now that app is always visible)
     createDoughnutChart();
     createPieChart();
     populateTransactions();
