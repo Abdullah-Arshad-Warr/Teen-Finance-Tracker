@@ -218,11 +218,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const { name, level, xp } = user.firestoreData;
                 elements.userNameElement.textContent = name || 'User';
                 elements.userLevelXp.textContent = `Level ${level} | ${xp} XP`;
-                if (name && name.trim() !== '') {
-                    elements.userAvatarInitial.textContent = name.trim().charAt(0).toUpperCase();
-                } else {
-                    elements.userAvatarInitial.textContent = '?';
-                }
+                elements.userAvatarInitial.textContent = name?.trim().charAt(0).toUpperCase() || '?';
 
                 elements.authLoadingSpinner.classList.add('hidden');
                 elements.headerAuthButton.classList.add('hidden');
@@ -415,16 +411,12 @@ document.addEventListener('DOMContentLoaded', function () {
         async handleLogin(e) {
             e.preventDefault();
             setFormLoading(elements.loginForm, true);
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-
-            if (!email || !password) {
-                ui.showAuthMessage('Please enter both email and password.');
-                setFormLoading(elements.loginForm, false);
-                return;
-            }
 
             try {
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                if (!email || !password) throw new Error('Please enter both email and password.');
+
                 await auth.signInWithEmailAndPassword(email, password);
                 ui.showAuthMessage('Login successful!', false);
                 setTimeout(() => ui.hideModal(elements.authModal), 1000);
@@ -438,23 +430,15 @@ document.addEventListener('DOMContentLoaded', function () {
         async handleSignup(e) {
             e.preventDefault();
             setFormLoading(elements.signupForm, true);
-            const name = document.getElementById('signup-name').value;
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-            const confirmPassword = document.getElementById('signup-confirm-password').value;
-
-            if (!name || !email || !password || !confirmPassword) {
-                ui.showAuthMessage('Please fill in all fields.');
-                setFormLoading(elements.signupForm, false);
-                return;
-            }
-            if (password !== confirmPassword) {
-                ui.showAuthMessage('Passwords do not match.');
-                setFormLoading(elements.signupForm, false);
-                return;
-            }
 
             try {
+                const name = document.getElementById('signup-name').value;
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                const confirmPassword = document.getElementById('signup-confirm-password').value;
+                if (!name || !email || !password || !confirmPassword) throw new Error('Please fill in all fields.');
+                if (password !== confirmPassword) throw new Error('Passwords do not match.');
+
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 await db.collection("users").doc(userCredential.user.uid).set({
                     name, level: 1, xp: 0, email
@@ -490,8 +474,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
             const uid = state.currentUser.uid;
+            const startOfMonth = new Date();
+            startOfMonth.setDate(1);
+            startOfMonth.setHours(0, 0, 0, 0);
+
             try {
-                const snapshot = await db.collection('users').doc(uid).collection('transactions').orderBy('date', 'desc').get();
+                const snapshot = await db.collection('users').doc(uid).collection('transactions').where('date', '>=', startOfMonth.toISOString().slice(0, 10)).orderBy('date', 'desc').get();
                 data.transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 app.updateAll();
             } catch (error) {
