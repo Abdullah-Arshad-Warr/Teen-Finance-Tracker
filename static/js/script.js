@@ -28,17 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- All data for the application is stored here. ---
     const data = {
-        transactions: [
-            // I've updated the dates to the current month for demonstration
-            { id: 1, date: '2025-08-01', desc: 'Pocket Money', cat: 'Allowance', amount: 50.00 },
-            { id: 7, date: '2025-08-05', desc: 'Babysitting', cat: 'Job', amount: 40.00 },
-            { id: 8, date: '2025-08-15', desc: 'Birthday Money', cat: 'Gift', amount: 75.00 },
-            { id: 2, date: '2025-08-02', desc: 'Boba Tea', cat: 'Food & Drink', amount: -6.50 },
-            { id: 3, date: '2025-08-10', desc: 'Movie Ticket', cat: 'Entertainment', amount: -15.00 },
-            { id: 4, date: '2025-08-12', desc: 'Gaming Store', cat: 'Hobbies', amount: -25.00 },
-            { id: 5, date: '2025-08-18', desc: 'Pizza Night', cat: 'Food & Drink', amount: -12.00 },
-            { id: 6, date: '2025-07-15', desc: 'Initial Deposit', cat: 'Savings', amount: 320.75 },
-        ],
+        transactions: [], // Firestore will now populate this.,
         savingsGoals: [
             { name: 'New Gaming Phone', target: 500, saved: 325, icon: '📱' },
             { name: 'Concert Tickets', target: 150, saved: 50, icon: '🎟️' },
@@ -215,13 +205,6 @@ document.addEventListener('DOMContentLoaded', function () {
             elements.authMessage.classList.add('hidden');
         },
 
-        // Updates UI based on login status.
-        updateAuthUI() {
-            elements.headerAuthButton.classList.toggle('hidden', state.isLoggedIn);
-            elements.logoutButton.classList.toggle('hidden', !state.isLoggedIn);
-            elements.userLevelXp.classList.toggle('hidden', !state.isLoggedIn);
-        },
-
         showAuthMessage(message, isError = true) {
             elements.authMessage.textContent = message;
             elements.authMessage.classList.remove('hidden');
@@ -256,21 +239,36 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         },
 
+        updateTransactionControls(isLoggedIn) {
+            const displayStyle = isLoggedIn ? 'flex' : 'none';
+            elements.addTransactionButton.style.display = displayStyle;
+            elements.dashboardAddTransactionButton.style.display = isLoggedIn ? 'block' : 'none';
+        },
+
         // Populates the transaction table with data.
         populateTransactions() {
+            if (data.transactions.length === 0) {
+                const message = state.isLoggedIn ?
+                    'No transactions yet. Click "Add Transaction" to get started!' :
+                    'Please log in to see and manage your transactions.';
+                elements.transactionTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-8 text-subtle">${message}</td></tr>`;
+                return;
+            }
+
             elements.transactionTableBody.innerHTML = data.transactions
-                .sort((a, b) => new Date(b.date) - new Date(a.date))
                 .map(tx => `
-                            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                                <td class="p-2 text-subtle">${tx.date}</td>
-                                <td class="p-2 font-medium">${tx.desc}</td>
-                                <td class="p-2 text-subtle">${tx.cat}</td>
-                                <td class="p-2 text-right font-medium ${tx.amount > 0 ? 'text-green-500' : 'text-red-500'}">${tx.amount > 0 ? '+' : ''}${formatCurrency(tx.amount)}</td>
-                                <td class="p-2 text-center flex justify-center items-center gap-2">
-                                    <button class="edit-btn text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-blue-100 transition-colors" data-id="${tx.id}" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" /></svg></button>
-                                    <button class="delete-btn text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100 transition-colors" data-id="${tx.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
-                                </td>
-                            </tr>`).join('');
+                    <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                        <td class="p-2 text-subtle">${tx.date}</td>
+                        <td class="p-2 font-medium">${tx.desc}</td>
+                        <td class="p-2 text-subtle">${tx.cat}</td>
+                        <td class="p-2 text-right font-medium ${tx.amount > 0 ? 'text-green-500' : 'text-red-500'}">${tx.amount > 0 ? '+' : ''}${formatCurrency(tx.amount)}</td>
+                        <td class="p-2 text-center flex justify-center items-center gap-2">
+                            ${state.isLoggedIn ? `
+                            <button class="edit-btn text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-blue-100 transition-colors" data-id="${tx.id}" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" /></svg></button>
+                            <button class="delete-btn text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100 transition-colors" data-id="${tx.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                            ` : ''}
+                        </td>
+                    </tr>`).join('');
         },
 
         // Calculates and displays the current balance and monthly totals.
@@ -485,9 +483,37 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         },
 
+        async loadUserTransactions() {
+            if (!state.isLoggedIn) {
+                data.transactions = [];
+                app.updateAll();
+                return;
+            }
+            const uid = state.currentUser.uid;
+            try {
+                const snapshot = await db.collection('users').doc(uid).collection('transactions').orderBy('date', 'desc').get();
+                data.transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                app.updateAll();
+            } catch (error) {
+                console.error("Error loading transactions:", error);
+                data.transactions = [];
+                app.updateAll();
+            }
+        },
+
         // Transaction form submission handler.
-        handleTransactionFormSubmit(e) {
+        async handleTransactionFormSubmit(e) {
             e.preventDefault();
+            if (!state.isLoggedIn) {
+                ui.showAuthModal();
+                return;
+            }
+
+            const uid = state.currentUser.uid;
+            const formButton = elements.transactionForm.querySelector('button[type="submit"]');
+            formButton.disabled = true;
+            formButton.textContent = 'Saving...';
+
             const id = document.getElementById('transaction-id').value;
             const type = document.querySelector('input[name="transaction-type"]:checked').value;
             let amount = parseFloat(document.getElementById('transaction-amount').value);
@@ -500,28 +526,38 @@ document.addEventListener('DOMContentLoaded', function () {
                 amount: amount,
             };
 
-            if (id) {
-                const index = data.transactions.findIndex(t => t.id == id);
-                data.transactions[index] = { ...data.transactions[index], ...transactionData };
-            } else {
-                transactionData.id = Date.now();
-                data.transactions.push(transactionData);
+            try {
+                if (id) {
+                    await db.collection('users').doc(uid).collection('transactions').doc(id).update(transactionData);
+                } else {
+                    await db.collection('users').doc(uid).collection('transactions').add(transactionData);
+                }
+                await app.loadUserTransactions(); // Reload all data and update UI
+                ui.hideModal(elements.transactionModal);
+            } catch (error) {
+                console.error("Error saving transaction: ", error);
+                alert("There was an error saving your transaction.");
+            } finally {
+                formButton.disabled = false;
+                formButton.textContent = 'Save Transaction';
             }
-
-            app.updateAll();
-            ui.hideModal(elements.transactionModal);
         },
 
         // Deletes a transaction after confirmation.
-        confirmDelete() {
-            if (state.transactionIdToDelete) {
-                data.transactions = data.transactions.filter(t => t.id != state.transactionIdToDelete);
-                app.updateAll();
+        async confirmDelete() {
+            if (state.transactionIdToDelete && state.isLoggedIn) {
+                const uid = state.currentUser.uid;
+                try {
+                    await db.collection('users').doc(uid).collection('transactions').doc(state.transactionIdToDelete).delete();
+                    await app.loadUserTransactions(); // Reload and re-render
+                } catch (error) {
+                    console.error("Error deleting transaction: ", error);
+                    alert("Could not delete the transaction.");
+                }
             }
             ui.hideModal(elements.deleteConfirmModal);
             state.transactionIdToDelete = null;
         },
-
         // A single function to update all dynamic parts of the UI.
         updateAll() {
             ui.populateTransactions();
@@ -601,13 +637,15 @@ document.addEventListener('DOMContentLoaded', function () {
             state.currentUser.firestoreData = await app.fetchUserData(user.uid);
             // Now update the UI with the complete user object
             ui.updateHeaderForAuthState(state.currentUser);
-            // Here you can add logic to fetch the user's real transactions, etc.
+            ui.updateTransactionControls(true);
+            await app.loadUserTransactions();
         } else {
             state.isLoggedIn = false;
             state.currentUser = null;
             // Update the UI to its logged-out state
             ui.updateHeaderForAuthState(null);
-            // Here you can add logic to show a guest dashboard or clear sensitive data
+            ui.updateTransactionControls(false);
+            await app.loadUserTransactions(); // Will clear data and update the UI
         }
     });
 
