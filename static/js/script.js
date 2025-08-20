@@ -1,5 +1,21 @@
 // script.js
 document.addEventListener('DOMContentLoaded', function () {
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyClOs9cRAQWogZE6aJFcyGhxqor7jdqTp8",
+        authDomain: "teen-finance-tracker.firebaseapp.com",
+        projectId: "teen-finance-tracker",
+        storageBucket: "teen-finance-tracker.firebasestorage.app",
+        messagingSenderId: "528082447121",
+        appId: "1:528082447121:web:97ff558a1b5ea893d77ab0",
+        measurementId: "G-T9949ZH2NG"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
     const pages = document.querySelectorAll('.page-content');
     const navLinks = document.querySelectorAll('.nav-item');
     const pageTitle = document.getElementById('page-title');
@@ -19,6 +35,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const headerAuthButton = document.getElementById('header-auth-button');
     const logoutButton = document.getElementById('logout-button');
     const userLevelXp = document.getElementById('user-level-xp');
+    const userNameElement = document.getElementById('user-name');
+    const userAvatar = document.getElementById('user-avatar');
+    const userInfoContainer = document.getElementById('user-info-container');
+    const authLoadingSpinner = document.getElementById('auth-loading-spinner');
+    const userAvatarInitial = document.getElementById('user-avatar-initial');
 
     const chatbotButton = document.getElementById('chatbot-button');
     const chatbotModal = document.getElementById('chatbot-modal');
@@ -52,76 +73,160 @@ document.addEventListener('DOMContentLoaded', function () {
         ]
     };
 
+    // A helper function to manage the loading state of a form button
+    function setFormLoading(form, isLoading) {
+        const button = form.querySelector('button[type="submit"]');
+        if (isLoading) {
+            button.disabled = true;
+            button.innerHTML = `
+                <svg class="animate-spin h-5 w-5 mr-3 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10" stroke-width="4" stroke-opacity="0.25"></circle>
+                    <path d="M12 2a10 10 0 0110 10" stroke-width="4" stroke-linecap="round"></path>
+                </svg>
+                Loading...`;
+        } else {
+            button.disabled = false;
+            // Restore original text based on the form ID
+            if (form.id === 'login-form') {
+                button.textContent = 'Login';
+            } else {
+                button.textContent = 'Sign Up';
+            }
+        }
+    }
+
     function showAuthMessage(message, isError = true) {
         authMessage.textContent = message;
         authMessage.classList.remove('hidden');
-        if (isError) {
-            authMessage.classList.add('text-red-500');
-            authMessage.classList.remove('text-green-500');
-        } else {
-            authMessage.classList.add('text-green-500');
-            authMessage.classList.remove('text-red-500');
-        }
+        authMessage.className = isError
+            ? 'text-center text-red-500 mb-4'
+            : 'text-center text-green-500 mb-4';
     }
 
-    function handleLogin(e) {
+    async function handleLogin(e) {
         e.preventDefault();
+        setFormLoading(loginForm, true);
         const email = document.getElementById('login-email').value;
         const password = document.getElementById('login-password').value;
 
-        if (email && password) {
-            isLoggedIn = true;
-            showAuthMessage('Login successful!', false);
-            updateAuthUI();
-            setTimeout(() => {
-                hideAuthModal();
-                navigateTo(window.location.hash || '#dashboard');
-            }, 1500);
-        } else {
+        if (!email || !password) {
             showAuthMessage('Please enter both email and password.');
+            setFormLoading(loginForm, false);
+            return;
+        }
+
+        try {
+            await auth.signInWithEmailAndPassword(email, password);
+            showAuthMessage('Login successful!', false);
+            setTimeout(hideAuthModal, 1000); // Close modal after success
+        } catch (error) {
+            showAuthMessage(error.message); // Display Firebase error message
+        } finally {
+            setFormLoading(loginForm, false);
         }
     }
 
-    function handleSignup(e) {
+
+    async function handleSignup(e) {
         e.preventDefault();
+        setFormLoading(signupForm, true);
+        const name = document.getElementById('signup-name').value;
         const email = document.getElementById('signup-email').value;
         const password = document.getElementById('signup-password').value;
         const confirmPassword = document.getElementById('signup-confirm-password').value;
 
-        if (email && password && confirmPassword) {
-            if (password === confirmPassword) {
-                isLoggedIn = true;
-                showAuthMessage('Signup successful!', false);
-                updateAuthUI();
-                setTimeout(() => {
-                    hideAuthModal();
-                    navigateTo(window.location.hash || '#dashboard');
-                }, 1500);
-            } else {
-                showAuthMessage('Passwords do not match.');
-            }
-        } else {
+        if (!name || !email || !password || !confirmPassword) {
             showAuthMessage('Please fill in all fields.');
+            setFormLoading(signupForm, false);
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            showAuthMessage('Passwords do not match.');
+            setFormLoading(signupForm, false);
+            return;
+        }
+
+        // --- Firebase Logic ---
+        try {
+            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+            const user = userCredential.user;
+
+            // Create a new user document in Firestore using the provided name
+            await db.collection("users").doc(user.uid).set({
+                name: name,   // Use the name from the input field
+                level: 1,
+                xp: 0,
+                email: user.email
+            });
+
+            showAuthMessage('Signup successful! Logging in...', false);
+            setTimeout(hideAuthModal, 1500);
+        } catch (error) {
+            // Display specific error from Firebase (e.g., email already in use)
+            showAuthMessage(error.message);
+        } finally {
+            // Ensure the loading state is always removed
+            setFormLoading(signupForm, false);
         }
     }
 
     function handleLogout() {
-        isLoggedIn = false;
-        updateAuthUI();
-        navigateTo('#dashboard'); // Go back to dashboard after logout
+        auth.signOut().then(() => {
+            navigateTo('#dashboard'); // Go back to dashboard after logout
+        });
     }
 
-    function updateAuthUI() {
-        if (isLoggedIn) {
-            headerAuthButton.classList.add('hidden');
-            logoutButton.classList.remove('hidden');
-            userLevelXp.classList.remove('hidden'); // Show XP/Level
-        } else {
-            headerAuthButton.classList.remove('hidden');
-            logoutButton.classList.add('hidden');
-            userLevelXp.classList.add('hidden'); // Hide XP/Level for guest
+    async function fetchAndDisplayUserData(userId) {
+        const userDocRef = db.collection('users').doc(userId);
+        try {
+            const doc = await userDocRef.get();
+            if (doc.exists) {
+                const userData = doc.data();
+                userNameElement.textContent = userData.name || 'User';
+                userLevelXp.textContent = `Level ${userData.level} | ${userData.xp} XP`;
+
+                if (userData.name && userData.name.trim() !== '') {
+                    const firstLetter = userData.name.trim().charAt(0).toUpperCase();
+                    userAvatarInitial.textContent = firstLetter;
+                } else {
+                    // Fallback in case there is no name
+                    userAvatarInitial.textContent = '?';
+                }
+
+            } else {
+                console.log("No such user document!");
+                userNameElement.textContent = 'User';
+                userAvatarInitial.textContent = 'U'; // Fallback
+            }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+            userNameElement.textContent = 'Guest';
+            userAvatarInitial.textContent = 'G'; // Fallback on error
+        } finally {
+            // This logic correctly shows the container that holds our new avatar
+            authLoadingSpinner.classList.add('hidden');
+            userInfoContainer.classList.remove('hidden');
+            userInfoContainer.classList.add('flex');
         }
     }
+
+    // Listen for authentication state changes
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            // User is logged in
+            headerAuthButton.classList.add('hidden');
+            logoutButton.classList.remove('hidden');
+            // Now you would fetch and display the user's data
+            fetchAndDisplayUserData(user.uid);
+        } else {
+            // User is signed out
+            authLoadingSpinner.classList.add('hidden');
+            userInfoContainer.classList.add('hidden');
+            logoutButton.classList.add('hidden');
+            headerAuthButton.classList.remove('hidden');
+        }
+    });
 
     function showAuthModal() {
         authModal.classList.remove('hidden');
@@ -229,7 +334,6 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Initial Load and UI Update
-    updateAuthUI(); // Set initial button visibility based on isLoggedIn
     navigateTo(window.location.hash || '#dashboard'); // Always start on dashboard
 
     // Chart.js Initializations
