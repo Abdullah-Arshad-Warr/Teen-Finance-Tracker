@@ -25,8 +25,9 @@
 
 
 <body class="bg-main text-main-heading min-h-screen flex flex-col">
-
-   <div id="auth-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-40 hidden opacity-0">
+    <!-- Login/Signup Modal -->
+    <div id="auth-modal"
+        class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-40 hidden opacity-0">
         <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-8">
             <div class="flex justify-between items-center mb-6">
                 <h2 id="auth-title" class="text-3xl font-bold text-main-heading">Login</h2>
@@ -36,81 +37,104 @@
             <form id="login-form" class="space-y-4">
                 <div>
                     <label for="login-email" class="block text-sm font-medium text-subtle mb-1">Email</label>
-                    <input type="email" id="login-email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                    <input type="email" id="login-email"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
                 <div>
                     <label for="login-password" class="block text-sm font-medium text-subtle mb-1">Password</label>
-                    <input type="password" id="login-password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                    <input type="password" id="login-password"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
-                <button type="submit" class="w-full bg-primary-accent text-white py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Login</button>
+                <button type="submit"
+                    class="w-full bg-primary-accent text-white py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Login</button>
             </form>
             <form id="signup-form" class="space-y-4 hidden">
                 <div>
                     <label for="signup-email" class="block text-sm font-medium text-subtle mb-1">Email</label>
-                    <input type="email" id="signup-email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                    <input type="email" id="signup-email"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
                 <div>
                     <label for="signup-password" class="block text-sm font-medium text-subtle mb-1">Password</label>
-                    <input type="password" id="signup-password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                    <input type="password" id="signup-password"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
                 <div>
-                    <label for="signup-confirm-password" class="block text-sm font-medium text-subtle mb-1">Confirm Password</label>
-                    <input type="password" id="signup-confirm-password" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                    <label for="signup-confirm-password" class="block text-sm font-medium text-subtle mb-1">Confirm
+                        Password</label>
+                    <input type="password" id="signup-confirm-password"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
-                <button type="submit" class="w-full bg-primary-accent text-white py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Sign Up</button>
+                <button type="submit"
+                    class="w-full bg-primary-accent text-white py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Sign
+                    Up</button>
             </form>
             <p class="text-center text-subtle mt-6">
                 <span id="toggle-auth-text">Don't have an account?</span>
-                <button id="toggle-auth-button" class="text-primary-accent font-semibold hover:underline">Sign Up</button>
+                <button id="toggle-auth-button" class="text-primary-accent font-semibold hover:underline">Sign
+                    Up</button>
             </p>
         </div>
     </div>
-    
+
     <!-- Add/Edit Transaction Modal -->
-    <div id="transaction-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
+    <div id="transaction-modal"
+        class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
         <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-8">
             <div class="flex justify-between items-center mb-6">
                 <h2 id="transaction-title" class="text-3xl font-bold text-main-heading">Add Transaction</h2>
-                <button id="close-transaction-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+                <button id="close-transaction-button"
+                    class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
             </div>
             <form id="transaction-form" class="space-y-4">
                 <input type="hidden" id="transaction-id">
                 <div>
                     <label for="transaction-desc" class="block text-sm font-medium text-subtle mb-1">Description</label>
-                    <input type="text" id="transaction-desc" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                    <input type="text" id="transaction-desc" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
-                 <div>
+                <div>
                     <label for="transaction-cat" class="block text-sm font-medium text-subtle mb-1">Category</label>
-                    <input type="text" id="transaction-cat" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                    <input type="text" id="transaction-cat" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
                 <div>
                     <label for="transaction-amount" class="block text-sm font-medium text-subtle mb-1">Amount</label>
-                    <input type="number" id="transaction-amount" step="0.01" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                    <input type="number" id="transaction-amount" step="0.01" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
-                 <div>
+                <div>
                     <label class="block text-sm font-medium text-subtle mb-1">Type</label>
                     <div class="flex gap-4">
-                        <label class="flex items-center"><input type="radio" name="transaction-type" value="inflow" class="mr-2" checked> Inflow</label>
-                        <label class="flex items-center"><input type="radio" name="transaction-type" value="outflow" class="mr-2"> Outflow</label>
+                        <label class="flex items-center"><input type="radio" name="transaction-type" value="inflow"
+                                class="mr-2" checked> Inflow</label>
+                        <label class="flex items-center"><input type="radio" name="transaction-type" value="outflow"
+                                class="mr-2"> Outflow</label>
                     </div>
                 </div>
-                 <div>
+                <div>
                     <label for="transaction-date" class="block text-sm font-medium text-subtle mb-1">Date</label>
-                    <input type="date" id="transaction-date" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                    <input type="date" id="transaction-date" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
-                <button type="submit" class="w-full bg-primary-accent text-white py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Save Transaction</button>
+                <button type="submit"
+                    class="w-full bg-primary-accent text-white py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Save
+                    Transaction</button>
             </form>
         </div>
     </div>
-    
+
     <!-- Delete Confirmation Modal -->
-    <div id="delete-confirm-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
+    <div id="delete-confirm-modal"
+        class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
         <div class="bg-card rounded-lg shadow-xl w-full max-w-sm p-8 text-center">
             <h2 class="text-2xl font-bold text-main-heading mb-4">Are you sure?</h2>
             <p class="text-subtle mb-6">This action cannot be undone.</p>
             <div class="flex justify-center gap-4">
-                <button id="cancel-delete-btn" class="bg-gray-300 text-gray-800 py-2 px-6 rounded-lg font-semibold hover:bg-gray-400 transition-colors">Cancel</button>
-                <button id="confirm-delete-btn" class="bg-red-500 text-white py-2 px-6 rounded-lg font-semibold hover:bg-red-600 transition-colors">Delete</button>
+                <button id="cancel-delete-btn"
+                    class="bg-gray-300 text-gray-800 py-2 px-6 rounded-lg font-semibold hover:bg-gray-400 transition-colors">Cancel</button>
+                <button id="confirm-delete-btn"
+                    class="bg-red-500 text-white py-2 px-6 rounded-lg font-semibold hover:bg-red-600 transition-colors">Delete</button>
             </div>
         </div>
     </div>
@@ -120,42 +144,74 @@
 
     <div id="main-app-container" class="flex flex-1">
         <!-- Sidebar Navigation -->
-        <aside id="sidebar" class="bg-card w-64 p-4 flex-shrink-0 flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative absolute inset-y-0 left-0 z-30 shadow-lg">
+        <aside id="sidebar"
+            class="bg-card w-64 p-4 flex-shrink-0 flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative absolute inset-y-0 left-0 z-30 shadow-lg">
             <div>
                 <div class="flex items-center gap-3 mb-8 pl-2">
                     <div class="bg-primary-accent p-2 rounded-lg shadow-md">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                     </div>
                     <h1 class="text-2xl font-bold text-main-heading">MoneyFlow</h1>
                 </div>
                 <nav class="flex flex-col gap-2">
-                    <a href="#dashboard" class="nav-item flex items-center gap-3 p-3 rounded-xl text-subtle hover:bg-gray-100 hover:translate-x-1 transition-all duration-200 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                    <a href="#dashboard"
+                        class="nav-item flex items-center gap-3 p-3 rounded-xl text-subtle hover:bg-gray-100 hover:translate-x-1 transition-all duration-200 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                        </svg>
                         <span>Dashboard</span>
                     </a>
-                    <a href="#budget" class="nav-item flex items-center gap-3 p-3 rounded-xl text-subtle hover:bg-gray-100 hover:translate-x-1 transition-all duration-200 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                    <a href="#budget"
+                        class="nav-item flex items-center gap-3 p-3 rounded-xl text-subtle hover:bg-gray-100 hover:translate-x-1 transition-all duration-200 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
                         <span>Budget & Spending</span>
                     </a>
-                    <a href="#savings" class="nav-item flex items-center gap-3 p-3 rounded-xl text-subtle hover:bg-gray-100 hover:translate-x-1 transition-all duration-200 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01M12 6v-1m0-1V4m0 2.01M12 18v-2m0-2v-2m0-2v-2m0-2V8m0 0h.01M12 5h.01M12 3h.01M12 19h.01M12 21h.01M5 12h.01M3 12h.01M7 12h.01M19 12h.01M21 12h.01M17 12h.01" /></svg>
+                    <a href="#savings"
+                        class="nav-item flex items-center gap-3 p-3 rounded-xl text-subtle hover:bg-gray-100 hover:translate-x-1 transition-all duration-200 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01M12 6v-1m0-1V4m0 2.01M12 18v-2m0-2v-2m0-2v-2m0-2V8m0 0h.01M12 5h.01M12 3h.01M12 19h.01M12 21h.01M5 12h.01M3 12h.01M7 12h.01M19 12h.01M21 12h.01M17 12h.01" />
+                        </svg>
                         <span>Savings Goals</span>
                     </a>
-                    <a href="#learn" class="nav-item flex items-center gap-3 p-3 rounded-xl text-subtle hover:bg-gray-100 hover:translate-x-1 transition-all duration-200 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v11.494m-9-5.747h18" /></svg>
+                    <a href="#learn"
+                        class="nav-item flex items-center gap-3 p-3 rounded-xl text-subtle hover:bg-gray-100 hover:translate-x-1 transition-all duration-200 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v11.494m-9-5.747h18" />
+                        </svg>
                         <span>Learn & Play</span>
                     </a>
-                    <a href="#profile" class="nav-item flex items-center gap-3 p-3 rounded-xl text-subtle hover:bg-gray-100 hover:translate-x-1 transition-all duration-200 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                    <a href="#profile"
+                        class="nav-item flex items-center gap-3 p-3 rounded-xl text-subtle hover:bg-gray-100 hover:translate-x-1 transition-all duration-200 ease-in-out">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
                         <span>Profile & Settings</span>
                     </a>
                 </nav>
             </div>
             <div class="mt-8">
-                <button id="chatbot-button" class="w-full flex items-center justify-center gap-3 p-3 rounded-xl bg-gray-100 text-subtle hover:bg-gray-200 shadow-md hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                <button id="chatbot-button"
+                    class="w-full flex items-center justify-center gap-3 p-3 rounded-xl bg-gray-100 text-subtle hover:bg-gray-200 shadow-md hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
                     <span>Chatbot</span>
                 </button>
             </div>
@@ -166,7 +222,11 @@
             <!-- Header -->
             <header class="bg-card p-4 flex justify-between items-center border-b border-gray-200 shadow-sm">
                 <button id="menu-button" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
                 </button>
                 <h2 id="page-title" class="text-xl font-semibold text-main-heading">Dashboard</h2>
                 <div class="flex items-center gap-4">
@@ -174,8 +234,10 @@
                         <p class="font-semibold text-main-heading">Alex Ryder</p>
                         <p id="user-level-xp" class="text-sm text-secondary-accent font-medium">Level 5 | 1,250 XP</p>
                     </div>
-                    <img src="https://placehold.co/40x40/20C997/FFFFFF?text=A" alt="User Avatar" class="w-10 h-10 rounded-full border-2 border-primary-accent">
-                    <button id="header-auth-button" class="bg-primary-accent text-white py-2 px-4 rounded-lg text-sm ml-2 shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Login/Signup</button>
+                    <img src="https://placehold.co/40x40/20C997/FFFFFF?text=A" alt="User Avatar"
+                        class="w-10 h-10 rounded-full border-2 border-primary-accent">
+                    <button id="header-auth-button"
+                        class="bg-primary-accent text-white py-2 px-4 rounded-lg text-sm ml-2 shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Login/Signup</button>
                 </div>
             </header>
 
@@ -184,85 +246,124 @@
 
                 <!-- Dashboard Page -->
                 <div id="dashboard-page" class="page-content">
-                    <p class="text-subtle mb-6">Welcome back, Alex! Here's a quick look at your financial world. This dashboard gives you a snapshot of your income, spending, and progress towards your savings goals, helping you stay on top of your money.</p>
+                    <p class="text-subtle mb-6">Welcome back, Alex! Here's a quick look at your financial world. This
+                        dashboard gives you a snapshot of your income, spending, and progress towards your savings
+                        goals, helping you stay on top of your money.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
+                        <div
+                            class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
                             <h3 class="font-semibold mb-4 text-lg">Financial Snapshot</h3>
                             <div class="space-y-4">
-                                <div class="flex justify-between items-center"><span class="text-subtle">Money In (This Month)</span><span id="money-in" class="font-bold text-green-500 text-lg">$0.00</span></div>
-                                <div class="flex justify-between items-center"><span class="text-subtle">Money Out (This Month)</span><span id="money-out" class="font-bold text-red-500 text-lg">$0.00</span></div>
+                                <div class="flex justify-between items-center"><span class="text-subtle">Money In (This
+                                        Month)</span><span id="money-in"
+                                        class="font-bold text-green-500 text-lg">$0.00</span></div>
+                                <div class="flex justify-between items-center"><span class="text-subtle">Money Out (This
+                                        Month)</span><span id="money-out"
+                                        class="font-bold text-red-500 text-lg">$0.00</span></div>
                                 <div class="w-full h-2 bg-gray-200 rounded-full my-2"></div>
-                                <div class="flex justify-between items-center"><span class="text-subtle">Current Balance</span><span id="current-balance" class="font-bold text-main-heading text-xl">$0.00</span></div>
+                                <div class="flex justify-between items-center"><span class="text-subtle">Current
+                                        Balance</span><span id="current-balance"
+                                        class="font-bold text-main-heading text-xl">$0.00</span></div>
                             </div>
-                             <!-- START: MOVED BUTTON -->
-                            <button id="dashboard-add-transaction-button" class="w-full mt-6 bg-primary-accent text-white py-2 rounded-lg text-md font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Add New Transaction</button>
-                             <!-- END: MOVED BUTTON -->
+                            <button id="dashboard-add-transaction-button"
+                                class="w-full mt-6 bg-primary-accent text-white py-2 rounded-lg text-md font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Add
+                                New Transaction</button>
                         </div>
-                        <div class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
+                        <div
+                            class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
                             <h3 class="font-semibold mb-4 text-lg">Budget Summary</h3>
                             <div class="chart-container"><canvas id="budgetDoughnutChart"></canvas></div>
                         </div>
-                        <div class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
+                        <div
+                            class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
                             <h3 class="font-semibold mb-4 text-lg">Top Savings Goal</h3>
                             <p class="font-semibold text-lg">New Gaming Phone</p>
                             <p class="text-subtle mb-4">Saving for the latest model!</p>
                             <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
-                                <div class="bg-primary-accent h-4 rounded-full transition-all duration-500 ease-in-out" style="width: 65%;"></div>
+                                <div class="bg-primary-accent h-4 rounded-full transition-all duration-500 ease-in-out"
+                                    style="width: 65%;"></div>
                             </div>
-                            <div class="flex justify-between text-sm font-medium"><span class="text-primary-accent">$325 / $500</span><span>65%</span></div>
-                            <button class="w-full mt-4 bg-primary-accent text-white py-2 rounded-lg shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">View All Goals</button>
+                            <div class="flex justify-between text-sm font-medium"><span class="text-primary-accent">$325
+                                    / $500</span><span>65%</span></div>
+                            <button
+                                class="w-full mt-4 bg-primary-accent text-white py-2 rounded-lg shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">View
+                                All Goals</button>
                         </div>
                     </div>
                     <div class="mt-8 flex flex-col md:flex-row justify-center items-center gap-4">
-                        <button id="explore-articles-button" class="bg-secondary-accent text-main-heading py-3 px-6 rounded-3xl text-lg font-semibold shadow-md hover:bg-amber-500 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Explore Our Latest Articles</button>
-                        <button id="explore-trivia-button" class="bg-gray-700 text-white py-3 px-6 rounded-3xl text-lg font-semibold shadow-md hover:bg-gray-800 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Play Trivia Game</button>
+                        <button id="explore-articles-button"
+                            class="bg-secondary-accent text-main-heading py-3 px-6 rounded-3xl text-lg font-semibold shadow-md hover:bg-amber-500 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Explore
+                            Our Latest Articles</button>
+                        <button id="explore-trivia-button"
+                            class="bg-gray-700 text-white py-3 px-6 rounded-3xl text-lg font-semibold shadow-md hover:bg-gray-800 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Play
+                            Trivia Game</button>
                     </div>
                 </div>
 
                 <!-- Budget & Spending Page -->
                 <div id="budget-page" class="page-content hidden">
-                     <p class="text-subtle mb-6">Track where your money goes. This section helps you understand your spending habits with a detailed breakdown by category and a complete log of all your transactions.</p>
-                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                        <div class="lg:col-span-2 bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
+                    <p class="text-subtle mb-6">Track where your money goes. This section helps you understand your
+                        spending habits with a detailed breakdown by category and a complete log of all your
+                        transactions.</p>
+                    <!-- START: MODIFIED LAYOUT FOR CHARTS -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                        <div
+                            class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
                             <h3 class="font-semibold mb-4 text-lg">Spending by Category</h3>
                             <div class="chart-container"><canvas id="spendingPieChart"></canvas></div>
                         </div>
-                        <div class="lg:col-span-3 bg-card p-6 rounded-xl shadow-lg">
-                            <div class="flex justify-between items-center mb-4">
-                                <h3 class="font-semibold text-lg">Transaction Log</h3>
-                                <button id="add-transaction-button" class="bg-primary-accent text-white py-2 px-4 rounded-lg font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out flex-shrink-0">Add Transaction</button>
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left">
-                                    <thead>
-                                        <tr class="border-b border-gray-200">
-                                            <th class="p-3 text-sm font-semibold text-subtle">Date</th>
-                                            <th class="p-3 text-sm font-semibold text-subtle">Description</th>
-                                            <th class="p-3 text-sm font-semibold text-subtle">Category</th>
-                                            <th class="p-3 text-sm font-semibold text-subtle text-right">Amount</th>
-                                            <th class="p-3 text-sm font-semibold text-subtle text-center">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="transaction-table-body"></tbody>
-                                </table>
-                            </div>
+                        <div
+                            class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
+                            <h3 class="font-semibold mb-4 text-lg">Income Sources (This Month)</h3>
+                            <div class="chart-container"><canvas id="incomeSourcesChart"></canvas></div>
+                        </div>
+                    </div>
+                    <div class="bg-card p-6 rounded-xl shadow-lg">
+                        <!-- END: MODIFIED LAYOUT FOR CHARTS -->
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-semibold text-lg">Transaction Log</h3>
+                            <button id="add-transaction-button"
+                                class="bg-primary-accent text-white py-2 px-4 rounded-lg font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out flex-shrink-0">Add
+                                Transaction</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead>
+                                    <tr class="border-b border-gray-200">
+                                        <th class="p-3 text-sm font-semibold text-subtle">Date</th>
+                                        <th class="p-3 text-sm font-semibold text-subtle">Description</th>
+                                        <th class="p-3 text-sm font-semibold text-subtle">Category</th>
+                                        <th class="p-3 text-sm font-semibold text-subtle text-right">Amount</th>
+                                        <th class="p-3 text-sm font-semibold text-subtle text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transaction-table-body"></tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
 
                 <!-- Savings Goals Page -->
                 <div id="savings-page" class="page-content hidden">
-                    <p class="text-subtle mb-6">Turn your dreams into reality by saving for them. Create goals for things you want, track your progress visually, and celebrate when you reach them. Seeing your savings grow is the best motivation!</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="savings-goals-container"></div>
+                    <p class="text-subtle mb-6">Turn your dreams into reality by saving for them. Create goals for
+                        things you want, track your progress visually, and celebrate when you reach them. Seeing your
+                        savings grow is the best motivation!</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="savings-goals-container">
+                    </div>
                 </div>
 
                 <!-- Learn & Play Page -->
                 <div id="learn-page" class="page-content hidden">
-                    <p class="text-subtle mb-6">Boost your financial IQ! Read short articles to learn key money concepts and then test your knowledge with a fun trivia game. The more you learn, the better you'll be at managing your finances.</p>
+                    <p class="text-subtle mb-6">Boost your financial IQ! Read short articles to learn key money concepts
+                        and then test your knowledge with a fun trivia game. The more you learn, the better you'll be at
+                        managing your finances.</p>
                     <div class="border-b border-gray-200 mb-6 bg-card rounded-t-xl shadow-sm">
                         <nav class="flex space-x-2 md:space-x-4 justify-center">
-                            <button class="tab-button active px-4 py-3 border-b-2 font-semibold" data-tab-target="articles-tab-content" id="articles-tab-button">Articles</button>
-                            <button class="tab-button px-4 py-3 border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-all duration-200 ease-in-out" data-tab-target="trivia-tab-content" id="trivia-tab-button">Trivia Game</button>
+                            <button class="tab-button active px-4 py-3 border-b-2 font-semibold"
+                                data-tab-target="articles-tab-content" id="articles-tab-button">Articles</button>
+                            <button
+                                class="tab-button px-4 py-3 border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-all duration-200 ease-in-out"
+                                data-tab-target="trivia-tab-content" id="trivia-tab-button">Trivia Game</button>
                         </nav>
                     </div>
                     <div id="articles-tab-content" class="tab-content active bg-card p-6 rounded-b-xl shadow-lg">
@@ -273,9 +374,15 @@
                         <div id="trivia-game">
                             <p id="trivia-question" class="text-lg font-semibold mb-4">What does 'ROI' stand for?</p>
                             <div id="trivia-options" class="space-y-3">
-                                <button class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">Return on Investment</button>
-                                <button class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">Rate of Inflation</button>
-                                <button class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">Risk of Insolvency</button>
+                                <button
+                                    class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">Return
+                                    on Investment</button>
+                                <button
+                                    class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">Rate
+                                    of Inflation</button>
+                                <button
+                                    class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">Risk
+                                    of Insolvency</button>
                             </div>
                             <p id="trivia-feedback" class="mt-4 font-semibold"></p>
                         </div>
@@ -284,8 +391,12 @@
 
                 <!-- Article Reader Page -->
                 <div id="article-reader-page" class="page-content hidden bg-card p-6 rounded-xl shadow-lg">
-                    <button id="back-to-articles-button" class="bg-secondary-accent text-main-heading flex items-center gap-2 py-2 px-4 rounded-lg shadow-md hover:bg-amber-500 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                    <button id="back-to-articles-button"
+                        class="bg-secondary-accent text-main-heading flex items-center gap-2 py-2 px-4 rounded-lg shadow-md hover:bg-amber-500 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        </svg>
                         Back to Articles
                     </button>
                     <h2 id="article-reader-title" class="text-3xl font-bold text-main-heading mb-4"></h2>
@@ -294,7 +405,9 @@
 
                 <!-- Profile & Settings Page -->
                 <div id="profile-page" class="page-content hidden">
-                    <p class="text-subtle mb-6">This is your command center. Customize your profile, check your gamification progress and earned badges, and set up helpful reminders to stay on track with your financial goals.</p>
+                    <p class="text-subtle mb-6">This is your command center. Customize your profile, check your
+                        gamification progress and earned badges, and set up helpful reminders to stay on track with your
+                        financial goals.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-card p-6 rounded-xl shadow-lg">
                             <h3 class="font-semibold mb-4 text-lg">Your Badges</h3>
@@ -305,14 +418,25 @@
                             <div class="space-y-4">
                                 <div class="flex justify-between items-center">
                                     <span>Weekly Savings Reminder</span>
-                                    <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" value="" class="sr-only peer" checked><div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-teal-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-accent"></div></label>
+                                    <label class="relative inline-flex items-center cursor-pointer"><input
+                                            type="checkbox" value="" class="sr-only peer" checked>
+                                        <div
+                                            class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-teal-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-accent">
+                                        </div>
+                                    </label>
                                 </div>
                                 <div class="flex justify-between items-center">
                                     <span>Budget Review Alert</span>
-                                    <label class="relative inline-flex items-center cursor-pointer"><input type="checkbox" value="" class="sr-only peer"><div class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-teal-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-accent"></div></label>
+                                    <label class="relative inline-flex items-center cursor-pointer"><input
+                                            type="checkbox" value="" class="sr-only peer">
+                                        <div
+                                            class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-teal-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-accent">
+                                        </div>
+                                    </label>
                                 </div>
                             </div>
-                            <button id="logout-button" class="w-full mt-6 bg-secondary-accent text-main-heading py-2 rounded-3xl font-semibold shadow-md hover:bg-amber-500 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out hidden">Logout</button>
+                            <button id="logout-button"
+                                class="w-full mt-6 bg-secondary-accent text-main-heading py-2 rounded-3xl font-semibold shadow-md hover:bg-amber-500 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out hidden">Logout</button>
                         </div>
                     </div>
                 </div>
@@ -322,7 +446,8 @@
     </div>
 
     <!-- Chatbot Modal -->
-    <div id="chatbot-modal" class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-40 hidden opacity-0">
+    <div id="chatbot-modal"
+        class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-40 hidden opacity-0">
         <div class="bg-card rounded-lg shadow-xl w-full max-w-lg flex flex-col h-[80vh] p-6">
             <div class="p-4 border-b flex justify-between items-center">
                 <h3 class="text-lg font-semibold">Financial Advice Chatbot</h3>
@@ -337,14 +462,16 @@
             </div>
             <div class="p-4 border-t">
                 <div class="flex gap-2">
-                    <input id="chatbot-input" type="text" placeholder="Ask a question..." class="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
-                    <button id="chatbot-send" class="bg-primary-accent text-white px-4 rounded-lg shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Send</button>
+                    <input id="chatbot-input" type="text" placeholder="Ask a question..."
+                        class="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                    <button id="chatbot-send"
+                        class="bg-primary-accent text-white px-4 rounded-lg shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Send</button>
                 </div>
             </div>
         </div>
     </div>
-<!-- import script.js -->
-<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <!-- import script.js -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 
 
