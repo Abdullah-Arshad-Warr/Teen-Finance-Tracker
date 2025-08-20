@@ -1,4 +1,20 @@
 document.addEventListener('DOMContentLoaded', function () {
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyClOs9cRAQWogZE6aJFcyGhxqor7jdqTp8",
+        authDomain: "teen-finance-tracker.firebaseapp.com",
+        projectId: "teen-finance-tracker",
+        storageBucket: "teen-finance-tracker.firebasestorage.app",
+        messagingSenderId: "528082447121",
+        appId: "1:528082447121:web:97ff558a1b5ea893d77ab0",
+        measurementId: "G-T9949ZH2NG"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
     // --- App State & Data ---
     const state = {
         isLoggedIn: false,
@@ -115,10 +131,27 @@ document.addEventListener('DOMContentLoaded', function () {
         moneyInDisplay: document.getElementById('money-in'),
         moneyOutDisplay: document.getElementById('money-out'),
         currentBalanceDisplay: document.getElementById('current-balance'),
+
+        //Profile Displat
+        userNameElement: document.getElementById('user-name'),
+        userAvatarInitial: document.getElementById('user-avatar-initial'),
+        userInfoContainer: document.getElementById('user-info-container'),
+        authLoadingSpinner: document.getElementById('auth-loading-spinner'),
     };
 
     // --- Helper Functions ---
     const formatCurrency = (amount) => `$${Math.abs(amount).toFixed(2)}`;
+
+    function setFormLoading(form, isLoading) {
+        const button = form.querySelector('button[type="submit"]');
+        if (isLoading) {
+            button.disabled = true;
+            button.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="4" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0110 10" stroke-width="4" stroke-linecap="round"></path></svg> Loading...`;
+        } else {
+            button.disabled = false;
+            button.textContent = form.id === 'login-form' ? 'Login' : 'Sign Up';
+        }
+    }
 
     // --- UI Update Functions ---
     // This object holds all functions that directly manipulate the UI.
@@ -194,6 +227,33 @@ document.addEventListener('DOMContentLoaded', function () {
             elements.authMessage.classList.remove('hidden');
             elements.authMessage.classList.toggle('text-red-500', isError);
             elements.authMessage.classList.toggle('text-green-500', !isError);
+        },
+
+        updateHeaderForAuthState(user) {
+            if (user && user.firestoreData) {
+                // Logged In State
+                const { name, level, xp } = user.firestoreData;
+                elements.userNameElement.textContent = name || 'User';
+                elements.userLevelXp.textContent = `Level ${level} | ${xp} XP`;
+                if (name && name.trim() !== '') {
+                    elements.userAvatarInitial.textContent = name.trim().charAt(0).toUpperCase();
+                } else {
+                    elements.userAvatarInitial.textContent = '?';
+                }
+
+                elements.authLoadingSpinner.classList.add('hidden');
+                elements.headerAuthButton.classList.add('hidden');
+                elements.userInfoContainer.classList.remove('hidden');
+                elements.userInfoContainer.classList.add('flex');
+                elements.logoutButton.classList.remove('hidden');
+
+            } else {
+                // Logged Out State
+                elements.authLoadingSpinner.classList.add('hidden');
+                elements.userInfoContainer.classList.add('hidden');
+                elements.logoutButton.classList.add('hidden');
+                elements.headerAuthButton.classList.remove('hidden');
+            }
         },
 
         // Populates the transaction table with data.
@@ -320,10 +380,14 @@ document.addEventListener('DOMContentLoaded', function () {
     const app = {
         // Handles navigation between pages.
         navigateTo(hash, tabId = null) {
-            const targetPageId = hash.substring(1) + '-page';
+            const targetPageId = (hash.substring(1) || 'dashboard') + '-page';
             elements.pages.forEach(p => p.classList.add('hidden'));
-            const targetPage = document.getElementById(targetPageId) || document.getElementById('dashboard-page');
-            targetPage.classList.remove('hidden');
+            const targetPage = document.getElementById(targetPageId)
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            } else {
+                document.getElementById('dashboard-page').classList.remove('hidden');
+            }
 
             elements.navLinks.forEach(link => {
                 const isActive = link.getAttribute('href') === hash;
@@ -350,41 +414,75 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         // Authentication handlers.
-        handleAuthSuccess(message) {
-            state.isLoggedIn = true;
-            ui.showAuthMessage(message, false);
-            ui.updateAuthUI();
-            setTimeout(() => {
-                ui.hideModal(elements.authModal);
-                app.navigateTo(window.location.hash || '#dashboard');
-            }, 1000);
-        },
-        handleLogin(e) {
+        async handleLogin(e) {
             e.preventDefault();
-            if (document.getElementById('login-email').value && document.getElementById('login-password').value) {
-                app.handleAuthSuccess('Login successful!');
-            } else {
+            setFormLoading(elements.loginForm, true);
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) {
                 ui.showAuthMessage('Please enter both email and password.');
+                setFormLoading(elements.loginForm, false);
+                return;
+            }
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                ui.showAuthMessage('Login successful!', false);
+                setTimeout(() => ui.hideModal(elements.authModal), 1000);
+            } catch (error) {
+                ui.showAuthMessage(error.message);
+            } finally {
+                setFormLoading(elements.loginForm, false);
             }
         },
-        handleSignup(e) {
+
+        async handleSignup(e) {
             e.preventDefault();
-            const pass = document.getElementById('signup-password').value;
-            const confirmPass = document.getElementById('signup-confirm-password').value;
-            if (document.getElementById('signup-email').value && pass && confirmPass) {
-                if (pass === confirmPass) {
-                    app.handleAuthSuccess('Signup successful!');
-                } else {
-                    ui.showAuthMessage('Passwords do not match.');
-                }
-            } else {
+            setFormLoading(elements.signupForm, true);
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm-password').value;
+
+            if (!name || !email || !password || !confirmPassword) {
                 ui.showAuthMessage('Please fill in all fields.');
+                setFormLoading(elements.signupForm, false);
+                return;
+            }
+            if (password !== confirmPassword) {
+                ui.showAuthMessage('Passwords do not match.');
+                setFormLoading(elements.signupForm, false);
+                return;
+            }
+
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                await db.collection("users").doc(userCredential.user.uid).set({
+                    name, level: 1, xp: 0, email
+                });
+                ui.showAuthMessage('Signup successful!', false);
+                setTimeout(() => ui.hideModal(elements.authModal), 1500);
+            } catch (error) {
+                ui.showAuthMessage(error.message);
+            } finally {
+                setFormLoading(elements.signupForm, false);
             }
         },
+
         handleLogout() {
-            state.isLoggedIn = false;
-            ui.updateAuthUI();
-            app.navigateTo('#dashboard');
+            auth.signOut();
+            app.navigateTo('#dashboard'); // Navigate home on logout
+        },
+
+        async fetchUserData(uid) {
+            try {
+                const userDoc = await db.collection('users').doc(uid).get();
+                return userDoc.exists ? userDoc.data() : null;
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                return null;
+            }
         },
 
         // Transaction form submission handler.
@@ -435,7 +533,7 @@ document.addEventListener('DOMContentLoaded', function () {
         bindEvents() {
             // Navigation
             elements.navLinks.forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); app.navigateTo(e.currentTarget.getAttribute('href')); }));
-            window.addEventListener('hashchange', () => { if (window.location.hash !== '#article-reader') app.navigateTo(window.location.hash || '#dashboard'); });
+            window.addEventListener('hashchange', () => app.navigateTo(window.location.hash || '#dashboard'));
             elements.menuButton.addEventListener('click', () => { elements.sidebar.classList.toggle('-translate-x-full'); elements.sidebarOverlay.style.display = 'block'; });
             elements.sidebarOverlay.addEventListener('click', () => { elements.sidebar.classList.add('-translate-x-full'); elements.sidebarOverlay.style.display = 'none'; });
 
@@ -444,13 +542,15 @@ document.addEventListener('DOMContentLoaded', function () {
             elements.closeTransactionButton.addEventListener('click', () => ui.hideModal(elements.transactionModal));
             elements.closeChatbotButton.addEventListener('click', () => ui.hideModal(elements.chatbotModal));
             elements.cancelDeleteBtn.addEventListener('click', () => ui.hideModal(elements.deleteConfirmModal));
+            elements.chatbotButton.addEventListener('click', () => ui.showModal(elements.chatbotModal));
 
             // Authentication
             elements.headerAuthButton.addEventListener('click', ui.showAuthModal);
             elements.toggleAuthButton.addEventListener('click', () => elements.loginForm.classList.contains('hidden') ? ui.showLoginPage() : ui.showSignupPage());
-            elements.loginForm.addEventListener('submit', app.handleLogin);
-            elements.signupForm.addEventListener('submit', app.handleSignup);
-            elements.logoutButton.addEventListener('click', app.handleLogout);
+            elements.loginForm.addEventListener('submit', app.handleLogin); // Connect to new async function
+            elements.signupForm.addEventListener('submit', app.handleSignup); // Connect to new async function
+            elements.logoutButton.addEventListener('click', app.handleLogout); // Connect to new Firebase function
+            elements.closeAuthButton.addEventListener('click', () => ui.hideModal(elements.authModal));
 
             // Transactions
             elements.addTransactionButton.addEventListener('click', () => ui.showTransactionModal());
@@ -482,15 +582,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Initial application setup.
         init() {
-            ui.updateAuthUI();
+            app.bindEvents();
             ui.populateSavingsGoals();
             ui.populateArticles();
             ui.populateBadges();
             app.updateAll();
-            app.bindEvents();
-            app.navigateTo(window.location.hash || '#dashboard');
+            if (!auth.currentUser) {
+                app.navigateTo(window.location.hash || '#dashboard');
+            }
         }
     };
+
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            state.isLoggedIn = true;
+            state.currentUser = { uid: user.uid, email: user.email };
+            // Fetch the user's data from Firestore and attach it
+            state.currentUser.firestoreData = await app.fetchUserData(user.uid);
+            // Now update the UI with the complete user object
+            ui.updateHeaderForAuthState(state.currentUser);
+            // Here you can add logic to fetch the user's real transactions, etc.
+        } else {
+            state.isLoggedIn = false;
+            state.currentUser = null;
+            // Update the UI to its logged-out state
+            ui.updateHeaderForAuthState(null);
+            // Here you can add logic to show a guest dashboard or clear sensitive data
+        }
+    });
 
     // --- Start the App ---
     app.init();
