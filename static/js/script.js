@@ -1,4 +1,3 @@
-// script.js
 document.addEventListener('DOMContentLoaded', function () {
 
     const firebaseConfig = {
@@ -16,44 +15,29 @@ document.addEventListener('DOMContentLoaded', function () {
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    const pages = document.querySelectorAll('.page-content');
-    const navLinks = document.querySelectorAll('.nav-item');
-    const pageTitle = document.getElementById('page-title');
-    const menuButton = document.getElementById('menu-button');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebar-overlay');
-    const mainAppContainer = document.getElementById('main-app-container');
+    // --- App State & Data ---
+    const state = {
+        isLoggedIn: false,
+        transactionIdToDelete: null,
+        charts: {
+            budgetDoughnut: null,
+            spendingPie: null,
+            incomeSources: null, // <-- ADDED
+        }
+    };
 
-    const authModal = document.getElementById('auth-modal');
-    const authTitle = document.getElementById('auth-title');
-    const authMessage = document.getElementById('auth-message');
-    const loginForm = document.getElementById('login-form');
-    const signupForm = document.getElementById('signup-form');
-    const toggleAuthButton = document.getElementById('toggle-auth-button');
-    const toggleAuthText = document.getElementById('toggle-auth-text');
-    const closeAuthButton = document.getElementById('close-auth-button');
-    const headerAuthButton = document.getElementById('header-auth-button');
-    const logoutButton = document.getElementById('logout-button');
-    const userLevelXp = document.getElementById('user-level-xp');
-    const userNameElement = document.getElementById('user-name');
-    const userAvatar = document.getElementById('user-avatar');
-    const userInfoContainer = document.getElementById('user-info-container');
-    const authLoadingSpinner = document.getElementById('auth-loading-spinner');
-    const userAvatarInitial = document.getElementById('user-avatar-initial');
-
-    const chatbotButton = document.getElementById('chatbot-button');
-    const chatbotModal = document.getElementById('chatbot-modal');
-    const closeChatbotButton = document.getElementById('close-chatbot-button');
-
-    let isLoggedIn = false; // Initial state: not logged in
-
+    // --- All data for the application is stored here. ---
     const data = {
         transactions: [
-            { date: 'Jul 22', desc: 'Pocket Money', cat: 'Income', amount: 50.00 },
-            { date: 'Jul 21', desc: 'Boba Tea', cat: 'Food & Drink', amount: -6.50 },
-            { date: 'Jul 20', desc: 'Movie Ticket', cat: 'Entertainment', amount: -15.00 },
-            { date: 'Jul 19', desc: 'Gaming Store', cat: 'Hobbies', amount: -25.00 },
-            { date: 'Jul 18', desc: 'Pizza Night', cat: 'Food & Drink', amount: -12.00 },
+            // I've updated the dates to the current month for demonstration
+            { id: 1, date: '2025-08-01', desc: 'Pocket Money', cat: 'Allowance', amount: 50.00 },
+            { id: 7, date: '2025-08-05', desc: 'Babysitting', cat: 'Job', amount: 40.00 },
+            { id: 8, date: '2025-08-15', desc: 'Birthday Money', cat: 'Gift', amount: 75.00 },
+            { id: 2, date: '2025-08-02', desc: 'Boba Tea', cat: 'Food & Drink', amount: -6.50 },
+            { id: 3, date: '2025-08-10', desc: 'Movie Ticket', cat: 'Entertainment', amount: -15.00 },
+            { id: 4, date: '2025-08-12', desc: 'Gaming Store', cat: 'Hobbies', amount: -25.00 },
+            { id: 5, date: '2025-08-18', desc: 'Pizza Night', cat: 'Food & Drink', amount: -12.00 },
+            { id: 6, date: '2025-07-15', desc: 'Initial Deposit', cat: 'Savings', amount: 320.75 },
         ],
         savingsGoals: [
             { name: 'New Gaming Phone', target: 500, saved: 325, icon: '📱' },
@@ -61,9 +45,24 @@ document.addEventListener('DOMContentLoaded', function () {
             { name: 'Summer Trip Fund', target: 300, saved: 280, icon: '✈️' },
         ],
         articles: [
-            { title: "What is a Credit Score?", summary: "Learn why this three-digit number is so important for your financial future." },
-            { title: "Investing 101 for Teens", summary: "A simple guide to making your money grow over time." },
-            { title: "The Power of Compound Interest", summary: "Discover the 'eighth wonder of the world' and how it can make you rich." },
+            {
+                id: 'credit-score',
+                title: "What is a Credit Score?",
+                summary: "Learn why this three-digit number is so important for your financial future.",
+                content: `<p class="mb-4">A credit score is a three-digit number that lenders use to decide how likely you are to pay back borrowed money. This score typically ranges from 300 to 850, with higher scores indicating a lower risk to lenders.</p><p class="mb-4">Why is it important? A good credit score can help you:</p><ul class="list-disc list-inside mb-4"><li>Get approved for loans and credit cards.</li><li>Qualify for lower interest rates on loans (like car loans or mortgages).</li><li>Rent an apartment (landlords often check credit).</li><li>Even get better rates on insurance.</li></ul><p class="mb-4">Your credit score is primarily built on your payment history, the amount of debt you have, the length of your credit history, new credit, and credit mix. Paying bills on time and keeping credit card balances low are key to building a strong score.</p><p>Starting early to understand and build good credit habits is crucial for your long-term financial health.</p>`
+            },
+            {
+                id: 'investing-100',
+                title: "Investing 101 for Teens",
+                summary: "A simple guide to making your money grow over time.",
+                content: `<p class="mb-4">Investing might sound complicated, but it's really just putting your money to work so it can grow over time. For teens, starting early can give you a huge advantage thanks to something called "compound interest" (more on that in another article!).</p><p class="mb-4">Some simple ways teens can start exploring investing include:</p><ul class="list-disc list-inside mb-4"><li><strong>Savings Accounts:</strong> While not high-growth, they're safe and teach you about interest.</li><li><strong>Custodial Accounts:</strong> An adult sets up an investment account in your name. This lets you own investments like stocks and bonds.</li><li><strong>Mutual Funds/ETFs:</strong> These are like baskets of different investments, making it easy to diversify without picking individual stocks.</li></ul><p class="mb-4">The golden rule of investing is to start small, invest regularly, and be patient. Don't put all your eggs in one basket, and always do your research before putting your money into anything.</p><p>Learning about investing now can set you up for significant wealth building in the future.</p>`
+            },
+            {
+                id: 'compound-interest',
+                title: "The Power of Compound Interest",
+                summary: "Discover the 'eighth wonder of the world' and how it can make you rich.",
+                content: `<p class="mb-4">Albert Einstein reportedly called compound interest the "eighth wonder of the world." So, what is it?</p><p class="mb-4"><strong>Compound interest is interest on interest.</strong> It means that the interest you earn on your initial investment also starts earning interest. This creates an accelerating growth effect, especially over long periods.</p><p class="mb-4">Let's say you invest $100 and earn 10% interest. After one year, you have $110. In the second year, you don't just earn interest on the original $100; you earn it on the new total of $110. So, you earn $11, making your total $121. This might seem small, but over decades, it can turn modest savings into substantial wealth.</p><p class="mb-4">The key takeaways for teens:</p><ul class="list-disc list-inside mb-4"><li><strong>Start Early:</strong> The longer your money has to compound, the more it grows.</li><li><strong>Invest Regularly:</strong> Even small, consistent contributions add up significantly.</li></ul><p>Compound interest is a powerful tool for building wealth, and the earlier you harness it, the greater its magic will be.</p>`
+            },
         ],
         badges: [
             { name: 'Budget Boss', icon: '👑' },
@@ -73,401 +72,545 @@ document.addEventListener('DOMContentLoaded', function () {
         ]
     };
 
-    // A helper function to manage the loading state of a form button
+    // --- DOM Element Cache ---
+    // Caching all DOM elements we need to interact with for performance.
+    const elements = {
+        pages: document.querySelectorAll('.page-content'),
+        navLinks: document.querySelectorAll('.nav-item'),
+        pageTitle: document.getElementById('page-title'),
+        menuButton: document.getElementById('menu-button'),
+        sidebar: document.getElementById('sidebar'),
+        sidebarOverlay: document.getElementById('sidebar-overlay'),
+
+        // Modals
+        authModal: document.getElementById('auth-modal'),
+        transactionModal: document.getElementById('transaction-modal'),
+        deleteConfirmModal: document.getElementById('delete-confirm-modal'),
+        chatbotModal: document.getElementById('chatbot-modal'),
+
+        // Auth Form
+        authTitle: document.getElementById('auth-title'),
+        authMessage: document.getElementById('auth-message'),
+        loginForm: document.getElementById('login-form'),
+        signupForm: document.getElementById('signup-form'),
+        toggleAuthButton: document.getElementById('toggle-auth-button'),
+        toggleAuthText: document.getElementById('toggle-auth-text'),
+        closeAuthButton: document.getElementById('close-auth-button'),
+        headerAuthButton: document.getElementById('header-auth-button'),
+        logoutButton: document.getElementById('logout-button'),
+        userLevelXp: document.getElementById('user-level-xp'),
+
+        // Transaction Form
+        transactionForm: document.getElementById('transaction-form'),
+        transactionTitle: document.getElementById('transaction-title'),
+        closeTransactionButton: document.getElementById('close-transaction-button'),
+        addTransactionButton: document.getElementById('add-transaction-button'),
+        dashboardAddTransactionButton: document.getElementById('dashboard-add-transaction-button'),
+        transactionTableBody: document.getElementById('transaction-table-body'),
+
+        // Delete Confirm
+        confirmDeleteBtn: document.getElementById('confirm-delete-btn'),
+        cancelDeleteBtn: document.getElementById('cancel-delete-btn'),
+
+        // Chatbot
+        chatbotButton: document.getElementById('chatbot-button'),
+        closeChatbotButton: document.getElementById('close-chatbot-button'),
+
+        // Learn Page
+        learnTabButtons: document.querySelectorAll('#learn-page .tab-button'),
+        learnTabContents: document.querySelectorAll('#learn-page .tab-content'),
+        exploreArticlesButton: document.getElementById('explore-articles-button'),
+        exploreTriviaButton: document.getElementById('explore-trivia-button'),
+
+        // Article Reader
+        articleReaderTitle: document.getElementById('article-reader-title'),
+        articleReaderContent: document.getElementById('article-reader-content'),
+        backToArticlesButton: document.getElementById('back-to-articles-button'),
+
+        // Dashboard Display
+        moneyInDisplay: document.getElementById('money-in'),
+        moneyOutDisplay: document.getElementById('money-out'),
+        currentBalanceDisplay: document.getElementById('current-balance'),
+
+        //Profile Displat
+        userNameElement: document.getElementById('user-name'),
+        userAvatarInitial: document.getElementById('user-avatar-initial'),
+        userInfoContainer: document.getElementById('user-info-container'),
+        authLoadingSpinner: document.getElementById('auth-loading-spinner'),
+    };
+
+    // --- Helper Functions ---
+    const formatCurrency = (amount) => `$${Math.abs(amount).toFixed(2)}`;
+
     function setFormLoading(form, isLoading) {
         const button = form.querySelector('button[type="submit"]');
         if (isLoading) {
             button.disabled = true;
-            button.innerHTML = `
-                <svg class="animate-spin h-5 w-5 mr-3 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <circle cx="12" cy="12" r="10" stroke-width="4" stroke-opacity="0.25"></circle>
-                    <path d="M12 2a10 10 0 0110 10" stroke-width="4" stroke-linecap="round"></path>
-                </svg>
-                Loading...`;
+            button.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" stroke-width="4" stroke-opacity="0.25"></circle><path d="M12 2a10 10 0 0110 10" stroke-width="4" stroke-linecap="round"></path></svg> Loading...`;
         } else {
             button.disabled = false;
-            // Restore original text based on the form ID
-            if (form.id === 'login-form') {
-                button.textContent = 'Login';
+            button.textContent = form.id === 'login-form' ? 'Login' : 'Sign Up';
+        }
+    }
+
+    // --- UI Update Functions ---
+    // This object holds all functions that directly manipulate the UI.
+    const ui = {
+        // Generic modal functions to reduce redundant code.
+        showModal(modalElement) {
+            modalElement.classList.remove('hidden');
+            setTimeout(() => modalElement.classList.remove('opacity-0'), 10);
+        },
+
+        hideModal(modalElement) {
+            modalElement.classList.add('opacity-0');
+            setTimeout(() => modalElement.classList.add('hidden'), 300);
+        },
+
+        // Specific modal handlers that might need to do something before showing.
+        showAuthModal() {
+            ui.showLoginPage();
+            ui.showModal(elements.authModal);
+        },
+
+        showTransactionModal(transaction = null) {
+            elements.transactionForm.reset();
+            if (transaction) {
+                elements.transactionTitle.textContent = 'Edit Transaction';
+                document.getElementById('transaction-id').value = transaction.id;
+                document.getElementById('transaction-desc').value = transaction.desc;
+                document.getElementById('transaction-cat').value = transaction.cat;
+                document.getElementById('transaction-amount').value = Math.abs(transaction.amount);
+                document.getElementById('transaction-date').value = transaction.date;
+                document.querySelector(`input[name="transaction-type"][value="${transaction.amount > 0 ? 'inflow' : 'outflow'}"]`).checked = true;
             } else {
-                button.textContent = 'Sign Up';
+                elements.transactionTitle.textContent = 'Add Transaction';
+                document.getElementById('transaction-id').value = '';
+                document.getElementById('transaction-date').valueAsDate = new Date();
             }
-        }
-    }
+            ui.showModal(elements.transactionModal);
+        },
 
-    function showAuthMessage(message, isError = true) {
-        authMessage.textContent = message;
-        authMessage.classList.remove('hidden');
-        authMessage.className = isError
-            ? 'text-center text-red-500 mb-4'
-            : 'text-center text-green-500 mb-4';
-    }
+        showDeleteConfirmModal(id) {
+            state.transactionIdToDelete = id;
+            ui.showModal(elements.deleteConfirmModal);
+        },
 
-    async function handleLogin(e) {
-        e.preventDefault();
-        setFormLoading(loginForm, true);
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
+        // Functions to switch between login and signup forms.
+        showLoginPage() {
+            elements.loginForm.classList.remove('hidden');
+            elements.signupForm.classList.add('hidden');
+            elements.authTitle.textContent = 'Login';
+            elements.toggleAuthText.textContent = "Don't have an account?";
+            elements.toggleAuthButton.textContent = "Sign Up";
+            elements.authMessage.classList.add('hidden');
+        },
 
-        if (!email || !password) {
-            showAuthMessage('Please enter both email and password.');
-            setFormLoading(loginForm, false);
-            return;
-        }
+        showSignupPage() {
+            elements.loginForm.classList.add('hidden');
+            elements.signupForm.classList.remove('hidden');
+            elements.authTitle.textContent = 'Sign Up';
+            elements.toggleAuthText.textContent = "Already have an account?";
+            elements.toggleAuthButton.textContent = "Login";
+            elements.authMessage.classList.add('hidden');
+        },
 
-        try {
-            await auth.signInWithEmailAndPassword(email, password);
-            showAuthMessage('Login successful!', false);
-            setTimeout(hideAuthModal, 1000); // Close modal after success
-        } catch (error) {
-            showAuthMessage(error.message); // Display Firebase error message
-        } finally {
-            setFormLoading(loginForm, false);
-        }
-    }
+        // Updates UI based on login status.
+        updateAuthUI() {
+            elements.headerAuthButton.classList.toggle('hidden', state.isLoggedIn);
+            elements.logoutButton.classList.toggle('hidden', !state.isLoggedIn);
+            elements.userLevelXp.classList.toggle('hidden', !state.isLoggedIn);
+        },
 
+        showAuthMessage(message, isError = true) {
+            elements.authMessage.textContent = message;
+            elements.authMessage.classList.remove('hidden');
+            elements.authMessage.classList.toggle('text-red-500', isError);
+            elements.authMessage.classList.toggle('text-green-500', !isError);
+        },
 
-    async function handleSignup(e) {
-        e.preventDefault();
-        setFormLoading(signupForm, true);
-        const name = document.getElementById('signup-name').value;
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-        const confirmPassword = document.getElementById('signup-confirm-password').value;
+        updateHeaderForAuthState(user) {
+            if (user && user.firestoreData) {
+                // Logged In State
+                const { name, level, xp } = user.firestoreData;
+                elements.userNameElement.textContent = name || 'User';
+                elements.userLevelXp.textContent = `Level ${level} | ${xp} XP`;
+                if (name && name.trim() !== '') {
+                    elements.userAvatarInitial.textContent = name.trim().charAt(0).toUpperCase();
+                } else {
+                    elements.userAvatarInitial.textContent = '?';
+                }
 
-        if (!name || !email || !password || !confirmPassword) {
-            showAuthMessage('Please fill in all fields.');
-            setFormLoading(signupForm, false);
-            return;
-        }
+                elements.authLoadingSpinner.classList.add('hidden');
+                elements.headerAuthButton.classList.add('hidden');
+                elements.userInfoContainer.classList.remove('hidden');
+                elements.userInfoContainer.classList.add('flex');
+                elements.logoutButton.classList.remove('hidden');
 
-        if (password !== confirmPassword) {
-            showAuthMessage('Passwords do not match.');
-            setFormLoading(signupForm, false);
-            return;
-        }
+            } else {
+                // Logged Out State
+                elements.authLoadingSpinner.classList.add('hidden');
+                elements.userInfoContainer.classList.add('hidden');
+                elements.logoutButton.classList.add('hidden');
+                elements.headerAuthButton.classList.remove('hidden');
+            }
+        },
 
-        // --- Firebase Logic ---
-        try {
-            const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-            const user = userCredential.user;
+        // Populates the transaction table with data.
+        populateTransactions() {
+            elements.transactionTableBody.innerHTML = data.transactions
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .map(tx => `
+                            <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                <td class="p-2 text-subtle">${tx.date}</td>
+                                <td class="p-2 font-medium">${tx.desc}</td>
+                                <td class="p-2 text-subtle">${tx.cat}</td>
+                                <td class="p-2 text-right font-medium ${tx.amount > 0 ? 'text-green-500' : 'text-red-500'}">${tx.amount > 0 ? '+' : ''}${formatCurrency(tx.amount)}</td>
+                                <td class="p-2 text-center flex justify-center items-center gap-2">
+                                    <button class="edit-btn text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-blue-100 transition-colors" data-id="${tx.id}" title="Edit"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" /></svg></button>
+                                    <button class="delete-btn text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-red-100 transition-colors" data-id="${tx.id}" title="Delete"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></button>
+                                </td>
+                            </tr>`).join('');
+        },
 
-            // Create a new user document in Firestore using the provided name
-            await db.collection("users").doc(user.uid).set({
-                name: name,   // Use the name from the input field
-                level: 1,
-                xp: 0,
-                email: user.email
+        // Calculates and displays the current balance and monthly totals.
+        updateBalance() {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            const monthlyInflow = data.transactions
+                .filter(t => { const d = new Date(t.date); return t.amount > 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear; })
+                .reduce((sum, t) => sum + t.amount, 0);
+
+            const monthlyOutflow = data.transactions
+                .filter(t => { const d = new Date(t.date); return t.amount < 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear; })
+                .reduce((sum, t) => sum + t.amount, 0);
+
+            const currentBalance = data.transactions.reduce((sum, t) => sum + t.amount, 0);
+
+            elements.moneyInDisplay.textContent = formatCurrency(monthlyInflow);
+            elements.moneyOutDisplay.textContent = formatCurrency(monthlyOutflow);
+            elements.currentBalanceDisplay.textContent = formatCurrency(currentBalance);
+        },
+
+        // Creates or updates the charts.
+        createOrUpdateCharts() {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            // --- Spending Data Calculation ---
+            const spendingData = data.transactions
+                .filter(t => {
+                    const d = new Date(t.date);
+                    return t.amount < 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+                })
+                .reduce((acc, t) => {
+                    acc[t.cat] = (acc[t.cat] || 0) + Math.abs(t.amount);
+                    return acc;
+                }, {});
+
+            const spendingChartConfig = {
+                labels: Object.keys(spendingData),
+                datasets: [{
+                    data: Object.values(spendingData),
+                    backgroundColor: ['#F87171', '#FBBF24', '#60A5FA', '#A78BFA', '#34D399'],
+                    borderColor: '#FFFFFF'
+                }]
+            };
+
+            // --- Income Data Calculation (NEW) ---
+            const incomeData = data.transactions
+                .filter(t => {
+                    const d = new Date(t.date);
+                    return t.amount > 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+                })
+                .reduce((acc, t) => {
+                    acc[t.cat] = (acc[t.cat] || 0) + t.amount;
+                    return acc;
+                }, {});
+
+            const incomeChartConfig = {
+                labels: Object.keys(incomeData),
+                datasets: [{
+                    data: Object.values(incomeData),
+                    backgroundColor: ['#20C997', '#48BB78', '#38A169', '#2F855A'],
+                    borderColor: '#FFFFFF'
+                }]
+            };
+
+            // --- Chart Rendering ---
+            if (state.charts.budgetDoughnut) state.charts.budgetDoughnut.destroy();
+            state.charts.budgetDoughnut = new Chart(document.getElementById('budgetDoughnutChart').getContext('2d'), {
+                type: 'doughnut', data: spendingChartConfig, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', borderWidth: 4, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20 } } } }
             });
 
-            showAuthMessage('Signup successful! Logging in...', false);
-            setTimeout(hideAuthModal, 1500);
-        } catch (error) {
-            // Display specific error from Firebase (e.g., email already in use)
-            showAuthMessage(error.message);
-        } finally {
-            // Ensure the loading state is always removed
-            setFormLoading(signupForm, false);
-        }
-    }
+            if (state.charts.spendingPie) state.charts.spendingPie.destroy();
+            state.charts.spendingPie = new Chart(document.getElementById('spendingPieChart').getContext('2d'), {
+                type: 'pie', data: spendingChartConfig, options: { responsive: true, maintainAspectRatio: false, borderWidth: 2, plugins: { legend: { position: 'right' } } }
+            });
 
-    function handleLogout() {
-        auth.signOut().then(() => {
-            navigateTo('#dashboard'); // Go back to dashboard after logout
-        });
-    }
+            // --- New Income Chart Rendering ---
+            if (state.charts.incomeSources) state.charts.incomeSources.destroy();
+            state.charts.incomeSources = new Chart(document.getElementById('incomeSourcesChart').getContext('2d'), {
+                type: 'pie', data: incomeChartConfig, options: { responsive: true, maintainAspectRatio: false, borderWidth: 2, plugins: { legend: { position: 'right' } } }
+            });
+        },
 
-    async function fetchAndDisplayUserData(userId) {
-        const userDocRef = db.collection('users').doc(userId);
-        try {
-            const doc = await userDocRef.get();
-            if (doc.exists) {
-                const userData = doc.data();
-                userNameElement.textContent = userData.name || 'User';
-                userLevelXp.textContent = `Level ${userData.level} | ${userData.xp} XP`;
+        // Populates other sections of the UI.
+        populateSavingsGoals() {
+            document.getElementById('savings-goals-container').innerHTML = data.savingsGoals.map(goal => {
+                const percentage = Math.round((goal.saved / goal.target) * 100);
+                return `<div class="bg-card p-6 rounded-xl shadow-lg"><div class="text-4xl mb-3">${goal.icon}</div><h3 class="font-bold text-xl">${goal.name}</h3><p class="text-subtle mb-4">Saved $${goal.saved} of $${goal.target}</p><div class="w-full bg-gray-200 rounded-full h-3 mb-2"><div class="bg-primary-accent h-3 rounded-full" style="width: ${percentage}%;"></div></div><p class="text-right font-semibold text-primary-accent">${percentage}%</p></div>`;
+            }).join('');
+        },
+        populateArticles() {
+            document.getElementById('articles-container').innerHTML = data.articles.map(article => `
+                        <div class="bg-card p-4 rounded-xl shadow-md border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow duration-200" data-article-id="${article.id}">
+                            <h4 class="font-bold text-lg">${article.title}</h4><p class="text-subtle my-2">${article.summary}</p>
+                            <button class="font-semibold text-primary-accent hover:underline mt-2">Read Article &rarr;</button>
+                        </div>`).join('');
+        },
+        populateBadges() {
+            document.getElementById('badges-container').innerHTML = data.badges.map(badge => `<div class="text-center p-2 rounded-xl bg-gray-100 shadow-sm"><div class="text-4xl">${badge.icon}</div><p class="text-xs font-medium mt-1">${badge.name}</p></div>`).join('');
+        },
+    };
 
-                if (userData.name && userData.name.trim() !== '') {
-                    const firstLetter = userData.name.trim().charAt(0).toUpperCase();
-                    userAvatarInitial.textContent = firstLetter;
-                } else {
-                    // Fallback in case there is no name
-                    userAvatarInitial.textContent = '?';
-                }
-
+    // --- App Logic & Event Handlers ---
+    // This object holds the main application logic.
+    const app = {
+        // Handles navigation between pages.
+        navigateTo(hash, tabId = null) {
+            const targetPageId = (hash.substring(1) || 'dashboard') + '-page';
+            elements.pages.forEach(p => p.classList.add('hidden'));
+            const targetPage = document.getElementById(targetPageId)
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
             } else {
-                console.log("No such user document!");
-                userNameElement.textContent = 'User';
-                userAvatarInitial.textContent = 'U'; // Fallback
+                document.getElementById('dashboard-page').classList.remove('hidden');
             }
-        } catch (error) {
-            console.error("Error fetching user data:", error);
-            userNameElement.textContent = 'Guest';
-            userAvatarInitial.textContent = 'G'; // Fallback on error
-        } finally {
-            // This logic correctly shows the container that holds our new avatar
-            authLoadingSpinner.classList.add('hidden');
-            userInfoContainer.classList.remove('hidden');
-            userInfoContainer.classList.add('flex');
-        }
-    }
 
-    // Listen for authentication state changes
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            // User is logged in
-            headerAuthButton.classList.add('hidden');
-            logoutButton.classList.remove('hidden');
-            // Now you would fetch and display the user's data
-            fetchAndDisplayUserData(user.uid);
-        } else {
-            // User is signed out
-            authLoadingSpinner.classList.add('hidden');
-            userInfoContainer.classList.add('hidden');
-            logoutButton.classList.add('hidden');
-            headerAuthButton.classList.remove('hidden');
-        }
-    });
+            elements.navLinks.forEach(link => {
+                const isActive = link.getAttribute('href') === hash;
+                link.classList.toggle('active', isActive);
+                if (isActive) elements.pageTitle.textContent = link.querySelector('span').textContent;
+            });
 
-    function showAuthModal() {
-        authModal.classList.remove('hidden');
-        setTimeout(() => authModal.classList.remove('opacity-0'), 10);
-        showLoginPage(); // Always show login form first when modal opens
-    }
+            elements.sidebar.classList.add('-translate-x-full');
+            elements.sidebarOverlay.style.display = 'none';
 
-    function hideAuthModal() {
-        authModal.classList.add('opacity-0');
-        setTimeout(() => authModal.classList.add('hidden'), 300);
-    }
-
-    function showLoginPage() {
-        loginForm.classList.remove('hidden');
-        signupForm.classList.add('hidden');
-        authTitle.textContent = 'Login';
-        toggleAuthText.textContent = "Don't have an account?";
-        toggleAuthButton.textContent = "Sign Up";
-        authMessage.classList.add('hidden');
-    }
-
-    function showSignupPage() {
-        loginForm.classList.add('hidden');
-        signupForm.classList.remove('hidden');
-        authTitle.textContent = 'Sign Up';
-        toggleAuthText.textContent = "Already have an account?";
-        toggleAuthButton.textContent = "Login";
-        authMessage.classList.add('hidden');
-    }
-
-    // Event Listeners for Auth
-    toggleAuthButton.addEventListener('click', () => {
-        if (loginForm.classList.contains('hidden')) {
-            showLoginPage();
-        } else {
-            showSignupPage();
-        }
-    });
-
-    loginForm.addEventListener('submit', handleLogin);
-    signupForm.addEventListener('submit', handleSignup);
-    closeAuthButton.addEventListener('click', hideAuthModal);
-    headerAuthButton.addEventListener('click', showAuthModal); // New button in header
-    logoutButton.addEventListener('click', handleLogout); // Logout button on profile page
-
-
-    function navigateTo(hash) {
-        const targetPageId = hash.substring(1) + '-page';
-        const targetPage = document.getElementById(targetPageId);
-
-        pages.forEach(p => p.classList.add('hidden'));
-        if (targetPage) {
-            targetPage.classList.remove('hidden');
-        } else {
-            document.getElementById('dashboard-page').classList.remove('hidden');
-        }
-
-        navLinks.forEach(link => {
-            if (link.getAttribute('href') === hash) {
-                link.classList.add('active');
-                pageTitle.textContent = link.querySelector('span').textContent;
-            } else {
-                link.classList.remove('active');
+            if (hash === '#learn' && tabId) {
+                elements.learnTabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tabTarget === tabId));
+                elements.learnTabContents.forEach(content => content.classList.toggle('active', content.id === tabId));
             }
-        });
-        // Close sidebar on navigation for mobile
-        sidebar.classList.add('-translate-x-full');
-        sidebarOverlay.style.display = 'none';
-    }
+        },
 
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
+        showArticle(articleId) {
+            const article = data.articles.find(a => a.id === articleId);
+            if (article) {
+                elements.articleReaderTitle.textContent = article.title;
+                elements.articleReaderContent.innerHTML = article.content;
+                app.navigateTo('#article-reader');
+            }
+        },
+
+        // Authentication handlers.
+        async handleLogin(e) {
             e.preventDefault();
-            const hash = e.currentTarget.getAttribute('href');
-            window.location.hash = hash;
-        });
-    });
+            setFormLoading(elements.loginForm, true);
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
 
-    window.addEventListener('hashchange', () => {
-        navigateTo(window.location.hash || '#dashboard');
-    });
+            if (!email || !password) {
+                ui.showAuthMessage('Please enter both email and password.');
+                setFormLoading(elements.loginForm, false);
+                return;
+            }
 
-    menuButton.addEventListener('click', () => {
-        sidebar.classList.toggle('-translate-x-full');
-        if (sidebar.classList.contains('-translate-x-full')) {
-            sidebarOverlay.style.display = 'none';
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                ui.showAuthMessage('Login successful!', false);
+                setTimeout(() => ui.hideModal(elements.authModal), 1000);
+            } catch (error) {
+                ui.showAuthMessage(error.message);
+            } finally {
+                setFormLoading(elements.loginForm, false);
+            }
+        },
+
+        async handleSignup(e) {
+            e.preventDefault();
+            setFormLoading(elements.signupForm, true);
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm-password').value;
+
+            if (!name || !email || !password || !confirmPassword) {
+                ui.showAuthMessage('Please fill in all fields.');
+                setFormLoading(elements.signupForm, false);
+                return;
+            }
+            if (password !== confirmPassword) {
+                ui.showAuthMessage('Passwords do not match.');
+                setFormLoading(elements.signupForm, false);
+                return;
+            }
+
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                await db.collection("users").doc(userCredential.user.uid).set({
+                    name, level: 1, xp: 0, email
+                });
+                ui.showAuthMessage('Signup successful!', false);
+                setTimeout(() => ui.hideModal(elements.authModal), 1500);
+            } catch (error) {
+                ui.showAuthMessage(error.message);
+            } finally {
+                setFormLoading(elements.signupForm, false);
+            }
+        },
+
+        handleLogout() {
+            auth.signOut();
+            app.navigateTo('#dashboard'); // Navigate home on logout
+        },
+
+        async fetchUserData(uid) {
+            try {
+                const userDoc = await db.collection('users').doc(uid).get();
+                return userDoc.exists ? userDoc.data() : null;
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+                return null;
+            }
+        },
+
+        // Transaction form submission handler.
+        handleTransactionFormSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('transaction-id').value;
+            const type = document.querySelector('input[name="transaction-type"]:checked').value;
+            let amount = parseFloat(document.getElementById('transaction-amount').value);
+            if (type === 'outflow') amount = -amount;
+
+            const transactionData = {
+                date: document.getElementById('transaction-date').value,
+                desc: document.getElementById('transaction-desc').value,
+                cat: document.getElementById('transaction-cat').value,
+                amount: amount,
+            };
+
+            if (id) {
+                const index = data.transactions.findIndex(t => t.id == id);
+                data.transactions[index] = { ...data.transactions[index], ...transactionData };
+            } else {
+                transactionData.id = Date.now();
+                data.transactions.push(transactionData);
+            }
+
+            app.updateAll();
+            ui.hideModal(elements.transactionModal);
+        },
+
+        // Deletes a transaction after confirmation.
+        confirmDelete() {
+            if (state.transactionIdToDelete) {
+                data.transactions = data.transactions.filter(t => t.id != state.transactionIdToDelete);
+                app.updateAll();
+            }
+            ui.hideModal(elements.deleteConfirmModal);
+            state.transactionIdToDelete = null;
+        },
+
+        // A single function to update all dynamic parts of the UI.
+        updateAll() {
+            ui.populateTransactions();
+            ui.updateBalance();
+            ui.createOrUpdateCharts();
+        },
+
+        // Centralized event listener setup.
+        bindEvents() {
+            // Navigation
+            elements.navLinks.forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); app.navigateTo(e.currentTarget.getAttribute('href')); }));
+            window.addEventListener('hashchange', () => app.navigateTo(window.location.hash || '#dashboard'));
+            elements.menuButton.addEventListener('click', () => { elements.sidebar.classList.toggle('-translate-x-full'); elements.sidebarOverlay.style.display = 'block'; });
+            elements.sidebarOverlay.addEventListener('click', () => { elements.sidebar.classList.add('-translate-x-full'); elements.sidebarOverlay.style.display = 'none'; });
+
+            // Modals
+            elements.closeAuthButton.addEventListener('click', () => ui.hideModal(elements.authModal));
+            elements.closeTransactionButton.addEventListener('click', () => ui.hideModal(elements.transactionModal));
+            elements.closeChatbotButton.addEventListener('click', () => ui.hideModal(elements.chatbotModal));
+            elements.cancelDeleteBtn.addEventListener('click', () => ui.hideModal(elements.deleteConfirmModal));
+            elements.chatbotButton.addEventListener('click', () => ui.showModal(elements.chatbotModal));
+
+            // Authentication
+            elements.headerAuthButton.addEventListener('click', ui.showAuthModal);
+            elements.toggleAuthButton.addEventListener('click', () => elements.loginForm.classList.contains('hidden') ? ui.showLoginPage() : ui.showSignupPage());
+            elements.loginForm.addEventListener('submit', app.handleLogin); // Connect to new async function
+            elements.signupForm.addEventListener('submit', app.handleSignup); // Connect to new async function
+            elements.logoutButton.addEventListener('click', app.handleLogout); // Connect to new Firebase function
+            elements.closeAuthButton.addEventListener('click', () => ui.hideModal(elements.authModal));
+
+            // Transactions
+            elements.addTransactionButton.addEventListener('click', () => ui.showTransactionModal());
+            elements.dashboardAddTransactionButton.addEventListener('click', () => ui.showTransactionModal());
+            elements.transactionForm.addEventListener('submit', app.handleTransactionFormSubmit);
+            elements.confirmDeleteBtn.addEventListener('click', app.confirmDelete);
+            elements.transactionTableBody.addEventListener('click', (e) => {
+                const target = e.target.closest('button');
+                if (!target) return;
+                const id = target.dataset.id;
+                if (target.classList.contains('edit-btn')) {
+                    ui.showTransactionModal(data.transactions.find(t => t.id == id));
+                } else if (target.classList.contains('delete-btn')) {
+                    ui.showDeleteConfirmModal(id);
+                }
+            });
+
+            // Learn & Play
+            elements.chatbotButton.addEventListener('click', () => ui.showModal(elements.chatbotModal));
+            elements.learnTabButtons.forEach(button => button.addEventListener('click', () => app.navigateTo('#learn', button.dataset.tabTarget)));
+            elements.exploreArticlesButton.addEventListener('click', () => app.navigateTo('#learn', 'articles-tab-content'));
+            elements.exploreTriviaButton.addEventListener('click', () => app.navigateTo('#learn', 'trivia-tab-content'));
+            elements.backToArticlesButton.addEventListener('click', () => app.navigateTo('#learn', 'articles-tab-content'));
+            document.getElementById('articles-container').addEventListener('click', (e) => {
+                const articleCard = e.target.closest('[data-article-id]');
+                if (articleCard) app.showArticle(articleCard.dataset.articleId);
+            });
+        },
+
+        // Initial application setup.
+        init() {
+            app.bindEvents();
+            ui.populateSavingsGoals();
+            ui.populateArticles();
+            ui.populateBadges();
+            app.updateAll();
+            if (!auth.currentUser) {
+                app.navigateTo(window.location.hash || '#dashboard');
+            }
+        }
+    };
+
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            state.isLoggedIn = true;
+            state.currentUser = { uid: user.uid, email: user.email };
+            // Fetch the user's data from Firestore and attach it
+            state.currentUser.firestoreData = await app.fetchUserData(user.uid);
+            // Now update the UI with the complete user object
+            ui.updateHeaderForAuthState(state.currentUser);
+            // Here you can add logic to fetch the user's real transactions, etc.
         } else {
-            sidebarOverlay.style.display = 'block';
+            state.isLoggedIn = false;
+            state.currentUser = null;
+            // Update the UI to its logged-out state
+            ui.updateHeaderForAuthState(null);
+            // Here you can add logic to show a guest dashboard or clear sensitive data
         }
     });
 
-    sidebarOverlay.addEventListener('click', () => {
-        sidebar.classList.add('-translate-x-full');
-        sidebarOverlay.style.display = 'none';
-    });
-
-    // Chatbot Modal Logic
-    chatbotButton.addEventListener('click', () => {
-        chatbotModal.classList.remove('hidden');
-        setTimeout(() => chatbotModal.classList.remove('opacity-0'), 10);
-    });
-    closeChatbotButton.addEventListener('click', () => {
-        chatbotModal.classList.add('opacity-0');
-        setTimeout(() => chatbotModal.classList.add('hidden'), 300);
-    });
-
-    // Initial Load and UI Update
-    navigateTo(window.location.hash || '#dashboard'); // Always start on dashboard
-
-    // Chart.js Initializations
-    function createDoughnutChart() {
-        const ctx = document.getElementById('budgetDoughnutChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Food & Drink', 'Entertainment', 'Hobbies', 'Savings'],
-                datasets: [{
-                    data: [35, 25, 20, 20],
-                    backgroundColor: ['#34D399', '#FBBF24', '#60A5FA', '#A78BFA'],
-                    borderColor: '#FFFFFF',
-                    borderWidth: 4,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '70%',
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 12,
-                            padding: 20,
-                        }
-                    },
-                    tooltip: {
-                        enabled: true,
-                    }
-                }
-            }
-        });
-    }
-
-    function createPieChart() {
-        const ctx = document.getElementById('spendingPieChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Food & Drink', 'Entertainment', 'Hobbies'],
-                datasets: [{
-                    data: [18.50, 15.00, 25.00],
-                    backgroundColor: ['#34D399', '#FBBF24', '#60A5FA'],
-                    borderColor: '#FFFFFF',
-                    borderWidth: 2,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                    }
-                }
-            }
-        });
-    }
-
-    // Populate dynamic content
-    function populateTransactions() {
-        const tableBody = document.getElementById('transaction-table-body');
-        tableBody.innerHTML = '';
-        data.transactions.forEach(tx => {
-            const row = `
-                        <tr class="border-b border-gray-100">
-                            <td class="p-2 text-subtle">${tx.date}</td>
-                            <td class="p-2 font-medium">${tx.desc}</td>
-                            <td class="p-2 text-subtle">${tx.cat}</td>
-                            <td class="p-2 text-right font-medium ${tx.amount > 0 ? 'text-green-500' : 'text-red-500'}">
-                                ${tx.amount > 0 ? '+' : ''}$${Math.abs(tx.amount).toFixed(2)}
-                            </td>
-                        </tr>
-                    `;
-            tableBody.innerHTML += row;
-        });
-    }
-
-    function populateSavingsGoals() {
-        const container = document.getElementById('savings-goals-container');
-        container.innerHTML = '';
-        data.savingsGoals.forEach(goal => {
-            const percentage = Math.round((goal.saved / goal.target) * 100);
-            const card = `
-                        <div class="bg-card p-6 rounded-lg shadow-sm">
-                            <div class="text-4xl mb-3">${goal.icon}</div>
-                            <h3 class="font-bold text-xl">${goal.name}</h3>
-                            <p class="text-subtle mb-4">Saved $${goal.saved} of $${goal.target}</p>
-                            <div class="w-full progress-bar-bg rounded-full h-3 mb-2">
-                                <div class="progress-bar-fill h-3 rounded-full" style="width: ${percentage}%;"></div>
-                            </div>
-                            <p class="text-right font-semibold text-primary-accent">${percentage}%</p>
-                        </div>
-                    `;
-            container.innerHTML += card;
-        });
-    }
-
-    function populateArticles() {
-        const container = document.getElementById('articles-container');
-        container.innerHTML = '';
-        data.articles.forEach(article => {
-            const card = `
-                        <div class="bg-card p-4 rounded-lg shadow-sm border border-gray-200">
-                            <h4 class="font-bold text-lg">${article.title}</h4>
-                            <p class="text-subtle my-2">${article.summary}</p>
-                            <button class="font-semibold text-primary-accent hover:underline">Read Article &rarr;</button>
-                        </div>
-                    `;
-            container.innerHTML += card;
-        });
-    }
-
-    function populateBadges() {
-        const container = document.getElementById('badges-container');
-        container.innerHTML = '';
-        data.badges.forEach(badge => {
-            const item = `
-                        <div class="text-center p-2 rounded-lg bg-gray-100">
-                            <div class="text-4xl">${badge.icon}</div>
-                            <p class="text-xs font-medium mt-1">${badge.name}</p>
-                        </div>
-                    `;
-            container.innerHTML += item;
-        });
-    }
-
-    // Call population functions (these are called on DOMContentLoaded now that app is always visible)
-    createDoughnutChart();
-    createPieChart();
-    populateTransactions();
-    populateSavingsGoals();
-    populateArticles();
-    populateBadges();
+    // --- Start the App ---
+    app.init();
 });
