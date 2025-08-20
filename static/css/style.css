@@ -1,133 +1,85 @@
-html,
-body {
-    height: 100%;
-    /* Ensure html and body take full height */
-}
+/* --- Custom Color Palette: "Vibrant Growth" --- */
+        .bg-primary-accent {
+            background-color: #20C997; /* Vibrant Green */
+        }
+        .text-primary-accent {
+            color: #20C997;
+        }
+        .border-primary-accent {
+            border-color: #20C997;
+        }
+        .bg-secondary-accent {
+            background-color: #FFC107; /* Energetic Amber */
+        }
+        .text-secondary-accent {
+            color: #FFC107;
+        }
+        .bg-main {
+            background-color: #F0F2F5; /* Light Grey BG */
+        }
+        .bg-card {
+            background-color: #FFFFFF; /* White Card BG */
+        }
+        .text-main-heading {
+            color: #343A40; /* Dark Charcoal Text */
+        }
+        .text-subtle {
+            color: #6C757D; /* Medium Grey Text */
+        }
 
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #F8F9FA;
-}
-
-.bg-primary-accent {
-    background-color: #20C997;
-}
-
-.text-primary-accent {
-    color: #20C997;
-}
-
-.border-primary-accent {
-    border-color: #20C997;
-}
-
-.bg-secondary-accent {
-    background-color: #FFC107;
-}
-
-.text-secondary-accent {
-    color: #FFC107;
-}
-
-.bg-main {
-    background-color: #F8F9FA;
-}
-
-.bg-card {
-    background-color: #FFFFFF;
-}
-
-.text-main-heading {
-    color: #343A40;
-}
-
-.text-subtle {
-    color: #6C757D;
-}
-
-.btn-primary {
-    background-color: #20C997;
-    color: white;
-    transition: background-color 0.3s;
-}
-
-.btn-primary:hover {
-    background-color: #1aa87f;
-}
-
-.btn-secondary {
-    background-color: #FFC107;
-    color: #343A40;
-    transition: background-color 0.3s;
-}
-
-.btn-secondary:hover {
-    background-color: #e6ac00;
-}
-
-.nav-item.active {
-    background-color: #E9ECEF;
-    color: #20C997;
-    font-weight: 600;
-}
-
-.nav-item.active svg {
-    stroke: #20C997;
-}
-
-.chart-container {
-    position: relative;
-    width: 100%;
-    max-width: 400px;
-    /* Max width for charts */
-    margin-left: auto;
-    margin-right: auto;
-    height: 250px;
-    /* Base height for mobile */
-    max-height: 400px;
-    /* Max height for larger screens */
-}
-
-@media (min-width: 768px) {
-    .chart-container {
-        height: 300px;
-        /* Slightly taller on tablets */
-    }
-}
-
-@media (min-width: 1024px) {
-    .chart-container {
-        height: 350px;
-        /* Even taller on desktops */
-    }
-}
-
-.progress-bar-bg {
-    background-color: #E9ECEF;
-}
-
-.progress-bar-fill {
-    background-color: #20C997;
-    transition: width 0.5s ease-in-out;
-}
-
-.modal {
-    transition: opacity 0.3s ease;
-}
-
-.sidebar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 20;
-    display: none;
-    /* Hidden by default */
-}
-
-main {
-    will-change: transform, scroll-position;
-    /* Hint for browser optimization */
-}
+        /* --- Custom Styles --- */
+        html,
+        body {
+            height: 100%;
+            font-family: 'Inter', sans-serif;
+        }
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 20;
+            display: none;
+        }
+        main {
+            will-change: transform, scroll-position;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 250px;
+            max-height: 400px;
+        }
+        .nav-item.active {
+            background-color: #e9ecef;
+            color: #20C997;
+            font-weight: 600;
+        }
+        .tab-button.active {
+            border-bottom-color: #20C997;
+            color: #20C997;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        @media (min-width: 1024px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
