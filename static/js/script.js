@@ -18,7 +18,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- App State & Data ---
     const state = {
         isLoggedIn: false,
-        transactionIdToDelete: null,
+        currentUser: null,
+        itemToDelete: null,
         charts: {
             budgetDoughnut: null,
             spendingPie: null,
@@ -29,11 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- All data for the application is stored here. ---
     const data = {
         transactions: [], // Firestore will now populate this.,
-        savingsGoals: [
-            { name: 'New Gaming Phone', target: 500, saved: 325, icon: '📱' },
-            { name: 'Concert Tickets', target: 150, saved: 50, icon: '🎟️' },
-            { name: 'Summer Trip Fund', target: 300, saved: 280, icon: '✈️' },
-        ],
+        savingsGoals: [],
         articles: [
             {
                 id: 'credit-score',
@@ -122,11 +119,26 @@ document.addEventListener('DOMContentLoaded', function () {
         moneyInDisplay: document.getElementById('money-in'),
         moneyOutDisplay: document.getElementById('money-out'),
         currentBalanceDisplay: document.getElementById('current-balance'),
+        topGoalContent: document.getElementById('top-goal-content'),
+        topGoalEmptyState: document.getElementById('top-goal-empty-state'),
+        topGoalName: document.getElementById('top-goal-name'),
+        topGoalSavedText: document.getElementById('top-goal-saved-text'),
+        topGoalProgressBar: document.getElementById('top-goal-progress-bar'),
+        topGoalDetails: document.getElementById('top-goal-details'),
 
-        //Profile Displat
+        //Profile Display
         userNameElement: document.getElementById('user-name'),
         userAvatarInitial: document.getElementById('user-avatar-initial'),
         userInfoContainer: document.getElementById('user-info-container'),
+
+        //Savings Goals
+        goalModal: document.getElementById('goal-modal'),
+        goalForm: document.getElementById('goal-form'),
+        goalTitle: document.getElementById('goal-title'),
+        closeGoalButton: document.getElementById('close-goal-button'),
+        addGoalButton: document.getElementById('add-goal-button'),
+        viewAllGoalsButton: document.getElementById('view-all-goals-button'),
+        savingsGoalsContainer: document.getElementById('savings-goals-container'),
     };
 
     // --- Helper Functions ---
@@ -196,9 +208,9 @@ document.addEventListener('DOMContentLoaded', function () {
             ui.showModal(elements.transactionModal);
         },
 
-        showDeleteConfirmModal(id) {
-            state.transactionIdToDelete = id;
-            ui.showModal(elements.deleteConfirmModal);
+        showDeleteConfirmModal(id, type) {
+            state.itemToDelete = { id, type };
+            this.showModal(elements.deleteConfirmModal);
         },
 
         // Functions to switch between login and signup forms.
@@ -254,6 +266,33 @@ document.addEventListener('DOMContentLoaded', function () {
             elements.dashboardAddTransactionButton.style.display = isLoggedIn ? 'block' : 'none';
         },
 
+        updateTopGoalDisplay() {
+            if (data.savingsGoals.length === 0) {
+                elements.topGoalContent.classList.add('hidden');
+                elements.topGoalEmptyState.classList.remove('hidden');
+                return;
+            }
+
+            elements.topGoalContent.classList.remove('hidden');
+            elements.topGoalEmptyState.classList.add('hidden');
+
+            // Find goal closest to completion (highest percentage)
+            const topGoal = [...data.savingsGoals].sort((a, b) => {
+                const percA = a.target > 0 ? a.saved / a.target : 0;
+                const percB = b.target > 0 ? b.saved / b.target : 0;
+                return percB - percA;
+            })[0];
+
+            const percentage = topGoal.target > 0 ? Math.round((topGoal.saved / topGoal.target) * 100) : 0;
+
+            elements.topGoalName.textContent = topGoal.name;
+            elements.topGoalSavedText.textContent = `Saving for this goal!`;
+            elements.topGoalProgressBar.style.width = `${percentage}%`;
+            elements.topGoalDetails.innerHTML = `
+            <span class="text-primary-accent">${formatCurrency(topGoal.saved)} / ${formatCurrency(topGoal.target)}</span>
+            <span>${percentage}%</span>`;
+        },
+
         // Populates the transaction table with data.
         populateTransactions() {
             if (data.transactions.length === 0) {
@@ -268,7 +307,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .map(tx => `
                     <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                         <td class="p-2 text-subtle">${tx.date}</td>
-                        <td class="p-2 font-medium">${tx.desc}</td>
+                        <td class="p-2 font-medium truncate-text" style="max-width: 200px;" title="${tx.desc}">${tx.desc}</td>
                         <td class="p-2 text-subtle">${tx.cat}</td>
                         <td class="p-2 text-right font-medium ${tx.amount > 0 ? 'text-green-500' : 'text-red-500'}">${tx.amount > 0 ? '+' : ''}${formatCurrency(tx.amount)}</td>
                         <td class="p-2 text-center flex justify-center items-center gap-2">
@@ -367,20 +406,62 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Populates other sections of the UI.
         populateSavingsGoals() {
-            document.getElementById('savings-goals-container').innerHTML = data.savingsGoals.map(goal => {
-                const percentage = Math.round((goal.saved / goal.target) * 100);
-                return `<div class="bg-card p-6 rounded-xl shadow-lg"><div class="text-4xl mb-3">${goal.icon}</div><h3 class="font-bold text-xl">${goal.name}</h3><p class="text-subtle mb-4">Saved $${goal.saved} of $${goal.target}</p><div class="w-full bg-gray-200 rounded-full h-3 mb-2"><div class="bg-primary-accent h-3 rounded-full" style="width: ${percentage}%;"></div></div><p class="text-right font-semibold text-primary-accent">${percentage}%</p></div>`;
+            elements.addGoalButton.classList.toggle('hidden', !state.isLoggedIn);
+
+            if (data.savingsGoals.length === 0) {
+                const message = state.isLoggedIn ?
+                    'You have no savings goals yet. Click "Add Goal" to create one!' :
+                    'Please log in to manage your savings goals.';
+                elements.savingsGoalsContainer.innerHTML = `<p class="text-subtle col-span-full text-center">${message}</p>`;
+                return;
+            }
+
+            elements.savingsGoalsContainer.innerHTML = data.savingsGoals.map(goal => {
+                const percentage = goal.target > 0 ? Math.round((goal.saved / goal.target) * 100) : 0;
+                return `
+        <div class="bg-card p-6 rounded-xl shadow-lg flex flex-col">
+            <div class="flex-grow">
+                <div class="text-4xl mb-3">${goal.icon}</div>
+                <h3 class="font-bold text-xl truncate-text" title="${goal.name}">${goal.name}</h3>
+                <p class="text-subtle mb-4">Saved ${formatCurrency(goal.saved)} of ${formatCurrency(goal.target)}</p>
+                <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                    <div class="bg-primary-accent h-3 rounded-full" style="width: ${percentage}%;"></div>
+                </div>
+                <p class="text-right font-semibold text-primary-accent">${percentage}%</p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-end gap-2">
+                <button class="edit-goal-btn p-2 rounded-full hover:bg-blue-100 text-blue-500 transition-colors" data-id="${goal.id}" title="Edit Goal"><svg class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z"/></svg></button>
+                <button class="delete-goal-btn p-2 rounded-full hover:bg-red-100 text-red-500 transition-colors" data-id="${goal.id}" title="Delete Goal"><svg class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+            </div>
+        </div>`;
             }).join('');
         },
+
         populateArticles() {
             document.getElementById('articles-container').innerHTML = data.articles.map(article => `
                         <div class="bg-card p-4 rounded-xl shadow-md border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow duration-200" data-article-id="${article.id}">
-                            <h4 class="font-bold text-lg">${article.title}</h4><p class="text-subtle my-2">${article.summary}</p>
+                            <h4 class="font-bold text-lg truncate-text" title="${article.title}">${article.title}</h4><p class="text-subtle my-2 line-clamp-2">${article.summary}</p>
                             <button class="font-semibold text-primary-accent hover:underline mt-2">Read Article &rarr;</button>
                         </div>`).join('');
         },
         populateBadges() {
             document.getElementById('badges-container').innerHTML = data.badges.map(badge => `<div class="text-center p-2 rounded-xl bg-gray-100 shadow-sm"><div class="text-4xl">${badge.icon}</div><p class="text-xs font-medium mt-1">${badge.name}</p></div>`).join('');
+        },
+
+        showGoalModal(goal = null) {
+            elements.goalForm.reset();
+            if (goal) {
+                elements.goalTitle.textContent = 'Edit Savings Goal';
+                document.getElementById('goal-id').value = goal.id;
+                document.getElementById('goal-name').value = goal.name;
+                document.getElementById('goal-icon').value = goal.icon;
+                document.getElementById('goal-target').value = goal.target;
+                document.getElementById('goal-saved').value = goal.saved;
+            } else {
+                elements.goalTitle.textContent = 'Add Savings Goal';
+                document.getElementById('goal-id').value = '';
+            }
+            this.showModal(elements.goalModal);
         },
     };
 
@@ -389,6 +470,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const app = {
         // Handles navigation between pages.
         navigateTo(hash, tabId = null) {
+            if (!hash) hash = '#dashboard';
+            window.location.hash = hash;
             const targetPageId = (hash.substring(1) || 'dashboard') + '-page';
             elements.pages.forEach(p => p.classList.add('hidden'));
             const targetPage = document.getElementById(targetPageId)
@@ -396,6 +479,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 targetPage.classList.remove('hidden');
             } else {
                 document.getElementById('dashboard-page').classList.remove('hidden');
+            }
+
+            if (hash === '#dashboard' || hash === '#budget') {
+                // A small delay ensures the page container is visible before the chart tries to render.
+                setTimeout(() => ui.createOrUpdateCharts(), 50);
             }
 
             elements.navLinks.forEach(link => {
@@ -510,6 +598,66 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         },
 
+        async loadUserSavingsGoals() {
+            if (!state.isLoggedIn) {
+                data.savingsGoals = [];
+                ui.populateSavingsGoals();
+                return;
+            }
+            const uid = state.currentUser.uid;
+            try {
+                const snapshot = await db.collection('users').doc(uid).collection('savingsGoals').orderBy('name').get();
+                data.savingsGoals = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            } catch (error) {
+                console.error("Error loading savings goals:", error);
+                data.savingsGoals = [];
+                ui.populateSavingsGoals();
+            } finally {
+                ui.populateSavingsGoals();
+                ui.updateTopGoalDisplay();
+            }
+        },
+
+        async handleGoalFormSubmit(e) {
+            e.preventDefault();
+            if (!state.isLoggedIn) return;
+
+            const uid = state.currentUser.uid;
+            const id = document.getElementById('goal-id').value;
+
+            const goalData = {
+                name: document.getElementById('goal-name').value,
+                icon: document.getElementById('goal-icon').value,
+                target: parseFloat(document.getElementById('goal-target').value) || 0,
+                saved: parseFloat(document.getElementById('goal-saved').value) || 0,
+            };
+
+            if (goalData.saved > goalData.target) {
+                goalData.saved = goalData.target;
+            }
+
+            const formButton = elements.goalForm.querySelector('button[type="submit"]');
+            formButton.disabled = true;
+            formButton.textContent = 'Saving...';
+
+            try {
+                const collectionRef = db.collection('users').doc(uid).collection('savingsGoals');
+                if (id) {
+                    await collectionRef.doc(id).update(goalData);
+                } else {
+                    await collectionRef.add(goalData);
+                }
+                await this.loadUserSavingsGoals();
+                ui.hideModal(elements.goalModal);
+            } catch (error) {
+                console.error("Error saving goal:", error);
+                alert("There was an error saving your goal.");
+            } finally {
+                formButton.disabled = false;
+                formButton.textContent = 'Save Goal';
+            }
+        },
+
         // Transaction form submission handler.
         async handleTransactionFormSubmit(e) {
             e.preventDefault();
@@ -552,20 +700,39 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         },
 
-        // Deletes a transaction after confirmation.
         async confirmDelete() {
-            if (state.transactionIdToDelete && state.isLoggedIn) {
-                const uid = state.currentUser.uid;
-                try {
-                    await db.collection('users').doc(uid).collection('transactions').doc(state.transactionIdToDelete).delete();
-                    await app.loadUserTransactions(); // Reload and re-render
-                } catch (error) {
-                    console.error("Error deleting transaction: ", error);
-                    alert("Could not delete the transaction.");
-                }
+            if (!state.itemToDelete || !state.isLoggedIn) {
+                console.error("confirmDelete called with no item to delete or not logged in.");
+                ui.hideModal(elements.deleteConfirmModal);
+                return;
             }
-            ui.hideModal(elements.deleteConfirmModal);
-            state.transactionIdToDelete = null;
+
+            const deleteButton = elements.confirmDeleteBtn;
+
+            deleteButton.disabled = true;
+            deleteButton.textContent = 'Deleting...';
+
+            const { id, type } = state.itemToDelete;
+            const uid = state.currentUser.uid;
+
+            try {
+                if (type === 'transaction') {
+                    await db.collection('users').doc(uid).collection('transactions').doc(id).delete();
+                    await this.loadUserTransactions();
+                } else if (type === 'goal') {
+                    await db.collection('users').doc(uid).collection('savingsGoals').doc(id).delete();
+                    await this.loadUserSavingsGoals();
+                }
+            } catch (error) {
+                console.error(`Error deleting ${type}:`, error);
+                alert(`Could not delete the ${type}. Please try again.`);
+            } finally {
+                deleteButton.disabled = false;
+                deleteButton.textContent = 'Delete';
+                // This block runs whether the delete succeeded or failed.
+                ui.hideModal(elements.deleteConfirmModal);
+                state.itemToDelete = null; // Clear the state variable after the operation.
+            }
         },
         // A single function to update all dynamic parts of the UI.
         updateAll() {
@@ -581,6 +748,7 @@ document.addEventListener('DOMContentLoaded', function () {
             window.addEventListener('hashchange', () => app.navigateTo(window.location.hash || '#dashboard'));
             elements.menuButton.addEventListener('click', () => { elements.sidebar.classList.toggle('-translate-x-full'); elements.sidebarOverlay.style.display = 'block'; });
             elements.sidebarOverlay.addEventListener('click', () => { elements.sidebar.classList.add('-translate-x-full'); elements.sidebarOverlay.style.display = 'none'; });
+            elements.viewAllGoalsButton.addEventListener('click', () => app.navigateTo('#savings'));
 
             // Modals
             elements.closeAuthButton.addEventListener('click', () => ui.hideModal(elements.authModal));
@@ -601,7 +769,7 @@ document.addEventListener('DOMContentLoaded', function () {
             elements.addTransactionButton.addEventListener('click', () => ui.showTransactionModal());
             elements.dashboardAddTransactionButton.addEventListener('click', () => ui.showTransactionModal());
             elements.transactionForm.addEventListener('submit', app.handleTransactionFormSubmit);
-            elements.confirmDeleteBtn.addEventListener('click', app.confirmDelete);
+            elements.confirmDeleteBtn.addEventListener('click', app.confirmDelete.bind(app));
             elements.transactionTableBody.addEventListener('click', (e) => {
                 const target = e.target.closest('button');
                 if (!target) return;
@@ -609,7 +777,37 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (target.classList.contains('edit-btn')) {
                     ui.showTransactionModal(data.transactions.find(t => t.id == id));
                 } else if (target.classList.contains('delete-btn')) {
-                    ui.showDeleteConfirmModal(id);
+                    ui.showDeleteConfirmModal(id, 'transaction');
+                }
+            });
+
+            // Savings Goals
+            document.getElementById('dashboard-page').addEventListener('click', (e) => {
+                if (e.target.classList.contains('view-all-goals-link')) {
+                    e.preventDefault();
+
+                    app.navigateTo('#savings').then(() => {
+                        elements.addGoalButton.click();
+                    });
+                }
+            });
+            elements.viewAllGoalsButton.addEventListener('click', () => app.navigateTo('#savings'));
+            elements.closeGoalButton.addEventListener('click', () => ui.hideModal(elements.goalModal));
+            elements.addGoalButton.addEventListener('click', () => ui.showGoalModal());
+            elements.goalForm.addEventListener('submit', (e) => app.handleGoalFormSubmit(e));
+
+            // Event delegation for dynamically created goal buttons
+            elements.savingsGoalsContainer.addEventListener('click', (e) => {
+                const target = e.target.closest('button');
+                if (!target) return;
+
+                const id = target.dataset.id;
+                const goal = data.savingsGoals.find(g => g.id === id);
+
+                if (target.classList.contains('edit-goal-btn') && goal) {
+                    ui.showGoalModal(goal);
+                } else if (target.classList.contains('delete-goal-btn')) {
+                    ui.showDeleteConfirmModal(id, 'goal');
                 }
             });
 
@@ -646,10 +844,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Fetch the user's data from Firestore and attach it
                 state.currentUser.firestoreData = await app.fetchUserData(user.uid);
                 await app.loadUserTransactions();
+                await app.loadUserSavingsGoals();
             } else {
                 state.isLoggedIn = false;
                 state.currentUser = null;
                 await app.loadUserTransactions(); // Will clear data and update the UI
+                await app.loadUserSavingsGoals();
             }
             ui.updateHeaderForAuthState(state.currentUser);
             ui.updateTransactionControls(state.isLoggedIn);
@@ -657,7 +857,6 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error("Error during auth state processing:", error);
             // You can add UI feedback here if something goes wrong, e.g., an error message.
         } finally {
-            // Step 3: THIS IS THE KEY. Hide the loader only after all try/catch logic is complete.
             ui.hideGlobalLoader();
         }
     });

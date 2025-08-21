@@ -76,7 +76,7 @@
                 <div>
                     <label for="signup-name" class="block text-sm font-medium text-subtle mb-1">Full Name</label>
 
-                    <input type="text" id="signup-name"
+                    <input type="text" id="signup-name" maxlength="70"
                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
                 <div>
@@ -120,12 +120,12 @@
                 <input type="hidden" id="transaction-id">
                 <div>
                     <label for="transaction-desc" class="block text-sm font-medium text-subtle mb-1">Description</label>
-                    <input type="text" id="transaction-desc" required
+                    <input type="text" id="transaction-desc" required maxlength="100"
                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
                 <div>
                     <label for="transaction-cat" class="block text-sm font-medium text-subtle mb-1">Category</label>
-                    <input type="text" id="transaction-cat" required
+                    <input type="text" id="transaction-cat" required maxlength="30"
                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
                 <div>
@@ -166,6 +166,44 @@
                 <button id="confirm-delete-btn"
                     class="bg-red-500 text-white py-2 px-6 rounded-lg font-semibold hover:bg-red-600 transition-colors">Delete</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Goal Modal -->
+    <div id="goal-modal"
+        class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="goal-title" class="text-3xl font-bold text-main-heading">Add Savings Goal</h2>
+                <button id="close-goal-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+            </div>
+            <form id="goal-form" class="space-y-4">
+                <input type="hidden" id="goal-id">
+                <div>
+                    <label for="goal-name" class="block text-sm font-medium text-subtle mb-1">Goal Name</label>
+                    <input type="text" id="goal-name" placeholder="e.g., New Gaming Phone" required maxlength="50"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                </div>
+                <div>
+                    <label for="goal-icon" class="block text-sm font-medium text-subtle mb-1">Icon (Emoji)</label>
+                    <input type="text" id="goal-icon" placeholder="📱" required maxlength="1"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                </div>
+                <div>
+                    <label for="goal-target" class="block text-sm font-medium text-subtle mb-1">Target Amount
+                        ($)</label>
+                    <input type="number" id="goal-target" step="1" required placeholder="500"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                </div>
+                <div>
+                    <label for="goal-saved" class="block text-sm font-medium text-subtle mb-1">Amount Saved ($)</label>
+                    <input type="number" id="goal-saved" step="0.01" required placeholder="0"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                </div>
+                <button type="submit"
+                    class="w-full bg-primary-accent text-white py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Save
+                    Goal</button>
+            </form>
         </div>
     </div>
 
@@ -313,15 +351,30 @@
                         <div
                             class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
                             <h3 class="font-semibold mb-4 text-lg">Top Savings Goal</h3>
-                            <p class="font-semibold text-lg">New Gaming Phone</p>
-                            <p class="text-subtle mb-4">Saving for the latest model!</p>
-                            <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
-                                <div class="bg-primary-accent h-4 rounded-full transition-all duration-500 ease-in-out"
-                                    style="width: 65%;"></div>
+
+                            <!-- This will show when a goal exists -->
+                            <div id="top-goal-content">
+                                <p id="top-goal-name" class="font-semibold text-lg">New Gaming Phone</p>
+                                <p class="text-subtle mb-4" id="top-goal-saved-text">Saving...</p>
+                                <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+                                    <div id="top-goal-progress-bar"
+                                        class="bg-primary-accent h-4 rounded-full transition-all duration-500 ease-in-out"
+                                        style="width: 0%;"></div>
+                                </div>
+                                <div id="top-goal-details" class="flex justify-between text-sm font-medium">
+                                    <span class="text-primary-accent">$0 / $0</span><span>0%</span>
+                                </div>
                             </div>
-                            <div class="flex justify-between text-sm font-medium"><span class="text-primary-accent">$325
-                                    / $500</span><span>65%</span></div>
-                            <button
+
+                            <!-- This will show when NO goals exist -->
+                            <div id="top-goal-empty-state" class="hidden text-center text-subtle py-8">
+                                <p>No savings goals yet!</p>
+                                <a href="#savings"
+                                    class="font-semibold text-primary-accent hover:underline mt-2 inline-block">Create
+                                    one now</a>
+                            </div>
+
+                            <button id="view-all-goals-button"
                                 class="w-full mt-4 bg-primary-accent text-white py-2 rounded-lg shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">View
                                 All Goals</button>
                         </div>
@@ -341,7 +394,7 @@
                     <p class="text-subtle mb-6">Track where your money goes. This section helps you understand your
                         spending habits with a detailed breakdown by category and a complete log of all your
                         transactions.</p>
-                    <!-- START: MODIFIED LAYOUT FOR CHARTS -->
+                    <!-- LAYOUT FOR CHARTS -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                         <div
                             class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
@@ -355,7 +408,6 @@
                         </div>
                     </div>
                     <div class="bg-card p-6 rounded-xl shadow-lg">
-                        <!-- END: MODIFIED LAYOUT FOR CHARTS -->
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-semibold text-lg">Transaction Log</h3>
                             <button id="add-transaction-button"
@@ -381,17 +433,28 @@
 
                 <!-- Savings Goals Page -->
                 <div id="savings-page" class="page-content hidden">
-                    <p class="text-subtle mb-6">Turn your dreams into reality by saving for them. Create goals for
-                        things you want, track your progress visually, and celebrate when you reach them. Seeing your
-                        savings grow is the best motivation!</p>
+                    <div class="flex justify-between items-center mb-6">
+                        <p class="text-subtle mb-6">Turn your dreams into reality by saving for them. Create
+                            goals
+                            for
+                            things you want, track your progress visually, and celebrate when you reach them. Seeing
+                            your
+                            savings grow is the best motivation!</p>
+                        <button id="add-goal-button"
+                            class="hidden bg-primary-accent text-white py-2 px-4 rounded-lg font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out flex-shrink-0">Add
+                            Goal</button>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="savings-goals-container">
+                        <!-- Savings goals will be populated here by JavaScript -->
                     </div>
                 </div>
 
                 <!-- Learn & Play Page -->
                 <div id="learn-page" class="page-content hidden">
-                    <p class="text-subtle mb-6">Boost your financial IQ! Read short articles to learn key money concepts
-                        and then test your knowledge with a fun trivia game. The more you learn, the better you'll be at
+                    <p class="text-subtle mb-6">Boost your financial IQ! Read short articles to learn key money
+                        concepts
+                        and then test your knowledge with a fun trivia game. The more you learn, the better you'll
+                        be at
                         managing your finances.</p>
                     <div class="border-b border-gray-200 mb-6 bg-card rounded-t-xl shadow-sm">
                         <nav class="flex space-x-2 md:space-x-4 justify-center">
@@ -408,7 +471,8 @@
                     <div id="trivia-tab-content" class="tab-content bg-card p-6 rounded-b-xl shadow-lg">
                         <h3 class="text-2xl font-bold mb-4">Trivia Challenge</h3>
                         <div id="trivia-game">
-                            <p id="trivia-question" class="text-lg font-semibold mb-4">What does 'ROI' stand for?</p>
+                            <p id="trivia-question" class="text-lg font-semibold mb-4">What does 'ROI' stand for?
+                            </p>
                             <div id="trivia-options" class="space-y-3">
                                 <button
                                     class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">Return
@@ -442,7 +506,8 @@
                 <!-- Profile & Settings Page -->
                 <div id="profile-page" class="page-content hidden">
                     <p class="text-subtle mb-6">This is your command center. Customize your profile, check your
-                        gamification progress and earned badges, and set up helpful reminders to stay on track with your
+                        gamification progress and earned badges, and set up helpful reminders to stay on track with
+                        your
                         financial goals.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-card p-6 rounded-xl shadow-lg">
