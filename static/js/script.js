@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- DOM Element Cache ---
     // Caching all DOM elements we need to interact with for performance.
     const elements = {
+        globalLoader: document.getElementById('global-loader'),
         pages: document.querySelectorAll('.page-content'),
         navLinks: document.querySelectorAll('.nav-item'),
         pageTitle: document.getElementById('page-title'),
@@ -126,7 +127,6 @@ document.addEventListener('DOMContentLoaded', function () {
         userNameElement: document.getElementById('user-name'),
         userAvatarInitial: document.getElementById('user-avatar-initial'),
         userInfoContainer: document.getElementById('user-info-container'),
-        authLoadingSpinner: document.getElementById('auth-loading-spinner'),
     };
 
     // --- Helper Functions ---
@@ -151,6 +151,16 @@ document.addEventListener('DOMContentLoaded', function () {
     // --- UI Update Functions ---
     // This object holds all functions that directly manipulate the UI.
     const ui = {
+
+        hideGlobalLoader() {
+            const loader = elements.globalLoader;
+            if (loader) {
+                loader.classList.add('opacity-0');
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 350);
+            }
+        },
         // Generic modal functions to reduce redundant code.
         showModal(modalElement) {
             modalElement.classList.remove('hidden');
@@ -225,7 +235,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 elements.userLevelXp.textContent = `Level ${level} | ${xp} XP`;
                 elements.userAvatarInitial.textContent = name?.trim().charAt(0).toUpperCase() || '?';
 
-                elements.authLoadingSpinner.classList.add('hidden');
                 elements.headerAuthButton.classList.add('hidden');
                 elements.userInfoContainer.classList.remove('hidden');
                 elements.userInfoContainer.classList.add('flex');
@@ -233,7 +242,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             } else {
                 // Logged Out State
-                elements.authLoadingSpinner.classList.add('hidden');
                 elements.userInfoContainer.classList.add('hidden');
                 elements.logoutButton.classList.add('hidden');
                 elements.headerAuthButton.classList.remove('hidden');
@@ -492,7 +500,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const firstDayOfNextMonthISO = firstDayOfNextMonth.toISOString().split('T')[0]; // e.g., "2023-11-01"
 
             try {
-                const snapshot = await db.collection('users').doc(uid).collection('transactions').where('date', '>=', firstDayISO).where('date','<',firstDayOfNextMonthISO).orderBy('date', 'desc').get();
+                const snapshot = await db.collection('users').doc(uid).collection('transactions').where('date', '>=', firstDayISO).where('date', '<', firstDayOfNextMonthISO).orderBy('date', 'desc').get();
                 data.transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 app.updateAll();
             } catch (error) {
@@ -631,22 +639,26 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     auth.onAuthStateChanged(async (user) => {
-        if (user) {
-            state.isLoggedIn = true;
-            state.currentUser = { uid: user.uid, email: user.email };
-            // Fetch the user's data from Firestore and attach it
-            state.currentUser.firestoreData = await app.fetchUserData(user.uid);
-            // Now update the UI with the complete user object
+        try {
+            if (user) {
+                state.isLoggedIn = true;
+                state.currentUser = { uid: user.uid, email: user.email };
+                // Fetch the user's data from Firestore and attach it
+                state.currentUser.firestoreData = await app.fetchUserData(user.uid);
+                await app.loadUserTransactions();
+            } else {
+                state.isLoggedIn = false;
+                state.currentUser = null;
+                await app.loadUserTransactions(); // Will clear data and update the UI
+            }
             ui.updateHeaderForAuthState(state.currentUser);
-            ui.updateTransactionControls(true);
-            await app.loadUserTransactions();
-        } else {
-            state.isLoggedIn = false;
-            state.currentUser = null;
-            // Update the UI to its logged-out state
-            ui.updateHeaderForAuthState(null);
-            ui.updateTransactionControls(false);
-            await app.loadUserTransactions(); // Will clear data and update the UI
+            ui.updateTransactionControls(state.isLoggedIn);
+        } catch (error) {
+            console.error("Error during auth state processing:", error);
+            // You can add UI feedback here if something goes wrong, e.g., an error message.
+        } finally {
+            // Step 3: THIS IS THE KEY. Hide the loader only after all try/catch logic is complete.
+            ui.hideGlobalLoader();
         }
     });
 
