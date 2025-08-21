@@ -287,7 +287,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             elements.moneyInDisplay.textContent = formatCurrency(monthlyInflow);
             elements.moneyOutDisplay.textContent = formatCurrency(Math.abs(monthlyOutflow)); // Keep money out display positive
-            elements.currentBalanceDisplay.textContent = formatCurrency(currentBalance); 
+            elements.currentBalanceDisplay.textContent = formatCurrency(currentBalance);
 
             // Dynamically change the color to red if the balance is negative
             elements.currentBalanceDisplay.classList.toggle('text-red-500', currentBalance < 0);
@@ -481,12 +481,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
             const uid = state.currentUser.uid;
-            const startOfMonth = new Date();
-            startOfMonth.setDate(1);
-            startOfMonth.setHours(0, 0, 0, 0);
+            const now = new Date();
+
+            // Calculate the start of the current month
+            const firstDayOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const firstDayISO = firstDayOfCurrentMonth.toISOString().split('T')[0]; // e.g., "2023-10-01"
+
+            // CALCULATE THE END BOUNDARY (start of next month)
+            const firstDayOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+            const firstDayOfNextMonthISO = firstDayOfNextMonth.toISOString().split('T')[0]; // e.g., "2023-11-01"
 
             try {
-                const snapshot = await db.collection('users').doc(uid).collection('transactions').where('date', '>=', startOfMonth.toISOString().slice(0, 10)).orderBy('date', 'desc').get();
+                const snapshot = await db.collection('users').doc(uid).collection('transactions').where('date', '>=', firstDayISO).where('date','<',firstDayOfNextMonthISO).orderBy('date', 'desc').get();
                 data.transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 app.updateAll();
             } catch (error) {
