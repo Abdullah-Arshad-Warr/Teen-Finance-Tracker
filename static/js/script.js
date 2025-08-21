@@ -130,7 +130,12 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     // --- Helper Functions ---
-    const formatCurrency = (amount) => `$${Math.abs(amount).toFixed(2)}`;
+    const formatCurrency = (amount) => {
+        if (amount < 0) {
+            return `-$${Math.abs(amount).toFixed(2)}`;
+        }
+        return `$${amount.toFixed(2)}`;
+    };
 
     function setFormLoading(form, isLoading) {
         const button = form.querySelector('button[type="submit"]');
@@ -269,22 +274,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Calculates and displays the current balance and monthly totals.
         updateBalance() {
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-
+            // These calculations remain the same, but now are for the current month only
             const monthlyInflow = data.transactions
-                .filter(t => { const d = new Date(t.date); return t.amount > 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear; })
+                .filter(t => t.amount > 0)
                 .reduce((sum, t) => sum + t.amount, 0);
 
             const monthlyOutflow = data.transactions
-                .filter(t => { const d = new Date(t.date); return t.amount < 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear; })
+                .filter(t => t.amount < 0)
                 .reduce((sum, t) => sum + t.amount, 0);
 
-            const currentBalance = data.transactions.reduce((sum, t) => sum + t.amount, 0);
+            const currentBalance = monthlyInflow + monthlyOutflow;
 
             elements.moneyInDisplay.textContent = formatCurrency(monthlyInflow);
-            elements.moneyOutDisplay.textContent = formatCurrency(monthlyOutflow);
-            elements.currentBalanceDisplay.textContent = formatCurrency(currentBalance);
+            elements.moneyOutDisplay.textContent = formatCurrency(Math.abs(monthlyOutflow)); // Keep money out display positive
+            elements.currentBalanceDisplay.textContent = formatCurrency(currentBalance); 
+
+            // Dynamically change the color to red if the balance is negative
+            elements.currentBalanceDisplay.classList.toggle('text-red-500', currentBalance < 0);
+            elements.currentBalanceDisplay.classList.toggle('text-main-heading', currentBalance >= 0);
         },
 
         // Creates or updates the charts.
