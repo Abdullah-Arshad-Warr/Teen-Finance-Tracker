@@ -119,4 +119,79 @@
      display: -webkit-box;
      -webkit-box-orient: vertical;
      -webkit-line-clamp: 2;
+     line-clamp: 2;
+ }
+
+ /* Budget Management Styles */
+ .budget-method-card {
+     transition: all 0.3s ease;
+ }
+
+ .budget-method-card:hover {
+     transform: translateY(-2px);
+     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+ }
+
+ .budget-method-card.selected {
+     border-color: #20C997 !important;
+     background-color: #f0f9ff;
+ }
+
+ .category-group {
+     border: 1px solid #e5e7eb;
+     border-radius: 8px;
+     padding: 16px;
+     margin-bottom: 16px;
+ }
+
+ .category-row {
+     margin-bottom: 8px;
+ }
+
+ .category-row:last-child {
+     margin-bottom: 0;
+ }
+
+ .budget-progress-bar {
+     transition: all 0.5s ease;
+ }
+
+ /* Status Colors */
+ .status-green {
+     background-color: #20C997;
+     color: #20C997;
+ }
+
+ .status-orange {
+     background-color: #f59e0b;
+     color: #f59e0b;
+ }
+
+ .status-red {
+     background-color: #ef4444;
+     color: #ef4444;
+ }
+
+ /* Modal scroll styling */
+ .modal .overflow-y-auto {
+     scrollbar-width: thin;
+     scrollbar-color: #cbd5e0 #f7fafc;
+ }
+
+ .modal .overflow-y-auto::-webkit-scrollbar {
+     width: 6px;
+ }
+
+ .modal .overflow-y-auto::-webkit-scrollbar-track {
+     background: #f7fafc;
+     border-radius: 3px;
+ }
+
+ .modal .overflow-y-auto::-webkit-scrollbar-thumb {
+     background: #cbd5e0;
+     border-radius: 3px;
+ }
+
+ .modal .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+     background: #a0aec0;
  }

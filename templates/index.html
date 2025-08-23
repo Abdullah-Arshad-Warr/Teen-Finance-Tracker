@@ -343,11 +343,50 @@
                                 class="w-full mt-6 bg-primary-accent text-white py-2 rounded-lg text-md font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out hidden">Add
                                 New Transaction</button>
                         </div>
+                        <!-- Budget Summary -->
                         <div
                             class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
-                            <h3 class="font-semibold mb-4 text-lg">Budget Summary</h3>
-                            <div class="chart-container"><canvas id="budgetDoughnutChart"></canvas></div>
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-semibold text-lg">Budget Summary</h3>
+                                <button id="manage-budget-button"
+                                    class="text-sm bg-secondary-accent text-main-heading px-3 py-1 rounded-lg hover:bg-amber-500 transition-colors">
+                                    Manage Budget
+                                </button>
+                            </div>
+
+                            <!-- No Budget State -->
+                            <div id="no-budget-state" class="text-center py-8">
+                                <div class="text-6xl mb-4">💰</div>
+                                <p class="text-subtle mb-4">No budget set for this month</p>
+                                <button id="create-first-budget-button"
+                                    class="bg-primary-accent text-white px-4 py-2 rounded-lg font-semibold shadow-md hover:bg-emerald-600 transition-all duration-300">
+                                    Create Your First Budget
+                                </button>
+                            </div>
+
+                            <!-- Budget Overview -->
+                            <div id="budget-overview" class="hidden">
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div class="text-center">
+                                        <p class="text-subtle text-sm">Total Budget</p>
+                                        <p id="total-budget-amount" class="font-bold text-xl text-main-heading">$0</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-subtle text-sm">Spent</p>
+                                        <p id="total-spent-amount" class="font-bold text-xl">$0</p>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                                    <div id="overall-budget-progress"
+                                        class="h-3 rounded-full transition-all duration-500" style="width: 0%;"></div>
+                                </div>
+                                <p id="budget-status-text" class="text-center text-sm font-medium">On track</p>
+                                <div class="chart-container">
+                                    <canvas id="budgetDoughnutChart"></canvas>
+                                </div>
+                            </div>
                         </div>
+
                         <div
                             class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
                             <h3 class="font-semibold mb-4 text-lg">Top Savings Goal</h3>
@@ -420,7 +459,6 @@
                                     <tr class="border-b border-gray-200">
                                         <th class="p-3 text-sm font-semibold text-subtle">Date</th>
                                         <th class="p-3 text-sm font-semibold text-subtle">Description</th>
-                                        <th class="p-3 text-sm font-semibold text-subtle">Category</th>
                                         <th class="p-3 text-sm font-semibold text-subtle text-right">Amount</th>
                                         <th class="p-3 text-sm font-semibold text-subtle text-center">Actions</th>
                                     </tr>
@@ -567,6 +605,143 @@
                         class="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                     <button id="chatbot-send"
                         class="bg-primary-accent text-white px-4 rounded-lg shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget Management Modal -->
+    <div id="budget-modal"
+        class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-card p-6 border-b border-gray-200 rounded-t-lg">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-3xl font-bold text-main-heading">Budget Management</h2>
+                    <button id="close-budget-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+                </div>
+            </div>
+
+            <!-- Budget Setup Steps -->
+            <div class="p-6">
+                <!-- Step 1: Choose Method -->
+                <div id="budget-step-1">
+                    <h3 class="text-xl font-semibold mb-4">Choose Your Budgeting Method</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div class="budget-method-card border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-primary-accent transition-colors"
+                            data-method="50-30-20">
+                            <div class="text-4xl mb-2">📊</div>
+                            <h4 class="font-bold text-lg mb-2">50/30/20 Rule</h4>
+                            <p class="text-subtle text-sm">50% Needs • 30% Wants • 20% Savings</p>
+                            <p class="text-xs text-gray-500 mt-2">Perfect for beginners</p>
+                        </div>
+                        <div class="budget-method-card border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-primary-accent transition-colors"
+                            data-method="custom">
+                            <div class="text-4xl mb-2">🎯</div>
+                            <h4 class="font-bold text-lg mb-2">Custom Budget</h4>
+                            <p class="text-subtle text-sm">Create your own categories and amounts</p>
+                            <p class="text-xs text-gray-500 mt-2">Full control over your budget</p>
+                        </div>
+                    </div>
+                    <button id="next-to-step-2"
+                        class="w-full bg-primary-accent text-white py-3 rounded-lg font-semibold opacity-50 cursor-not-allowed transition-all duration-300"
+                        disabled>
+                        Continue
+                    </button>
+                </div>
+
+                <!-- Step 2: Income Input -->
+                <div id="budget-step-2" class="hidden">
+                    <button id="back-to-step-1" class="mb-4 text-primary-accent hover:underline">&larr; Back</button>
+                    <h3 class="text-xl font-semibold mb-4">Enter Your Monthly Income</h3>
+                    <div class="mb-6">
+                        <label for="monthly-income" class="block text-sm font-medium text-subtle mb-2">Monthly Income
+                            ($)</label>
+                        <input type="number" id="monthly-income" step="0.01" min="0"
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none text-lg"
+                            placeholder="e.g., 2000">
+                    </div>
+                    <div id="income-breakdown" class="hidden bg-gray-50 p-4 rounded-lg mb-6">
+                        <h4 class="font-semibold mb-3">Your Budget Breakdown:</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Needs (50%):</span>
+                                <span id="needs-amount" class="font-medium">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Wants (30%):</span>
+                                <span id="wants-amount" class="font-medium">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Savings (20%):</span>
+                                <span id="savings-amount" class="font-medium">$0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="next-to-step-3"
+                        class="w-full bg-primary-accent text-white py-3 rounded-lg font-semibold opacity-50 cursor-not-allowed transition-all duration-300"
+                        disabled>
+                        Set Up Categories
+                    </button>
+                </div>
+
+                <!-- Step 3: Category Setup -->
+                <div id="budget-step-3" class="hidden">
+                    <button id="back-to-step-2" class="mb-4 text-primary-accent hover:underline">&larr; Back</button>
+                    <h3 class="text-xl font-semibold mb-4">Set Budget Categories</h3>
+
+                    <!-- 50/30/20 Categories -->
+                    <div id="rule-categories" class="hidden">
+                        <div class="space-y-4 mb-6">
+                            <div class="category-group">
+                                <h4 class="font-semibold text-primary-accent mb-2">Needs (50%)</h4>
+                                <div id="needs-categories" class="space-y-2"></div>
+                                <button class="add-category-btn text-sm text-primary-accent hover:underline"
+                                    data-type="needs">+ Add Need Category</button>
+                            </div>
+                            <div class="category-group">
+                                <h4 class="font-semibold text-secondary-accent mb-2">Wants (30%)</h4>
+                                <div id="wants-categories" class="space-y-2"></div>
+                                <button class="add-category-btn text-sm text-primary-accent hover:underline"
+                                    data-type="wants">+ Add Want Category</button>
+                            </div>
+                            <div class="category-group">
+                                <h4 class="font-semibold text-green-600 mb-2">Savings (20%)</h4>
+                                <div id="savings-categories" class="space-y-2"></div>
+                                <button class="add-category-btn text-sm text-primary-accent hover:underline"
+                                    data-type="savings">+ Add Savings Category</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Categories -->
+                    <div id="custom-categories" class="hidden">
+                        <div id="custom-categories-container" class="space-y-2 mb-4"></div>
+                        <button id="add-custom-category" class="text-primary-accent hover:underline">+ Add
+                            Category</button>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <button id="save-budget"
+                            class="flex-1 bg-primary-accent text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition-colors">
+                            Save Budget
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Edit Existing Budget -->
+                <div id="budget-edit-mode" class="hidden">
+                    <h3 class="text-xl font-semibold mb-4">Edit Budget</h3>
+                    <div id="edit-categories-container" class="space-y-3 mb-6"></div>
+                    <div class="flex gap-4">
+                        <button id="update-budget"
+                            class="flex-1 bg-primary-accent text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition-colors">
+                            Update Budget
+                        </button>
+                        <button id="delete-budget"
+                            class="bg-red-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-600 transition-colors">
+                            Delete Budget
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -31,6 +31,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const data = {
         transactions: [], // Firestore will now populate this.,
         savingsGoals: [],
+        monthlyBudget: null, // Will store the current month's budget
+        budgetCategories: {
+            needs: ['Groceries', 'Transportation', 'Housing', 'Utilities'],
+            wants: ['Entertainment', 'Dining Out', 'Shopping', 'Hobbies'],
+            savings: ['Emergency Fund', 'Long-term Savings', 'Investments']
+        },
         articles: [
             {
                 id: 'credit-score',
@@ -342,11 +348,92 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         // Creates or updates the charts.
+        // Enhanced chart creation (replace the existing createOrUpdateCharts function)
         createOrUpdateCharts() {
             const currentMonth = new Date().getMonth();
             const currentYear = new Date().getFullYear();
 
-            // --- Spending Data Calculation ---
+            // --- Enhanced Budget Chart with Budget vs Spending Comparison ---
+            if (data.monthlyBudget) {
+                const spending = data.transactions
+                    .filter(t => {
+                        const d = new Date(t.date);
+                        return t.amount < 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+                    })
+                    .reduce((acc, t) => {
+                        acc[t.cat] = (acc[t.cat] || 0) + Math.abs(t.amount);
+                        return acc;
+                    }, {});
+
+                const budgetLabels = [];
+                const budgetData = [];
+                const budgetColors = [];
+
+                Object.entries(data.monthlyBudget.categories).forEach(([category, budgetAmount]) => {
+                    const spent = spending[category] || 0;
+                    const percentage = budgetAmount > 0 ? (spent / budgetAmount) * 100 : 0;
+
+                    budgetLabels.push(`${category} (${percentage.toFixed(0)}%)`);
+                    budgetData.push(spent);
+
+                    // Color based on budget status
+                    if (percentage >= 100) {
+                        budgetColors.push('#EF4444'); // Red - over budget
+                    } else if (percentage >= 80) {
+                        budgetColors.push('#F59E0B'); // Orange - near budget
+                    } else {
+                        budgetColors.push('#20C997'); // Green - under budget
+                    }
+                });
+
+                const budgetChartConfig = {
+                    labels: budgetLabels,
+                    datasets: [{
+                        label: 'Spending vs Budget',
+                        data: budgetData,
+                        backgroundColor: budgetColors,
+                        borderColor: '#FFFFFF',
+                        borderWidth: 2
+                    }]
+                };
+
+                // Create the budget chart
+                const budgetChartCanvas = document.getElementById('budgetDoughnutChart');
+                if (budgetChartCanvas) {
+                    if (state.charts.budgetDoughnut) state.charts.budgetDoughnut.destroy();
+                    state.charts.budgetDoughnut = new Chart(budgetChartCanvas.getContext('2d'), {
+                        type: 'doughnut',
+                        data: budgetChartConfig,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '70%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 12,
+                                        padding: 15,
+                                        font: { size: 11 }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const category = context.label.split(' (')[0];
+                                            const spent = context.parsed;
+                                            const budget = data.monthlyBudget.categories[category];
+                                            return `${category}: ${formatCurrency(spent)} of ${formatCurrency(budget)}`;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            // --- Spending Data Calculation (for the spending pie chart) ---
             const spendingData = data.transactions
                 .filter(t => {
                     const d = new Date(t.date);
@@ -362,11 +449,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [{
                     data: Object.values(spendingData),
                     backgroundColor: ['#F87171', '#FBBF24', '#60A5FA', '#A78BFA', '#34D399'],
-                    borderColor: '#FFFFFF'
+                    borderColor: '#FFFFFF',
+                    borderWidth: 2
                 }]
             };
 
-            // --- Income Data Calculation (NEW) ---
+            // --- Income Data Calculation ---
             const incomeData = data.transactions
                 .filter(t => {
                     const d = new Date(t.date);
@@ -382,26 +470,57 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [{
                     data: Object.values(incomeData),
                     backgroundColor: ['#20C997', '#48BB78', '#38A169', '#2F855A'],
-                    borderColor: '#FFFFFF'
+                    borderColor: '#FFFFFF',
+                    borderWidth: 2
                 }]
             };
 
             // --- Chart Rendering ---
-            if (state.charts.budgetDoughnut) state.charts.budgetDoughnut.destroy();
-            state.charts.budgetDoughnut = new Chart(document.getElementById('budgetDoughnutChart').getContext('2d'), {
-                type: 'doughnut', data: spendingChartConfig, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', borderWidth: 4, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20 } } } }
-            });
+            const spendingCanvas = document.getElementById('spendingPieChart');
+            if (spendingCanvas) {
+                if (state.charts.spendingPie) state.charts.spendingPie.destroy();
+                state.charts.spendingPie = new Chart(spendingCanvas.getContext('2d'), {
+                    type: 'pie',
+                    data: spendingChartConfig,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        borderWidth: 2,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 15
+                                }
+                            }
+                        }
+                    }
+                });
+            }
 
-            if (state.charts.spendingPie) state.charts.spendingPie.destroy();
-            state.charts.spendingPie = new Chart(document.getElementById('spendingPieChart').getContext('2d'), {
-                type: 'pie', data: spendingChartConfig, options: { responsive: true, maintainAspectRatio: false, borderWidth: 2, plugins: { legend: { position: 'right' } } }
-            });
-
-            // --- New Income Chart Rendering ---
-            if (state.charts.incomeSources) state.charts.incomeSources.destroy();
-            state.charts.incomeSources = new Chart(document.getElementById('incomeSourcesChart').getContext('2d'), {
-                type: 'pie', data: incomeChartConfig, options: { responsive: true, maintainAspectRatio: false, borderWidth: 2, plugins: { legend: { position: 'right' } } }
-            });
+            const incomeCanvas = document.getElementById('incomeSourcesChart');
+            if (incomeCanvas) {
+                if (state.charts.incomeSources) state.charts.incomeSources.destroy();
+                state.charts.incomeSources = new Chart(incomeCanvas.getContext('2d'), {
+                    type: 'pie',
+                    data: incomeChartConfig,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        borderWidth: 2,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    boxWidth: 12,
+                                    padding: 15
+                                }
+                            }
+                        }
+                    }
+                });
+            }
         },
 
         // Populates other sections of the UI.
@@ -657,7 +776,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 formButton.textContent = 'Save Goal';
             }
         },
-
         // Transaction form submission handler.
         async handleTransactionFormSubmit(e) {
             e.preventDefault();
@@ -739,6 +857,8 @@ document.addEventListener('DOMContentLoaded', function () {
             ui.populateTransactions();
             ui.updateBalance();
             ui.createOrUpdateCharts();
+            this.updateBudgetDisplay();
+
         },
 
         // Centralized event listener setup.
@@ -821,11 +941,31 @@ document.addEventListener('DOMContentLoaded', function () {
                 const articleCard = e.target.closest('[data-article-id]');
                 if (articleCard) app.showArticle(articleCard.dataset.articleId);
             });
+
+            // Budget Management Events (add to bindEvents function)
+            document.getElementById('create-first-budget-button').addEventListener('click', () => {
+                app.resetBudgetModal();
+                ui.showModal(document.getElementById('budget-modal'));
+            });
+
+            document.getElementById('manage-budget-button').addEventListener('click', () => {
+                if (data.monthlyBudget) {
+                    app.showEditBudgetMode();
+                } else {
+                    app.resetBudgetModal();
+                }
+                ui.showModal(document.getElementById('budget-modal'));
+            });
+
+            document.getElementById('close-budget-button').addEventListener('click', () => {
+                ui.hideModal(document.getElementById('budget-modal'));
+            });
         },
 
         // Initial application setup.
         init() {
             app.bindEvents();
+            app.initializeBudgetModal();
             ui.populateSavingsGoals();
             ui.populateArticles();
             ui.populateBadges();
@@ -833,6 +973,453 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!auth.currentUser) {
                 app.navigateTo(window.location.hash || '#dashboard');
             }
+        },
+
+        // Budget Management Functions
+        async loadUserBudget() {
+            if (!state.isLoggedIn) {
+                data.monthlyBudget = null;
+                this.updateBudgetDisplay();
+                return;
+            }
+
+            const uid = state.currentUser.uid;
+            const now = new Date();
+            const monthKey = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+
+            try {
+                const budgetDoc = await db.collection('users').doc(uid).collection('budgets').doc(monthKey).get();
+                if (budgetDoc.exists) {
+                    data.monthlyBudget = { id: budgetDoc.id, ...budgetDoc.data() };
+                } else {
+                    data.monthlyBudget = null;
+                }
+            } catch (error) {
+                console.error("Error loading budget:", error);
+                data.monthlyBudget = null;
+            } finally {
+                this.updateBudgetDisplay();
+            }
+        },
+
+        async saveBudget(budgetData) {
+            if (!state.isLoggedIn) return;
+
+            const uid = state.currentUser.uid;
+            const now = new Date();
+            const monthKey = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+
+            try {
+                await db.collection('users').doc(uid).collection('budgets').doc(monthKey).set({
+                    ...budgetData,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    month: monthKey
+                });
+                await this.loadUserBudget();
+            } catch (error) {
+                console.error("Error saving budget:", error);
+                throw error;
+            }
+        },
+
+        async deleteBudget() {
+            if (!state.isLoggedIn || !data.monthlyBudget) return;
+
+            const uid = state.currentUser.uid;
+            const now = new Date();
+            const monthKey = `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, '0')}`;
+
+            try {
+                await db.collection('users').doc(uid).collection('budgets').doc(monthKey).delete();
+                data.monthlyBudget = null;
+                this.updateBudgetDisplay();
+            } catch (error) {
+                console.error("Error deleting budget:", error);
+                throw error;
+            }
+        },
+
+        updateBudgetDisplay() {
+            const noBudgetState = document.getElementById('no-budget-state');
+            const budgetOverview = document.getElementById('budget-overview');
+
+            if (!data.monthlyBudget) {
+                noBudgetState.classList.remove('hidden');
+                budgetOverview.classList.add('hidden');
+                return;
+            }
+
+            noBudgetState.classList.add('hidden');
+            budgetOverview.classList.remove('hidden');
+
+            // Calculate spending by category
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            const spending = data.transactions
+                .filter(t => {
+                    const d = new Date(t.date);
+                    return t.amount < 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+                })
+                .reduce((acc, t) => {
+                    acc[t.cat] = (acc[t.cat] || 0) + Math.abs(t.amount);
+                    return acc;
+                }, {});
+
+            const totalBudget = Object.values(data.monthlyBudget.categories).reduce((sum, amount) => sum + amount, 0);
+            const totalSpent = Object.values(spending).reduce((sum, amount) => sum + amount, 0);
+            const spentPercentage = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
+
+            // Update display elements
+            document.getElementById('total-budget-amount').textContent = formatCurrency(totalBudget);
+            document.getElementById('total-spent-amount').textContent = formatCurrency(totalSpent);
+
+            const progressBar = document.getElementById('overall-budget-progress');
+            const statusText = document.getElementById('budget-status-text');
+
+            // Set progress bar width and color
+            progressBar.style.width = `${Math.min(spentPercentage, 100)}%`;
+
+            if (spentPercentage >= 100) {
+                progressBar.className = 'bg-red-500 h-3 rounded-full transition-all duration-500';
+                statusText.textContent = 'Over budget';
+                statusText.className = 'text-center text-sm font-medium text-red-500';
+            } else if (spentPercentage >= 80) {
+                progressBar.className = 'bg-orange-500 h-3 rounded-full transition-all duration-500';
+                statusText.textContent = 'Near budget limit';
+                statusText.className = 'text-center text-sm font-medium text-orange-500';
+            } else {
+                progressBar.className = 'bg-primary-accent h-3 rounded-full transition-all duration-500';
+                statusText.textContent = 'On track';
+                statusText.className = 'text-center text-sm font-medium text-primary-accent';
+            }
+        },
+
+        initializeBudgetModal() {
+            let selectedMethod = null;
+            let currentStep = 1;
+
+            // Method selection
+            document.querySelectorAll('.budget-method-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    document.querySelectorAll('.budget-method-card').forEach(c =>
+                        c.classList.remove('border-primary-accent', 'bg-green-50'));
+                    card.classList.add('border-primary-accent', 'bg-green-50');
+                    selectedMethod = card.dataset.method;
+                    document.getElementById('next-to-step-2').disabled = false;
+                    document.getElementById('next-to-step-2').classList.remove('opacity-50', 'cursor-not-allowed');
+                });
+            });
+
+            // Step navigation
+            document.getElementById('next-to-step-2').addEventListener('click', () => {
+                if (selectedMethod) {
+                    document.getElementById('budget-step-1').classList.add('hidden');
+                    document.getElementById('budget-step-2').classList.remove('hidden');
+                    currentStep = 2;
+                }
+            });
+
+            document.getElementById('back-to-step-1').addEventListener('click', () => {
+                document.getElementById('budget-step-2').classList.add('hidden');
+                document.getElementById('budget-step-1').classList.remove('hidden');
+                currentStep = 1;
+            });
+
+            document.getElementById('next-to-step-3').addEventListener('click', () => {
+                document.getElementById('budget-step-2').classList.add('hidden');
+                document.getElementById('budget-step-3').classList.remove('hidden');
+                currentStep = 3;
+                this.setupCategoriesStep(selectedMethod);
+            });
+
+            document.getElementById('back-to-step-2').addEventListener('click', () => {
+                document.getElementById('budget-step-3').classList.add('hidden');
+                document.getElementById('budget-step-2').classList.remove('hidden');
+                currentStep = 2;
+            });
+
+            // Income calculation
+            document.getElementById('monthly-income').addEventListener('input', (e) => {
+                const income = parseFloat(e.target.value) || 0;
+                const nextBtn = document.getElementById('next-to-step-3');
+
+                if (income > 0) {
+                    nextBtn.disabled = false;
+                    nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                    if (selectedMethod === '50-30-20') {
+                        document.getElementById('income-breakdown').classList.remove('hidden');
+                        document.getElementById('needs-amount').textContent = formatCurrency(income * 0.5);
+                        document.getElementById('wants-amount').textContent = formatCurrency(income * 0.3);
+                        document.getElementById('savings-amount').textContent = formatCurrency(income * 0.2);
+                    }
+                } else {
+                    nextBtn.disabled = true;
+                    nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    document.getElementById('income-breakdown').classList.add('hidden');
+                }
+            });
+
+            // Save budget
+            document.getElementById('save-budget').addEventListener('click', async () => {
+                await this.handleBudgetSave(selectedMethod);
+            });
+
+            // Update budget
+            document.getElementById('update-budget').addEventListener('click', async () => {
+                await this.handleBudgetUpdate();
+            });
+
+            // Delete budget
+            document.getElementById('delete-budget').addEventListener('click', async () => {
+                if (confirm('Are you sure you want to delete this budget? This action cannot be undone.')) {
+                    try {
+                        await this.deleteBudget();
+                        ui.hideModal(document.getElementById('budget-modal'));
+                    } catch (error) {
+                        alert('Error deleting budget. Please try again.');
+                    }
+                }
+            });
+        },
+
+        setupCategoriesStep(method) {
+            if (method === '50-30-20') {
+                document.getElementById('rule-categories').classList.remove('hidden');
+                document.getElementById('custom-categories').classList.add('hidden');
+                this.populate50302Categories();
+            } else {
+                document.getElementById('rule-categories').classList.add('hidden');
+                document.getElementById('custom-categories').classList.remove('hidden');
+                this.populateCustomCategories();
+            }
+        },
+
+        populate50302Categories() {
+            const income = parseFloat(document.getElementById('monthly-income').value) || 0;
+
+            const categoryTypes = {
+                needs: { amount: income * 0.5, container: 'needs-categories' },
+                wants: { amount: income * 0.3, container: 'wants-categories' },
+                savings: { amount: income * 0.2, container: 'savings-categories' }
+            };
+
+            Object.entries(categoryTypes).forEach(([type, config]) => {
+                const container = document.getElementById(config.container);
+                const categories = data.budgetCategories[type];
+                const amountPerCategory = config.amount / categories.length;
+
+                container.innerHTML = categories.map(category => `
+            <div class="flex items-center gap-2">
+                <input type="text" value="${category}" class="flex-1 p-2 border border-gray-300 rounded category-name" readonly>
+                <input type="number" value="${amountPerCategory.toFixed(2)}" step="0.01" min="0" class="w-24 p-2 border border-gray-300 rounded category-amount">
+                <button class="remove-category text-red-500 hover:text-red-700">&times;</button>
+            </div>
+        `).join('');
+            });
+
+            this.bindCategoryEvents();
+        },
+
+        populateCustomCategories() {
+            const container = document.getElementById('custom-categories-container');
+            container.innerHTML = `
+        <div class="flex items-center gap-2">
+            <input type="text" placeholder="Category name" class="flex-1 p-2 border border-gray-300 rounded category-name">
+            <input type="number" placeholder="Amount" step="0.01" min="0" class="w-24 p-2 border border-gray-300 rounded category-amount">
+            <button class="remove-category text-red-500 hover:text-red-700">&times;</button>
+        </div>
+    `;
+
+            document.getElementById('add-custom-category').addEventListener('click', () => {
+                const newRow = document.createElement('div');
+                newRow.className = 'flex items-center gap-2';
+                newRow.innerHTML = `
+            <input type="text" placeholder="Category name" class="flex-1 p-2 border border-gray-300 rounded category-name">
+            <input type="number" placeholder="Amount" step="0.01" min="0" class="w-24 p-2 border border-gray-300 rounded category-amount">
+            <button class="remove-category text-red-500 hover:text-red-700">&times;</button>
+        `;
+                container.appendChild(newRow);
+                this.bindCategoryEvents();
+            });
+
+            this.bindCategoryEvents();
+        },
+
+        bindCategoryEvents() {
+            document.querySelectorAll('.remove-category').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.target.closest('.flex').remove();
+                });
+            });
+
+            document.querySelectorAll('.add-category-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const type = e.target.dataset.type;
+                    const container = document.getElementById(`${type}-categories`);
+                    const newRow = document.createElement('div');
+                    newRow.className = 'flex items-center gap-2';
+                    newRow.innerHTML = `
+                <input type="text" placeholder="Category name" class="flex-1 p-2 border border-gray-300 rounded category-name">
+                <input type="number" placeholder="Amount" step="0.01" min="0" class="w-24 p-2 border border-gray-300 rounded category-amount">
+                <button class="remove-category text-red-500 hover:text-red-700">&times;</button>
+            `;
+                    container.appendChild(newRow);
+                    this.bindCategoryEvents();
+                });
+            });
+        },
+
+        async handleBudgetSave(method) {
+            const categories = {};
+
+            // Collect all category data
+            document.querySelectorAll('.category-name').forEach((nameInput, index) => {
+                const amountInput = document.querySelectorAll('.category-amount')[index];
+                const name = nameInput.value.trim();
+                const amount = parseFloat(amountInput.value) || 0;
+
+                if (name && amount > 0) {
+                    categories[name] = amount;
+                }
+            });
+
+            if (Object.keys(categories).length === 0) {
+                alert('Please add at least one category with an amount greater than 0.');
+                return;
+            }
+
+            const budgetData = {
+                method,
+                monthlyIncome: parseFloat(document.getElementById('monthly-income').value) || 0,
+                categories,
+                totalBudget: Object.values(categories).reduce((sum, amount) => sum + amount, 0)
+            };
+
+            try {
+                const saveBtn = document.getElementById('save-budget');
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+
+                await this.saveBudget(budgetData);
+                ui.hideModal(document.getElementById('budget-modal'));
+                this.resetBudgetModal();
+            } catch (error) {
+                alert('Error saving budget. Please try again.');
+            } finally {
+                const saveBtn = document.getElementById('save-budget');
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Budget';
+            }
+        },
+
+        async handleBudgetUpdate() {
+            const categories = {};
+
+            document.querySelectorAll('#edit-categories-container .category-row').forEach(row => {
+                const nameInput = row.querySelector('.category-name');
+                const amountInput = row.querySelector('.category-amount');
+                const name = nameInput.value.trim();
+                const amount = parseFloat(amountInput.value) || 0;
+
+                if (name && amount > 0) {
+                    categories[name] = amount;
+                }
+            });
+
+            if (Object.keys(categories).length === 0) {
+                alert('Please add at least one category with an amount greater than 0.');
+                return;
+            }
+
+            const budgetData = {
+                ...data.monthlyBudget,
+                categories,
+                totalBudget: Object.values(categories).reduce((sum, amount) => sum + amount, 0)
+            };
+
+            try {
+                const updateBtn = document.getElementById('update-budget');
+                updateBtn.disabled = true;
+                updateBtn.textContent = 'Updating...';
+
+                await this.saveBudget(budgetData);
+                ui.hideModal(document.getElementById('budget-modal'));
+            } catch (error) {
+                alert('Error updating budget. Please try again.');
+            } finally {
+                const updateBtn = document.getElementById('update-budget');
+                updateBtn.disabled = false;
+                updateBtn.textContent = 'Update Budget';
+            }
+        },
+
+        resetBudgetModal() {
+            // Reset all steps
+            document.getElementById('budget-step-1').classList.remove('hidden');
+            document.getElementById('budget-step-2').classList.add('hidden');
+            document.getElementById('budget-step-3').classList.add('hidden');
+            document.getElementById('budget-edit-mode').classList.add('hidden');
+
+            // Reset form data
+            document.querySelectorAll('.budget-method-card').forEach(card => {
+                card.classList.remove('border-primary-accent', 'bg-green-50');
+            });
+
+            document.getElementById('monthly-income').value = '';
+            document.getElementById('income-breakdown').classList.add('hidden');
+            document.getElementById('next-to-step-2').disabled = true;
+            document.getElementById('next-to-step-2').classList.add('opacity-50', 'cursor-not-allowed');
+            document.getElementById('next-to-step-3').disabled = true;
+            document.getElementById('next-to-step-3').classList.add('opacity-50', 'cursor-not-allowed');
+        },
+
+        showEditBudgetMode() {
+            if (!data.monthlyBudget) return;
+
+            // Hide setup steps, show edit mode
+            document.getElementById('budget-step-1').classList.add('hidden');
+            document.getElementById('budget-step-2').classList.add('hidden');
+            document.getElementById('budget-step-3').classList.add('hidden');
+            document.getElementById('budget-edit-mode').classList.remove('hidden');
+
+            // Populate edit form with current budget
+            const container = document.getElementById('edit-categories-container');
+            container.innerHTML = Object.entries(data.monthlyBudget.categories).map(([name, amount]) => `
+        <div class="category-row flex items-center gap-2">
+            <input type="text" value="${name}" class="flex-1 p-2 border border-gray-300 rounded category-name">
+            <input type="number" value="${amount}" step="0.01" min="0" class="w-24 p-2 border border-gray-300 rounded category-amount">
+            <button class="remove-category text-red-500 hover:text-red-700">&times;</button>
+        </div>
+    `).join('');
+
+            // Add new category button
+            const addButton = document.createElement('button');
+            addButton.className = 'text-primary-accent hover:underline mt-2';
+            addButton.textContent = '+ Add Category';
+            addButton.addEventListener('click', () => {
+                const newRow = document.createElement('div');
+                newRow.className = 'category-row flex items-center gap-2';
+                newRow.innerHTML = `
+            <input type="text" placeholder="Category name" class="flex-1 p-2 border border-gray-300 rounded category-name">
+            <input type="number" placeholder="Amount" step="0.01" min="0" class="w-24 p-2 border border-gray-300 rounded category-amount">
+            <button class="remove-category text-red-500 hover:text-red-700">&times;</button>
+        `;
+                container.appendChild(newRow);
+                this.bindEditCategoryEvents();
+            });
+            container.appendChild(addButton);
+
+            this.bindEditCategoryEvents();
+        },
+
+        bindEditCategoryEvents() {
+            document.querySelectorAll('#edit-categories-container .remove-category').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.target.closest('.category-row').remove();
+                });
+            });
         }
     };
 
@@ -845,11 +1432,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 state.currentUser.firestoreData = await app.fetchUserData(user.uid);
                 await app.loadUserTransactions();
                 await app.loadUserSavingsGoals();
+                await app.loadUserBudget();
             } else {
                 state.isLoggedIn = false;
                 state.currentUser = null;
                 await app.loadUserTransactions(); // Will clear data and update the UI
                 await app.loadUserSavingsGoals();
+                await app.loadUserBudget();
             }
             ui.updateHeaderForAuthState(state.currentUser);
             ui.updateTransactionControls(state.isLoggedIn);
