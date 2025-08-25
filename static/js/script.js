@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
         isLoggedIn: false,
         currentUser: null,
         itemToDelete: null,
+        chatHistory: [],
         charts: {
             budgetDoughnut: null,
             spendingPie: null,
@@ -109,6 +110,10 @@ document.addEventListener('DOMContentLoaded', function () {
         // Chatbot
         chatbotButton: document.getElementById('chatbot-button'),
         closeChatbotButton: document.getElementById('close-chatbot-button'),
+        chatbotInput: document.getElementById('chatbot-input'),
+        chatbotSend: document.getElementById('chatbot-send'),
+        chatbotMessages: document.getElementById('chatbot-messages'),
+        chatbotTyping: document.getElementById('chatbot-typing'),
 
         // Learn Page
         learnTabButtons: document.querySelectorAll('#learn-page .tab-button'),
@@ -566,7 +571,6 @@ document.addEventListener('DOMContentLoaded', function () {
         populateBadges() {
             document.getElementById('badges-container').innerHTML = data.badges.map(badge => `<div class="text-center p-2 rounded-xl bg-gray-100 shadow-sm"><div class="text-4xl">${badge.icon}</div><p class="text-xs font-medium mt-1">${badge.name}</p></div>`).join('');
         },
-
         showGoalModal(goal = null) {
             elements.goalForm.reset();
             if (goal) {
@@ -581,6 +585,39 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('goal-id').value = '';
             }
             this.showModal(elements.goalModal);
+        },
+        showChatBotModal() {
+            state.chatbotMessages = []; // Clear previous messages
+            let initialMessageHTML;
+            const userName = state.currentUser?.firestoreData?.name;
+
+            if (userName) {
+                // Logged-in state
+                initialMessageHTML = `
+            <div class="flex justify-start">
+                <div class="bg-gray-200 text-main-heading p-3 rounded-lg max-w-xs">
+                    Hi <strong>${userName}</strong>! I'm FinFlow AI, your personal financial assistant. How can I help you today? Ask me about your budget, savings, or spending! 💡
+                </div>
+            </div>`;
+            } else {
+                // Logged-out state
+                initialMessageHTML = `
+            <div class="flex justify-start">
+                <div class="bg-gray-200 text-main-heading p-3 rounded-lg max-w-xs">
+                    Hi there! I'm FinFlow AI. Please <strong>log in</strong> to get personalized advice based on your financial data. I can help you understand your spending and reach your goals! 🚀
+                </div>
+            </div>`;
+            }
+
+            // Reset the chat window with the new initial message
+            elements.chatbotMessages.innerHTML = initialMessageHTML;
+
+            // Ensure the typing indicator is appended after reset and is hidden
+            elements.chatbotMessages.appendChild(elements.chatbotTyping);
+            elements.chatbotTyping.classList.add('hidden');
+
+            // Show the modal
+            this.showModal(elements.chatbotModal);
         },
     };
 
@@ -860,6 +897,82 @@ document.addEventListener('DOMContentLoaded', function () {
             this.updateBudgetDisplay();
 
         },
+        async handleChatbotSend() {
+            const message = elements.chatbotInput.value.trim();
+            if (!message) return;
+
+            // --- Part 1: Update UI and local history with user's message ---
+
+            // Add user message to our local history state
+            state.chatHistory.push({ role: 'user', parts: [{ text: message }] });
+
+            const userMessageHTML = `
+        <div class="flex justify-end">
+            <div class="bg-primary-accent text-white p-3 rounded-lg max-w-xs">
+                ${message}
+            </div>
+        </div>`;
+            elements.chatbotMessages.insertAdjacentHTML('beforeend', userMessageHTML);
+            elements.chatbotInput.value = '';
+
+            // Create a new container for the bot's response
+            const botResponseContainer = document.createElement('div');
+            botResponseContainer.className = 'flex justify-start';
+            botResponseContainer.innerHTML = `<div class="bot-reply bg-gray-200 text-main-heading p-3 rounded-lg max-w-xs"><span class="typing-cursor"></span></div>`;
+            elements.chatbotMessages.appendChild(botResponseContainer);
+
+            // Scroll to show the latest messages
+            elements.chatbotMessages.scrollTop = elements.chatbotMessages.scrollHeight;
+
+            // --- Part 2: Fetch and process the stream with full history ---
+            const botReplyBubble = botResponseContainer.querySelector('.bot-reply');
+            let fullReply = ''; // Variable to accumulate the full response
+
+            try {
+                const userName = state.currentUser?.firestoreData?.name || "Friend";
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        // Send the entire history
+                        history: state.chatHistory,
+                        context: { name: userName, transactions: data.transactions, savingsGoals: data.savingsGoals, monthlyBudget: data.monthlyBudget }
+                    })
+                });
+
+                if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let firstChunk = true;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    fullReply += chunk; // Accumulate the response
+
+                    if (firstChunk) {
+                        botReplyBubble.innerHTML = ''; // Remove typing cursor
+                        firstChunk = false;
+                    }
+
+                    botReplyBubble.innerHTML += chunk.replace(/\n/g, '<br>'); // Render newlines
+                    elements.chatbotMessages.scrollTop = elements.chatbotMessages.scrollHeight;
+                }
+
+                // Add the complete AI response to our local history once streaming is done
+                state.chatHistory.push({ role: 'model', parts: [{ text: fullReply }] });
+
+            } catch (error) {
+                console.error("Chatbot stream error:", error);
+                botReplyBubble.innerHTML = `<span class="text-red-600">Error: ${error.message}</span>`;
+                // We don't add the error to history
+            } finally {
+                elements.chatbotMessages.scrollTop = elements.chatbotMessages.scrollHeight;
+            }
+        },
 
         // Centralized event listener setup.
         bindEvents() {
@@ -875,7 +988,13 @@ document.addEventListener('DOMContentLoaded', function () {
             elements.closeTransactionButton.addEventListener('click', () => ui.hideModal(elements.transactionModal));
             elements.closeChatbotButton.addEventListener('click', () => ui.hideModal(elements.chatbotModal));
             elements.cancelDeleteBtn.addEventListener('click', () => ui.hideModal(elements.deleteConfirmModal));
-            elements.chatbotButton.addEventListener('click', () => ui.showModal(elements.chatbotModal));
+            elements.chatbotSend.addEventListener('click', () => app.handleChatbotSend());
+            elements.chatbotInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    app.handleChatbotSend();
+                }
+            });
 
             // Authentication
             elements.headerAuthButton.addEventListener('click', ui.showAuthModal);
@@ -932,7 +1051,14 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             // Learn & Play
-            elements.chatbotButton.addEventListener('click', () => ui.showModal(elements.chatbotModal));
+            elements.chatbotButton.addEventListener('click', () => ui.showChatBotModal());
+            elements.chatbotSend.addEventListener('click', () => app.handleChatbotSend());
+            elements.chatbotInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); // Prevents form submission or new lines
+                    app.handleChatbotSend();
+                }
+            });
             elements.learnTabButtons.forEach(button => button.addEventListener('click', () => app.navigateTo('#learn', button.dataset.tabTarget)));
             elements.exploreArticlesButton.addEventListener('click', () => app.navigateTo('#learn', 'articles-tab-content'));
             elements.exploreTriviaButton.addEventListener('click', () => app.navigateTo('#learn', 'trivia-tab-content'));

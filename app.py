@@ -1,11 +1,112 @@
-from flask import Flask, render_template
+import os
+import json
+from flask import Flask, render_template, request, jsonify, Response
+from dotenv import load_dotenv
+import google.generativeai as genai
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
+
+# --- Gemini API Configuration ---
+try:
+    genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+    model = genai.GenerativeModel("gemini-2.5-flash")
+    print("Gemini API configured successfully.")
+except KeyError:
+    print("🔴 GEMINI_API_KEY not found. Please set it in your .env file.")
+    model = None
+except Exception as e:
+    print(f"🔴 An error occurred during Gemini configuration: {e}")
+    model = None
+
+# System prompt to define the chatbot's personality and rules
+SYSTEM_PROMPT = """
+You are "FinFlow AI", a friendly, knowledgeable financial assistant specifically for teenagers using the MoneyFlow app. 
+Your goal is to provide simple, encouraging, and easy-to-understand financial advice.
+
+Your Persona:
+- You are patient, positive, and non-judgmental.
+- Use simple terms. Avoid complex jargon like "asset allocation" or "quantitative easing". Instead of "diversify your portfolio", say "don't put all your eggs in one basket".
+- Use emojis to make the conversation engaging. 👍💰💡
+- Keep responses concise and to the point.
+
+Your Instructions:
+1.  **Analyze User Data:** You will be given the user's financial data (transactions, budget, savings goals) in JSON format. Use this data to make your advice personal and relevant.
+2.  **Address the User by Name:** The user's name will be provided. Greet them by name.
+3.  **Answer Questions:** Answer the user's questions based on their data and general financial principles for teens.
+4.  **Safety First:** IMPORTANT: You are an educational tool, NOT a licensed financial advisor. Do not give direct investment advice (e.g., "buy this stock"). Instead, teach concepts (e.g., "stocks are a way to own a small piece of a company, and they can grow over time").
+5.  **Be Proactive:** If the user just says "hi", analyze their data and offer a helpful tip. For example: "Hey [Name]! I noticed you're doing a great job saving for your [Goal Name]. Keep it up! 💪" or "Hi [Name]! I see your 'Dining Out' spending is a bit high this month. Maybe we can find some ways to save a little there? 🍕"
+"""
+
+
+def format_data_for_prompt(context):
+    """Formats the user's financial data into a readable string for the AI."""
+    # Convert numerical data to a more friendly format if needed, but JSON is good for structured data.
+    # We will pass the JSON string directly.
+    return json.dumps(context, indent=2)
 
 
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    if not model:
+        return jsonify({"error": "Gemini API is not configured. Please check server logs."}), 500
+
+    data = request.json
+    history_from_frontend = data.get("history", [])
+    financial_data_str = format_data_for_prompt(data.get("context", {}))
+
+    # We construct the full context for Gemini here
+    # 1. Start with the system prompt.
+    gemini_messages = [
+        {"role": "user", "parts": [SYSTEM_PROMPT]},
+        {
+            "role": "model",
+            "parts": [
+                "Got it. I'm FinFlow AI, a friendly financial assistant for teens. I will give simple, encouraging advice based on the user's data. I understand the safety rules. Let's begin! 👍"
+            ],
+        },
+    ]
+
+    # 2. Add the conversational history.
+    gemini_messages.extend(history_from_frontend)
+
+    # 3. Add the user's latest financial data to their MOST RECENT message for real-time context.
+    #    This ensures the AI always has the freshest data for its response.
+    if gemini_messages and gemini_messages[-1]["role"] == "user":
+        last_user_message = gemini_messages[-1]["parts"][0]["text"]
+        contextual_prompt = (
+            f"Here is the user's up-to-date financial data:\n"
+            f"{financial_data_str}\n\n"
+            f"Based on our conversation and this data, please respond to the user's last message:\n"
+            f'"{last_user_message}"'
+        )
+        # We replace the last message with our enhanced contextual one
+        gemini_messages[-1]["parts"][0]["text"] = contextual_prompt
+
+    def generate_stream():
+        try:
+            # Use generate_content for stateless, full-context requests
+            response_stream = model.generate_content(gemini_messages, stream=True)
+
+            for chunk in response_stream:
+                # Some chunks might not have text, especially at the end
+                if hasattr(chunk, "text"):
+                    formatted_chunk = chunk.text.replace("**", "<strong>").replace("*", "<em>")
+                    yield formatted_chunk
+
+        except Exception as e:
+            print(f"🔴 Error during Gemini stream generation: {e}")
+            yield "Sorry, I'm having a little trouble thinking right now. Please try asking again."
+
+    # Return a streaming response
+    return Response(generate_stream(), mimetype="text/plain; charset=utf-8")
 
 
 if __name__ == "__main__":

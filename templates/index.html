@@ -186,18 +186,18 @@
                 </div>
                 <div>
                     <label for="goal-icon" class="block text-sm font-medium text-subtle mb-1">Icon (Emoji)</label>
-                    <input type="text" id="goal-icon" placeholder="📱" required maxlength="1"
+                    <input type="text" id="goal-icon" placeholder="📱" required maxlength="15"
                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
                 <div>
                     <label for="goal-target" class="block text-sm font-medium text-subtle mb-1">Target Amount
                         ($)</label>
-                    <input type="number" id="goal-target" step="1" required placeholder="500"
+                    <input type="number" id="goal-target" step="0.01" min="0" required placeholder="500"
                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
                 <div>
                     <label for="goal-saved" class="block text-sm font-medium text-subtle mb-1">Amount Saved ($)</label>
-                    <input type="number" id="goal-saved" step="0.01" required placeholder="0"
+                    <input type="number" id="goal-saved" step="0.01" min="0" required placeholder="0"
                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
                 <button type="submit"
@@ -593,9 +593,14 @@
                 <button id="close-chatbot-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
             </div>
             <div id="chatbot-messages" class="flex-1 p-4 overflow-y-auto space-y-4">
-                <div class="flex justify-start">
-                    <div class="bg-gray-200 text-main-heading p-3 rounded-lg max-w-xs">
-                        Hi Alex! I'm your financial assistant. Ask me anything about saving, budgeting, or investing.
+                <!-- Messages will be dynamically inserted here by JavaScript -->
+
+                <!-- Typing indicator -->
+                <div id="chatbot-typing" class="hidden flex justify-start">
+                    <div class="bg-gray-200 text-main-heading p-3 rounded-lg max-w-xs flex items-center gap-2">
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
                     </div>
                 </div>
             </div>

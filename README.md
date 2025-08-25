@@ -37,6 +37,28 @@ Teen-Finance-Tracker is a simple web application designed to help teenagers trac
    pip install flask
    ```
 
+
+### Setup: Gemini API Key
+
+This project requires a Gemini API key to run. Follow these steps:
+
+1. **Get your Gemini API key**
+   - Go to the [Google AI Studio](https://aistudio.google.com/app/apikey).
+   - Sign in with your Google account.
+   - Click **Create API key** and copy it.
+
+2. **Add the API key to your environment file**
+   - In the root of your project, create a `.env` file (if it doesn’t exist).
+   - Add the following line, replacing `your_api_key_here` with the key you copied:
+
+     ```env
+     GEMINI_API_KEY=your_api_key_here
+     ```
+
+3. **Load environment variables**
+   - The project will automatically read the key from your `.env` file.
+   - Make sure you **never commit your `.env` file** to GitHub.  
+
 ### Running the App
 1. Start the Flask server:
    ```bash
