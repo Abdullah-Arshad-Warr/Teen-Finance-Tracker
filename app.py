@@ -1,13 +1,32 @@
 import os
 import json
-from flask import Flask, render_template, request, jsonify, Response
+from flask import Flask, render_template, request, jsonify, Response, session
 from dotenv import load_dotenv
 import google.generativeai as genai
+import firebase_admin
+from firebase_admin import credentials, firestore
+from functools import wraps
 
-# Load environment variables from .env file
+# --- Initialization ---
 load_dotenv()
 
 app = Flask(__name__)
+
+# A secret key is required for Flask sessions
+
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "a_super_secret_dev_key")
+
+
+# --- Firebase Admin SDK Initialization ---
+try:
+    cred = credentials.Certificate("serviceAccountKey.json")
+    firebase_admin.initialize_app(cred)
+    db = firestore.client()
+    print("Firebase Admin SDK initialized successfully.")
+
+except Exception as e:
+    db = None
+    print(f"🔴 Firebase Admin SDK failed to initialize: {e}")
 
 # --- Gemini API Configuration ---
 try:
@@ -48,11 +67,25 @@ def format_data_for_prompt(context):
     return json.dumps(context, indent=2)
 
 
+# --- Admin Authentication Decorator ---
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("is_admin"):
+            return jsonify({"error": "Admin access required"}), 403
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+# --- Main Routes ---
 @app.route("/")
+@app.route("/admin")  # The admin URL also serves the main app
 def index():
     return render_template("index.html")
 
 
+# --- Chatbot API ---
 @app.route("/chat", methods=["POST"])
 def chat():
     if not model:
@@ -107,6 +140,70 @@ def chat():
 
     # Return a streaming response
     return Response(generate_stream(), mimetype="text/plain; charset=utf-8")
+
+
+# --- Admin and Article API Endpoints ---
+
+
+@app.route("/admin/verify", methods=["POST"])
+def verify_admin():
+    password = request.json.get("password")
+    if password and password == os.environ.get("ADMIN_PASSWORD"):
+        session["is_admin"] = True
+        return jsonify({"message": "Verification successful"}), 200
+    return jsonify({"error": "Invalid password"}), 401
+
+
+@app.route("/api/articles", methods=["GET"])
+def get_articles():
+    if not db:
+        return jsonify({"error": "Database not configured"}), 500
+
+    try:
+        articles_ref = db.collection("articles").stream()
+        articles = []
+        for doc in articles_ref:
+            article_data = doc.to_dict()
+            article_data["id"] = doc.id
+            articles.append(article_data)
+        return jsonify(articles), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/articles", methods=["POST"])
+@admin_required
+def create_article():
+    data = request.json
+    try:
+        _, doc_ref = db.collection("articles").add(data)
+        new_article = doc_ref.get().to_dict()
+        new_article["id"] = doc_ref.id
+        return jsonify(new_article), 201
+    except Exception as e:
+        print(f"🔴 Error creating article: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/articles/<article_id>", methods=["PUT"])
+@admin_required
+def update_article(article_id):
+    data = request.json
+    try:
+        db.collection("articles").document(article_id).set(data)
+        return jsonify({"message": "Article updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/articles/<article_id>", methods=["DELETE"])
+@admin_required
+def delete_article(article_id):
+    try:
+        db.collection("articles").document(article_id).delete()
+        return jsonify({"message": "Article deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":

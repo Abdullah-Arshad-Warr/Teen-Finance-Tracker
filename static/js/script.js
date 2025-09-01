@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
         currentUser: null,
         itemToDelete: null,
         chatHistory: [],
+        isAdmin: false,
         charts: {
             budgetDoughnut: null,
             spendingPie: null,
@@ -38,26 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
             wants: ['Entertainment', 'Dining Out', 'Shopping', 'Hobbies'],
             savings: ['Emergency Fund', 'Long-term Savings', 'Investments']
         },
-        articles: [
-            {
-                id: 'credit-score',
-                title: "What is a Credit Score?",
-                summary: "Learn why this three-digit number is so important for your financial future.",
-                content: `<p class="mb-4">A credit score is a three-digit number that lenders use to decide how likely you are to pay back borrowed money. This score typically ranges from 300 to 850, with higher scores indicating a lower risk to lenders.</p><p class="mb-4">Why is it important? A good credit score can help you:</p><ul class="list-disc list-inside mb-4"><li>Get approved for loans and credit cards.</li><li>Qualify for lower interest rates on loans (like car loans or mortgages).</li><li>Rent an apartment (landlords often check credit).</li><li>Even get better rates on insurance.</li></ul><p class="mb-4">Your credit score is primarily built on your payment history, the amount of debt you have, the length of your credit history, new credit, and credit mix. Paying bills on time and keeping credit card balances low are key to building a strong score.</p><p>Starting early to understand and build good credit habits is crucial for your long-term financial health.</p>`
-            },
-            {
-                id: 'investing-100',
-                title: "Investing 101 for Teens",
-                summary: "A simple guide to making your money grow over time.",
-                content: `<p class="mb-4">Investing might sound complicated, but it's really just putting your money to work so it can grow over time. For teens, starting early can give you a huge advantage thanks to something called "compound interest" (more on that in another article!).</p><p class="mb-4">Some simple ways teens can start exploring investing include:</p><ul class="list-disc list-inside mb-4"><li><strong>Savings Accounts:</strong> While not high-growth, they're safe and teach you about interest.</li><li><strong>Custodial Accounts:</strong> An adult sets up an investment account in your name. This lets you own investments like stocks and bonds.</li><li><strong>Mutual Funds/ETFs:</strong> These are like baskets of different investments, making it easy to diversify without picking individual stocks.</li></ul><p class="mb-4">The golden rule of investing is to start small, invest regularly, and be patient. Don't put all your eggs in one basket, and always do your research before putting your money into anything.</p><p>Learning about investing now can set you up for significant wealth building in the future.</p>`
-            },
-            {
-                id: 'compound-interest',
-                title: "The Power of Compound Interest",
-                summary: "Discover the 'eighth wonder of the world' and how it can make you rich.",
-                content: `<p class="mb-4">Albert Einstein reportedly called compound interest the "eighth wonder of the world." So, what is it?</p><p class="mb-4"><strong>Compound interest is interest on interest.</strong> It means that the interest you earn on your initial investment also starts earning interest. This creates an accelerating growth effect, especially over long periods.</p><p class="mb-4">Let's say you invest $100 and earn 10% interest. After one year, you have $110. In the second year, you don't just earn interest on the original $100; you earn it on the new total of $110. So, you earn $11, making your total $121. This might seem small, but over decades, it can turn modest savings into substantial wealth.</p><p class="mb-4">The key takeaways for teens:</p><ul class="list-disc list-inside mb-4"><li><strong>Start Early:</strong> The longer your money has to compound, the more it grows.</li><li><strong>Invest Regularly:</strong> Even small, consistent contributions add up significantly.</li></ul><p>Compound interest is a powerful tool for building wealth, and the earlier you harness it, the greater its magic will be.</p>`
-            },
-        ],
+        articles: [],
         badges: [
             { name: 'Budget Boss', icon: '👑' },
             { name: 'Savings Starter', icon: '🌱' },
@@ -150,6 +132,21 @@ document.addEventListener('DOMContentLoaded', function () {
         addGoalButton: document.getElementById('add-goal-button'),
         viewAllGoalsButton: document.getElementById('view-all-goals-button'),
         savingsGoalsContainer: document.getElementById('savings-goals-container'),
+
+        // Admin Page
+        adminPage: document.getElementById('admin-page'),
+        adminLoginView: document.getElementById('admin-login-view'),
+        adminContentView: document.getElementById('admin-content-view'),
+        adminLoginForm: document.getElementById('admin-login-form'),
+        adminLoginError: document.getElementById('admin-login-error'),
+        adminArticlesTableBody: document.getElementById('admin-articles-table-body'),
+        addArticleButton: document.getElementById('add-article-button'),
+
+        // Article Modal
+        articleModal: document.getElementById('article-modal'),
+        articleModalTitle: document.getElementById('article-modal-title'),
+        closeArticleModal: document.getElementById('close-article-modal'),
+        articleForm: document.getElementById('article-form'),
     };
 
     // --- Helper Functions ---
@@ -560,13 +557,24 @@ document.addEventListener('DOMContentLoaded', function () {
         </div>`;
             }).join('');
         },
-
         populateArticles() {
-            document.getElementById('articles-container').innerHTML = data.articles.map(article => `
-                        <div class="bg-card p-4 rounded-xl shadow-md border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow duration-200" data-article-id="${article.id}">
-                            <h4 class="font-bold text-lg truncate-text" title="${article.title}">${article.title}</h4><p class="text-subtle my-2 line-clamp-2">${article.summary}</p>
-                            <button class="font-semibold text-primary-accent hover:underline mt-2">Read Article &rarr;</button>
-                        </div>`).join('');
+            const container = document.getElementById('articles-container');
+
+            // Check if articles array is empty or doesn't exist
+            if (!data.articles || data.articles.length === 0) {
+                container.innerHTML = `
+            <div class="text-center p-8 text-subtle bg-gray-50 rounded-lg">
+                <p class="mb-2 text-lg font-semibold">No Articles Available Yet</p>
+                <p>It looks like our library is currently empty. Please check back soon for helpful financial tips and guides! 📚</p>
+            </div>`;
+            } else {
+                container.innerHTML = data.articles.map(article => `
+            <div class="bg-card p-4 rounded-xl shadow-md border border-gray-200 cursor-pointer hover:shadow-lg transition-shadow duration-200" data-article-id="${article.id}">
+                <h4 class="font-bold text-lg truncate-text" title="${article.title}">${article.title}</h4>
+                <p class="text-subtle my-2 line-clamp-2">${article.summary}</p>
+                <button class="font-semibold text-primary-accent hover:underline mt-2">Read Article &rarr;</button>
+            </div>`).join('');
+            }
         },
         populateBadges() {
             document.getElementById('badges-container').innerHTML = data.badges.map(badge => `<div class="text-center p-2 rounded-xl bg-gray-100 shadow-sm"><div class="text-4xl">${badge.icon}</div><p class="text-xs font-medium mt-1">${badge.name}</p></div>`).join('');
@@ -619,6 +627,55 @@ document.addEventListener('DOMContentLoaded', function () {
             // Show the modal
             this.showModal(elements.chatbotModal);
         },
+
+        // --- Admin Page Functions ---
+        showAdminLogin() {
+            this.hideAllViews(elements.adminPage);
+            elements.adminLoginView.classList.remove('hidden');
+        },
+
+        async renderAdminView() {
+            this.hideAllViews(elements.adminPage);
+            await app.loadArticles(true); // Force reload articles for admin view
+            elements.adminContentView.classList.remove('hidden');
+
+            if (data.articles.length === 0) {
+                elements.adminArticlesTableBody.innerHTML = `<tr><td colspan="3" class="text-center p-8 text-subtle">No articles found. Add one!</td></tr>`;
+                return;
+            }
+
+            elements.adminArticlesTableBody.innerHTML = data.articles.map(article => `
+        <tr class="border-b border-gray-100">
+            <td class="p-3 font-medium">${article.title}</td>
+            <td class="p-3 text-subtle">${article.summary}</td>
+            <td class="p-3 text-center">
+                <button class="edit-article-btn text-blue-500 hover:text-blue-700 p-2" data-id="${article.id}" title="Edit">Edit</button>
+                <button class="delete-article-btn text-red-500 hover:text-red-700 p-2" data-id="${article.id}" title="Delete">Delete</button>
+            </td>
+        </tr>
+    `).join('');
+        },
+
+        hideAllViews(page) {
+            page.querySelectorAll('#admin-login-view, #admin-content-view').forEach(view => {
+                view.classList.add('hidden');
+            });
+        },
+
+        showArticleModal(article = null) {
+            elements.articleForm.reset();
+            if (article) {
+                elements.articleModalTitle.textContent = 'Edit Article';
+                document.getElementById('article-id').value = article.id;
+                document.getElementById('article-title').value = article.title;
+                document.getElementById('article-summary').value = article.summary;
+                document.getElementById('article-content').value = article.content;
+            } else {
+                elements.articleModalTitle.textContent = 'Add Article';
+                document.getElementById('article-id').value = '';
+            }
+            this.showModal(elements.articleModal);
+        },
     };
 
     // --- App Logic & Event Handlers ---
@@ -627,6 +684,9 @@ document.addEventListener('DOMContentLoaded', function () {
         // Handles navigation between pages.
         navigateTo(hash, tabId = null) {
             if (!hash) hash = '#dashboard';
+            if (hash.startsWith('#admin')) {
+                hash = '#admin'; // Normalize to just #admin
+            }
             window.location.hash = hash;
             const targetPageId = (hash.substring(1) || 'dashboard') + '-page';
             elements.pages.forEach(p => p.classList.add('hidden'));
@@ -636,8 +696,13 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 document.getElementById('dashboard-page').classList.remove('hidden');
             }
-
-            if (hash === '#dashboard' || hash === '#budget') {
+            if (hash === '#admin') {
+                if (state.isAdmin) {
+                    ui.renderAdminView();
+                } else {
+                    ui.showAdminLogin();
+                }
+            } else if (hash === '#dashboard' || hash === '#budget') {
                 // A small delay ensures the page container is visible before the chart tries to render.
                 setTimeout(() => ui.createOrUpdateCharts(), 50);
             }
@@ -877,6 +942,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else if (type === 'goal') {
                     await db.collection('users').doc(uid).collection('savingsGoals').doc(id).delete();
                     await this.loadUserSavingsGoals();
+                } else if (type === 'article') {
+                    // This is the new logic for deleting an article
+                    if (!state.isAdmin) throw new Error("Admin access required.");
+                    const response = await fetch(`/api/articles/${id}`, { method: 'DELETE' });
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.error || 'Failed to delete article.');
+                    }
+                    // Reload the articles and re-render the admin view
+                    await this.loadArticles(true);
                 }
             } catch (error) {
                 console.error(`Error deleting ${type}:`, error);
@@ -971,6 +1046,88 @@ document.addEventListener('DOMContentLoaded', function () {
                 // We don't add the error to history
             } finally {
                 elements.chatbotMessages.scrollTop = elements.chatbotMessages.scrollHeight;
+            }
+        },
+
+        async loadArticles(isAdmin = false) {
+            try {
+                const response = await fetch('/api/articles');
+                data.articles = await response.json();
+                ui.populateArticles(); // Always update the main view
+                if (isAdmin) ui.renderAdminView();
+            } catch (error) {
+                console.error("Failed to load articles:", error);
+            }
+        },
+
+        async handleAdminLogin(e) {
+            e.preventDefault();
+            const password = document.getElementById('admin-password').value;
+            elements.adminLoginError.classList.add('hidden');
+
+            try {
+                const response = await fetch('/admin/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password })
+                });
+
+                if (response.ok) {
+                    state.isAdmin = true;
+                    ui.renderAdminView();
+                } else {
+                    const err = await response.json();
+                    elements.adminLoginError.textContent = err.error || "Login failed.";
+                    elements.adminLoginError.classList.remove('hidden');
+                }
+            } catch (error) {
+                elements.adminLoginError.textContent = "A network error occurred.";
+                elements.adminLoginError.classList.remove('hidden');
+            }
+        },
+
+        async handleArticleFormSubmit(e) {
+            e.preventDefault();
+            // Get a reference to the save button
+            const saveButton = elements.articleForm.querySelector('button[type="submit"]');
+
+            // --- 1. SET LOADING STATE ---
+            // Disable the button to prevent multiple clicks
+            saveButton.disabled = true;
+            // Update button content to show a spinner and loading text
+            saveButton.innerHTML = `
+        <svg class="animate-spin h-5 w-5 mr-3 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10" stroke-width="4" stroke-opacity="0.25"></circle>
+            <path d="M12 2a10 10 0 0110 10" stroke-width="4" stroke-linecap="round"></path>
+        </svg>
+        Saving...`;
+            const id = document.getElementById('article-id').value;
+            const articleData = {
+                title: document.getElementById('article-title').value,
+                summary: document.getElementById('article-summary').value,
+                content: document.getElementById('article-content').value,
+            };
+
+            const url = id ? `/api/articles/${id}` : '/api/articles';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(articleData)
+                });
+                if (!response.ok) throw new Error('Failed to save article.');
+                await this.loadArticles(true); // Reload and render admin view
+                ui.hideModal(elements.articleModal);
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                // This 'finally' block runs whether the 'try' succeeded or failed.
+                // Restore the original text
+                saveButton.textContent = 'Save Article';
+                // Re-enable the button
+                saveButton.disabled = false;
             }
         },
 
@@ -1086,12 +1243,30 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('close-budget-button').addEventListener('click', () => {
                 ui.hideModal(document.getElementById('budget-modal'));
             });
+
+            // Admin Panel & Article Management
+            elements.adminLoginForm.addEventListener('submit', (e) => app.handleAdminLogin(e));
+            elements.addArticleButton.addEventListener('click', () => ui.showArticleModal());
+            elements.closeArticleModal.addEventListener('click', () => ui.hideModal(elements.articleModal));
+            elements.articleForm.addEventListener('submit', (e) => app.handleArticleFormSubmit(e));
+
+            elements.adminArticlesTableBody.addEventListener('click', (e) => {
+                const target = e.target;
+                const articleId = target.dataset.id;
+                if (target.classList.contains('edit-article-btn')) {
+                    const article = data.articles.find(a => a.id === articleId);
+                    if (article) ui.showArticleModal(article);
+                } else if (target.classList.contains('delete-article-btn')) {
+                    ui.showDeleteConfirmModal(articleId, 'article');
+                }
+            });
         },
 
         // Initial application setup.
         init() {
             app.bindEvents();
             app.initializeBudgetModal();
+            app.loadArticles();
             ui.populateSavingsGoals();
             ui.populateArticles();
             ui.populateBadges();
