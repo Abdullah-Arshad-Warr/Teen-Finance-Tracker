@@ -240,3 +240,69 @@
      animation: blink 1s step-end infinite;
      vertical-align: text-bottom;
  }
+
+ /* Trivia Game Styles */
+ .trivia-option {
+     cursor: pointer;
+     transform: translateY(0);
+ }
+
+ .trivia-option:hover {
+     transform: translateY(-2px);
+     box-shadow: 0 4px 12px rgba(32, 201, 151, 0.15);
+ }
+
+ .trivia-option:disabled {
+     cursor: not-allowed;
+     transform: none;
+ }
+
+ .trivia-option:disabled:hover {
+     transform: none;
+     box-shadow: none;
+ }
+
+ .question-count-btn {
+     transform: translateY(0);
+ }
+
+ .question-count-btn:hover {
+     transform: translateY(-3px);
+     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+ }
+
+ #trivia-feedback {
+     animation: slideDown 0.3s ease-out;
+ }
+
+ @keyframes slideDown {
+     from {
+         opacity: 0;
+         transform: translateY(-10px);
+     }
+
+     to {
+         opacity: 1;
+         transform: translateY(0);
+     }
+ }
+
+ #trivia-results {
+     animation: fadeIn 0.5s ease-out;
+ }
+
+ @keyframes fadeIn {
+     from {
+         opacity: 0;
+         transform: scale(0.95);
+     }
+
+     to {
+         opacity: 1;
+         transform: scale(1);
+     }
+ }
+
+ .bg-gradient-to-r {
+     background: linear-gradient(135deg, #20C997 0%, #10B981 100%);
+ }
