@@ -63,7 +63,124 @@ document.addEventListener('DOMContentLoaded', function () {
             { name: 'Savings Starter', icon: '🌱' },
             { name: 'Money Logger', icon: '✍️' },
             { name: 'Trivia Whiz', icon: '🧠' },
-        ]
+        ],
+        triviaQuestions: [
+            {
+                id: 1,
+                question: "What does 'ROI' stand for?",
+                options: ["Return on Investment", "Rate of Inflation", "Risk of Insolvency", "Revenue over Income"],
+                correct: 0,
+                explanation: "ROI stands for Return on Investment, which measures how much profit you make relative to your investment."
+            },
+            {
+                id: 2,
+                question: "What is compound interest?",
+                options: ["Interest on the principal only", "Interest on interest", "A type of loan", "A bank fee"],
+                correct: 1,
+                explanation: "Compound interest is interest earned on both the original principal and previously earned interest."
+            },
+            {
+                id: 3,
+                question: "What's a good rule for emergency funds?",
+                options: ["1 month of expenses", "3-6 months of expenses", "1 year of expenses", "Just $100"],
+                correct: 1,
+                explanation: "Financial experts recommend saving 3-6 months of living expenses for emergencies."
+            },
+            {
+                id: 4,
+                question: "What does diversification mean in investing?",
+                options: ["Putting all money in one stock", "Spreading investments across different assets", "Only buying expensive stocks", "Avoiding the stock market"],
+                correct: 1,
+                explanation: "Diversification means spreading your investments across different types of assets to reduce risk."
+            },
+            {
+                id: 5,
+                question: "What is a budget?",
+                options: ["A wish list", "A plan for spending and saving money", "A type of bank account", "A credit card limit"],
+                correct: 1,
+                explanation: "A budget is a plan that helps you track income and expenses to manage your money effectively."
+            },
+            {
+                id: 6,
+                question: "What's the 50/30/20 rule?",
+                options: ["50% fun, 30% food, 20% clothes", "50% needs, 30% wants, 20% savings", "50% cash, 30% credit, 20% debit", "50% stocks, 30% bonds, 20% crypto"],
+                correct: 1,
+                explanation: "The 50/30/20 rule suggests allocating 50% for needs, 30% for wants, and 20% for savings."
+            },
+            {
+                id: 7,
+                question: "What is inflation?",
+                options: ["When prices go down", "When prices stay the same", "When prices go up over time", "When you get a raise"],
+                correct: 2,
+                explanation: "Inflation is when the general level of prices for goods and services rises over time."
+            },
+            {
+                id: 8,
+                question: "What's a credit score range?",
+                options: ["0-100", "300-850", "1-10", "500-1000"],
+                correct: 1,
+                explanation: "Credit scores typically range from 300 to 850, with higher scores being better."
+            },
+            {
+                id: 9,
+                question: "What does APR stand for?",
+                options: ["Annual Percentage Rate", "Average Payment Rate", "Automatic Payment Return", "Annual Principal Return"],
+                correct: 0,
+                explanation: "APR stands for Annual Percentage Rate, which represents the yearly cost of borrowing money."
+            },
+            {
+                id: 10,
+                question: "What's the difference between debit and credit cards?",
+                options: ["No difference", "Debit uses your money, credit is borrowed money", "Credit is safer", "Debit has better rewards"],
+                correct: 1,
+                explanation: "Debit cards use money from your bank account, while credit cards let you borrow money that you pay back later."
+            },
+            {
+                id: 11,
+                question: "What is a stock?",
+                options: ["A type of savings account", "Ownership share in a company", "A government bond", "A loan to a bank"],
+                correct: 1,
+                explanation: "A stock represents partial ownership in a company. When you buy stock, you become a shareholder."
+            },
+            {
+                id: 12,
+                question: "What's the best time to start investing?",
+                options: ["When you're 40", "When you have $10,000", "As early as possible", "Only when rich"],
+                correct: 2,
+                explanation: "The best time to start investing is as early as possible to take advantage of compound growth over time."
+            },
+            {
+                id: 13,
+                question: "What is a mutual fund?",
+                options: ["A type of checking account", "A pool of money from many investors", "A government program", "A type of loan"],
+                correct: 1,
+                explanation: "A mutual fund pools money from many investors to buy a diversified portfolio of stocks, bonds, or other securities."
+            },
+            {
+                id: 14,
+                question: "What does it mean to 'pay yourself first'?",
+                options: ["Buy whatever you want", "Save money before spending on other things", "Pay your bills late", "Only use cash"],
+                correct: 1,
+                explanation: "'Pay yourself first' means prioritizing savings by setting aside money for savings before spending on other things."
+            },
+            {
+                id: 15,
+                question: "What is the main purpose of insurance?",
+                options: ["To make money", "To protect against financial loss", "To avoid paying taxes", "To get discounts"],
+                correct: 1,
+                explanation: "Insurance protects you from financial loss due to unexpected events like accidents, illness, or property damage."
+            }
+        ],
+        triviaProgress: {
+            answeredCorrectly: new Set(),
+            answeredWrongly: new Set(),
+            currentSession: {
+                questions: [],
+                currentIndex: 0,
+                score: 0,
+                totalQuestions: 0
+            }
+        }
     };
 
     // --- DOM Element Cache ---
@@ -974,6 +1091,205 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         },
 
+        // Trivia Game Functions
+        initTriviaGame() {
+            const setupScreen = document.getElementById('trivia-setup');
+            const gameScreen = document.getElementById('trivia-game');
+            const resultsScreen = document.getElementById('trivia-results');
+
+            // Show setup screen by default
+            setupScreen.classList.remove('hidden');
+            gameScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+        },
+
+        startTriviaGame(questionCount) {
+            const totalQuestions = data.triviaQuestions.length;
+            const correctlyAnswered = data.triviaProgress.answeredCorrectly;
+            const wronglyAnswered = data.triviaProgress.answeredWrongly;
+
+            // Available questions: unanswered + previously wrong answers
+            const availableQuestions = data.triviaQuestions.filter(q =>
+                !correctlyAnswered.has(q.id) || wronglyAnswered.has(q.id)
+            );
+
+            if (availableQuestions.length === 0) {
+                alert('🎉 Congrats! You\'ve mastered all questions! Reset your progress to play again.');
+                return;
+            }
+
+            // Select random questions
+            const selectedQuestions = this.shuffleArray([...availableQuestions]).slice(0, Math.min(questionCount, availableQuestions.length));
+
+            // Initialize session
+            data.triviaProgress.currentSession = {
+                questions: selectedQuestions,
+                currentIndex: 0,
+                score: 0,
+                totalQuestions: selectedQuestions.length
+            };
+
+            // Show game screen
+            document.getElementById('trivia-setup').classList.add('hidden');
+            document.getElementById('trivia-game').classList.remove('hidden');
+            document.getElementById('trivia-results').classList.add('hidden');
+
+            this.displayCurrentQuestion();
+        },
+
+        shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        },
+
+        displayCurrentQuestion() {
+            const session = data.triviaProgress.currentSession;
+            const question = session.questions[session.currentIndex];
+
+            if (!question) {
+                this.showTriviaResults();
+                return;
+            }
+
+            // Update progress
+            document.getElementById('current-question-num').textContent = session.currentIndex + 1;
+            document.getElementById('total-questions').textContent = session.totalQuestions;
+            document.getElementById('current-score').textContent = session.score;
+
+            const progressPercent = ((session.currentIndex) / session.totalQuestions) * 100;
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+
+            // Display question
+            document.getElementById('trivia-question').textContent = question.question;
+
+            // Display options
+            const optionsContainer = document.getElementById('trivia-options');
+            optionsContainer.innerHTML = question.options.map((option, index) => `
+        <button class="trivia-option w-full text-left p-4 border-2 border-gray-300 rounded-xl hover:border-primary-accent hover:bg-green-50 transition-all duration-200 font-medium" data-index="${index}">
+            <span class="mr-3 text-primary-accent font-bold">${String.fromCharCode(65 + index)})</span>
+            ${option}
+        </button>
+    `).join('');
+
+            // Hide feedback
+            document.getElementById('trivia-feedback').classList.add('hidden');
+
+            // Bind option clicks
+            document.querySelectorAll('.trivia-option').forEach(btn => {
+                btn.addEventListener('click', (e) => this.handleAnswerSelection(e, question));
+            });
+        },
+
+        handleAnswerSelection(e, question) {
+            const selectedIndex = parseInt(e.currentTarget.dataset.index);
+            const isCorrect = selectedIndex === question.correct;
+            const session = data.triviaProgress.currentSession;
+
+            // Disable all options
+            document.querySelectorAll('.trivia-option').forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('hover:border-primary-accent', 'hover:bg-green-50');
+            });
+
+            // Highlight correct and incorrect answers
+            document.querySelectorAll('.trivia-option').forEach((btn, index) => {
+                if (index === question.correct) {
+                    btn.classList.add('border-green-500', 'bg-green-100');
+                } else if (index === selectedIndex && !isCorrect) {
+                    btn.classList.add('border-red-500', 'bg-red-100');
+                }
+            });
+
+            // Update score and progress
+            if (isCorrect) {
+                session.score++;
+                data.triviaProgress.answeredCorrectly.add(question.id);
+                data.triviaProgress.answeredWrongly.delete(question.id);
+            } else {
+                data.triviaProgress.answeredWrongly.add(question.id);
+            }
+
+            // Show feedback
+            const feedbackContainer = document.getElementById('trivia-feedback');
+            const feedbackText = document.getElementById('feedback-text');
+            const correctAnswer = document.getElementById('correct-answer');
+
+            if (isCorrect) {
+                feedbackText.textContent = '🎉 Correct! Great job!';
+                feedbackText.className = 'font-semibold mb-2 text-green-600';
+                correctAnswer.textContent = '';
+            } else {
+                feedbackText.textContent = '❌ Not quite right, but you\'re learning!';
+                feedbackText.className = 'font-semibold mb-2 text-red-600';
+                correctAnswer.textContent = `💡 Correct answer: ${question.options[question.correct]}. ${question.explanation}`;
+            }
+
+            feedbackContainer.classList.remove('hidden');
+
+            // Update current score display
+            document.getElementById('current-score').textContent = session.score;
+        },
+
+        nextQuestion() {
+            const session = data.triviaProgress.currentSession;
+            session.currentIndex++;
+
+            if (session.currentIndex >= session.totalQuestions) {
+                this.showTriviaResults();
+            } else {
+                this.displayCurrentQuestion();
+            }
+        },
+
+        showTriviaResults() {
+            const session = data.triviaProgress.currentSession;
+            const percentage = Math.round((session.score / session.totalQuestions) * 100);
+
+            // Hide game screen, show results
+            document.getElementById('trivia-game').classList.add('hidden');
+            document.getElementById('trivia-results').classList.remove('hidden');
+
+            // Update results display
+            document.getElementById('final-score').textContent = `${session.score}/${session.totalQuestions}`;
+            document.getElementById('score-percentage').textContent = `${percentage}%`;
+
+            // Dynamic emoji and title based on performance
+            const resultsEmoji = document.getElementById('results-emoji');
+            const resultsTitle = document.getElementById('results-title');
+
+            if (percentage >= 90) {
+                resultsEmoji.textContent = '🏆';
+                resultsTitle.textContent = 'Money Master!';
+            } else if (percentage >= 70) {
+                resultsEmoji.textContent = '🎉';
+                resultsTitle.textContent = 'Well Done!';
+            } else if (percentage >= 50) {
+                resultsEmoji.textContent = '👍';
+                resultsTitle.textContent = 'Not Bad!';
+            } else {
+                resultsEmoji.textContent = '📚';
+                resultsTitle.textContent = 'Keep Learning!';
+            }
+        },
+
+        resetTriviaProgress() {
+            if (confirm('Are you sure you want to reset all your trivia progress? This will allow you to see all questions again.')) {
+                data.triviaProgress.answeredCorrectly.clear();
+                data.triviaProgress.answeredWrongly.clear();
+                data.triviaProgress.currentSession = {
+                    questions: [],
+                    currentIndex: 0,
+                    score: 0,
+                    totalQuestions: 0
+                };
+                this.initTriviaGame();
+            }
+        },
+
         // Centralized event listener setup.
         bindEvents() {
             // Navigation
@@ -1067,6 +1383,34 @@ document.addEventListener('DOMContentLoaded', function () {
                 const articleCard = e.target.closest('[data-article-id]');
                 if (articleCard) app.showArticle(articleCard.dataset.articleId);
             });
+            // Trivia Game Events
+            document.querySelectorAll('.question-count-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const count = parseInt(e.target.dataset.count);
+                    app.startTriviaGame(count);
+                });
+            });
+
+            document.getElementById('back-to-setup').addEventListener('click', () => {
+                app.initTriviaGame();
+            });
+
+            document.getElementById('next-question-btn').addEventListener('click', () => {
+                app.nextQuestion();
+            });
+
+            document.getElementById('play-again-btn').addEventListener('click', () => {
+                const lastQuestionCount = data.triviaProgress.currentSession.totalQuestions;
+                app.startTriviaGame(lastQuestionCount);
+            });
+
+            document.getElementById('back-to-setup-btn').addEventListener('click', () => {
+                app.initTriviaGame();
+            });
+
+            document.getElementById('reset-progress-btn').addEventListener('click', () => {
+                app.resetTriviaProgress();
+            });
 
             // Budget Management Events (add to bindEvents function)
             document.getElementById('create-first-budget-button').addEventListener('click', () => {
@@ -1096,6 +1440,7 @@ document.addEventListener('DOMContentLoaded', function () {
             ui.populateArticles();
             ui.populateBadges();
             app.updateAll();
+            app.initTriviaGame();
             if (!auth.currentUser) {
                 app.navigateTo(window.location.hash || '#dashboard');
             }
