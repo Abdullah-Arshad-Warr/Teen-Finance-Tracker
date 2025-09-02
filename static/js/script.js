@@ -46,113 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
             { name: 'Money Logger', icon: '✍️' },
             { name: 'Trivia Whiz', icon: '🧠' },
         ],
-        triviaQuestions: [
-            {
-                id: 1,
-                question: "What does 'ROI' stand for?",
-                options: ["Return on Investment", "Rate of Inflation", "Risk of Insolvency", "Revenue over Income"],
-                correct: 0,
-                explanation: "ROI stands for Return on Investment, which measures how much profit you make relative to your investment."
-            },
-            {
-                id: 2,
-                question: "What is compound interest?",
-                options: ["Interest on the principal only", "Interest on interest", "A type of loan", "A bank fee"],
-                correct: 1,
-                explanation: "Compound interest is interest earned on both the original principal and previously earned interest."
-            },
-            {
-                id: 3,
-                question: "What's a good rule for emergency funds?",
-                options: ["1 month of expenses", "3-6 months of expenses", "1 year of expenses", "Just $100"],
-                correct: 1,
-                explanation: "Financial experts recommend saving 3-6 months of living expenses for emergencies."
-            },
-            {
-                id: 4,
-                question: "What does diversification mean in investing?",
-                options: ["Putting all money in one stock", "Spreading investments across different assets", "Only buying expensive stocks", "Avoiding the stock market"],
-                correct: 1,
-                explanation: "Diversification means spreading your investments across different types of assets to reduce risk."
-            },
-            {
-                id: 5,
-                question: "What is a budget?",
-                options: ["A wish list", "A plan for spending and saving money", "A type of bank account", "A credit card limit"],
-                correct: 1,
-                explanation: "A budget is a plan that helps you track income and expenses to manage your money effectively."
-            },
-            {
-                id: 6,
-                question: "What's the 50/30/20 rule?",
-                options: ["50% fun, 30% food, 20% clothes", "50% needs, 30% wants, 20% savings", "50% cash, 30% credit, 20% debit", "50% stocks, 30% bonds, 20% crypto"],
-                correct: 1,
-                explanation: "The 50/30/20 rule suggests allocating 50% for needs, 30% for wants, and 20% for savings."
-            },
-            {
-                id: 7,
-                question: "What is inflation?",
-                options: ["When prices go down", "When prices stay the same", "When prices go up over time", "When you get a raise"],
-                correct: 2,
-                explanation: "Inflation is when the general level of prices for goods and services rises over time."
-            },
-            {
-                id: 8,
-                question: "What's a credit score range?",
-                options: ["0-100", "300-850", "1-10", "500-1000"],
-                correct: 1,
-                explanation: "Credit scores typically range from 300 to 850, with higher scores being better."
-            },
-            {
-                id: 9,
-                question: "What does APR stand for?",
-                options: ["Annual Percentage Rate", "Average Payment Rate", "Automatic Payment Return", "Annual Principal Return"],
-                correct: 0,
-                explanation: "APR stands for Annual Percentage Rate, which represents the yearly cost of borrowing money."
-            },
-            {
-                id: 10,
-                question: "What's the difference between debit and credit cards?",
-                options: ["No difference", "Debit uses your money, credit is borrowed money", "Credit is safer", "Debit has better rewards"],
-                correct: 1,
-                explanation: "Debit cards use money from your bank account, while credit cards let you borrow money that you pay back later."
-            },
-            {
-                id: 11,
-                question: "What is a stock?",
-                options: ["A type of savings account", "Ownership share in a company", "A government bond", "A loan to a bank"],
-                correct: 1,
-                explanation: "A stock represents partial ownership in a company. When you buy stock, you become a shareholder."
-            },
-            {
-                id: 12,
-                question: "What's the best time to start investing?",
-                options: ["When you're 40", "When you have $10,000", "As early as possible", "Only when rich"],
-                correct: 2,
-                explanation: "The best time to start investing is as early as possible to take advantage of compound growth over time."
-            },
-            {
-                id: 13,
-                question: "What is a mutual fund?",
-                options: ["A type of checking account", "A pool of money from many investors", "A government program", "A type of loan"],
-                correct: 1,
-                explanation: "A mutual fund pools money from many investors to buy a diversified portfolio of stocks, bonds, or other securities."
-            },
-            {
-                id: 14,
-                question: "What does it mean to 'pay yourself first'?",
-                options: ["Buy whatever you want", "Save money before spending on other things", "Pay your bills late", "Only use cash"],
-                correct: 1,
-                explanation: "'Pay yourself first' means prioritizing savings by setting aside money for savings before spending on other things."
-            },
-            {
-                id: 15,
-                question: "What is the main purpose of insurance?",
-                options: ["To make money", "To protect against financial loss", "To avoid paying taxes", "To get discounts"],
-                correct: 1,
-                explanation: "Insurance protects you from financial loss due to unexpected events like accidents, illness, or property damage."
-            }
-        ],
+        triviaQuestions: [],
         triviaProgress: {
             answeredCorrectly: new Set(),
             answeredWrongly: new Set(),
@@ -258,12 +152,23 @@ document.addEventListener('DOMContentLoaded', function () {
         adminLoginError: document.getElementById('admin-login-error'),
         adminArticlesTableBody: document.getElementById('admin-articles-table-body'),
         addArticleButton: document.getElementById('add-article-button'),
+        adminViewToggleButtons: document.querySelectorAll('.admin-view-toggle'),
+        adminArticlesView: document.getElementById('admin-articles-management'),
+        adminTriviaView: document.getElementById('admin-trivia-management'),
+        adminTriviaTableBody: document.getElementById('admin-trivia-table-body'),
+        addTriviaButton: document.getElementById('add-trivia-button'),
 
         // Article Modal
         articleModal: document.getElementById('article-modal'),
         articleModalTitle: document.getElementById('article-modal-title'),
         closeArticleModal: document.getElementById('close-article-modal'),
         articleForm: document.getElementById('article-form'),
+
+        // Trivia Modal
+        triviaModal: document.getElementById('trivia-modal'),
+        triviaModalTitle: document.getElementById('trivia-modal-title'),
+        closeTriviaModal: document.getElementById('close-trivia-modal'),
+        triviaForm: document.getElementById('trivia-form'),
     };
 
     // --- Helper Functions ---
@@ -753,28 +658,70 @@ document.addEventListener('DOMContentLoaded', function () {
 
         async renderAdminView() {
             this.hideAllViews(elements.adminPage);
-            await app.loadArticles(true); // Force reload articles for admin view
             elements.adminContentView.classList.remove('hidden');
 
+            // Fetch data in parallel
+            await Promise.all([app.loadArticles(true), app.loadTrivia(true)]);
+
+            this.showArticlesTable();
+            this.showTriviaTable();
+        },
+
+        showArticlesTable() {
+            const loadingHTML = `<tr><td colspan="3" class="text-center p-8 text-subtle">
+                <svg class="animate-spin h-6 w-6 mx-auto mb-2 text-primary-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10" stroke-width="4" stroke-opacity="0.25"></circle>
+                    <path d="M12 2a10 10 0 0110 10" stroke-width="4" stroke-linecap="round"></path>
+                </svg>
+                Loading...
+            </td></tr>`;
+            elements.adminArticlesTableBody.innerHTML = loadingHTML;
+
+            // Populate Articles Table
             if (data.articles.length === 0) {
                 elements.adminArticlesTableBody.innerHTML = `<tr><td colspan="3" class="text-center p-8 text-subtle">No articles found. Add one!</td></tr>`;
-                return;
+            } else {
+                elements.adminArticlesTableBody.innerHTML = data.articles.map(article => `
+                    <tr class="border-b border-gray-100">
+                        <td class="p-3 font-medium">${article.title}</td>
+                        <td class="p-3 text-subtle">${article.summary}</td>
+                        <td class="p-3 text-center">
+                            <button class="edit-article-btn text-blue-500 hover:text-blue-700 p-2" data-id="${article.id}" title="Edit">Edit</button>
+                            <button class="delete-article-btn text-red-500 hover:text-red-700 p-2" data-id="${article.id}" title="Delete">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
             }
+        },
 
-            elements.adminArticlesTableBody.innerHTML = data.articles.map(article => `
-        <tr class="border-b border-gray-100">
-            <td class="p-3 font-medium">${article.title}</td>
-            <td class="p-3 text-subtle">${article.summary}</td>
-            <td class="p-3 text-center">
-                <button class="edit-article-btn text-blue-500 hover:text-blue-700 p-2" data-id="${article.id}" title="Edit">Edit</button>
-                <button class="delete-article-btn text-red-500 hover:text-red-700 p-2" data-id="${article.id}" title="Delete">Delete</button>
-            </td>
-        </tr>
-    `).join('');
+        showTriviaTable() {
+            const loadingHTML = `<tr><td colspan="3" class="text-center p-8 text-subtle">
+                <svg class="animate-spin h-6 w-6 mx-auto mb-2 text-primary-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="12" cy="12" r="10" stroke-width="4" stroke-opacity="0.25"></circle>
+                    <path d="M12 2a10 10 0 0110 10" stroke-width="4" stroke-linecap="round"></path>
+                </svg>
+                Loading...
+            </td></tr>`;
+            elements.adminTriviaTableBody.innerHTML = loadingHTML;
+
+            if (data.triviaQuestions.length === 0) {
+                elements.adminTriviaTableBody.innerHTML = `<tr><td colspan="3" class="text-center p-8 text-subtle">No trivia questions found. Add one!</td></tr>`;
+            } else {
+                elements.adminTriviaTableBody.innerHTML = data.triviaQuestions.map(q => `
+                    <tr class="border-b border-gray-100">
+                        <td class="p-3 font-medium truncate-text" style="max-width: 400px;" title="${q.question}">${q.question}</td>
+                        <td class="p-3 text-subtle">${q.options[q.correct]}</td>
+                        <td class="p-3 text-center">
+                            <button class="edit-trivia-btn text-blue-500 hover:text-blue-700 p-2" data-id="${q.id}" title="Edit">Edit</button>
+                            <button class="delete-trivia-btn text-red-500 hover:text-red-700 p-2" data-id="${q.id}" title="Delete">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
         },
 
         hideAllViews(page) {
-            page.querySelectorAll('#admin-login-view, #admin-content-view').forEach(view => {
+            page.querySelectorAll('#admin-login-view, #admin-content-view, #admin-articles-management, #admin-trivia-management').forEach(view => {
                 view.classList.add('hidden');
             });
         },
@@ -792,6 +739,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById('article-id').value = '';
             }
             this.showModal(elements.articleModal);
+        },
+
+        showTriviaModal(trivia = null) {
+            elements.triviaForm.reset();
+            if (trivia) {
+                elements.triviaModalTitle.textContent = 'Edit Trivia Question';
+                document.getElementById('trivia-id').value = trivia.id;
+                document.getElementById('trivia-question-text').value = trivia.question;
+                document.getElementById('trivia-option-0').value = trivia.options[0];
+                document.getElementById('trivia-option-1').value = trivia.options[1];
+                document.getElementById('trivia-option-2').value = trivia.options[2];
+                document.getElementById('trivia-option-3').value = trivia.options[3];
+                document.getElementById('trivia-correct-answer').value = trivia.correct;
+                document.getElementById('trivia-explanation').value = trivia.explanation;
+            } else {
+                elements.triviaModalTitle.textContent = 'Add Trivia Question';
+                document.getElementById('trivia-id').value = '';
+            }
+            this.showModal(elements.triviaModal);
         },
     };
 
@@ -836,6 +802,24 @@ document.addEventListener('DOMContentLoaded', function () {
             if (hash === '#learn' && tabId) {
                 elements.learnTabButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.tabTarget === tabId));
                 elements.learnTabContents.forEach(content => content.classList.toggle('active', content.id === tabId));
+            }
+        },
+
+        showAdminView(viewToShow) {
+            elements.adminArticlesView.classList.add('hidden');
+            elements.adminTriviaView.classList.add('hidden');
+            elements.adminViewToggleButtons.forEach(btn => {
+                const isActive = btn.dataset.view === viewToShow;
+                btn.classList.toggle('border-primary-accent', isActive);
+                btn.classList.toggle('text-primary-accent', isActive);
+                btn.classList.toggle('border-transparent', !isActive);
+                btn.classList.toggle('text-subtle', !isActive);
+            });
+
+            if (viewToShow === 'articles') {
+                elements.adminArticlesView.classList.remove('hidden');
+            } else if (viewToShow === 'trivia') {
+                elements.adminTriviaView.classList.remove('hidden');
             }
         },
 
@@ -1038,8 +1022,8 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         async confirmDelete() {
-            if (!state.itemToDelete || !state.isLoggedIn) {
-                console.error("confirmDelete called with no item to delete or not logged in.");
+            if (!state.itemToDelete) {
+                console.error("confirmDelete called with no item to delete.");
                 ui.hideModal(elements.deleteConfirmModal);
                 return;
             }
@@ -1050,13 +1034,14 @@ document.addEventListener('DOMContentLoaded', function () {
             deleteButton.textContent = 'Deleting...';
 
             const { id, type } = state.itemToDelete;
-            const uid = state.currentUser.uid;
 
             try {
                 if (type === 'transaction') {
+                    const uid = state.currentUser.uid;
                     await db.collection('users').doc(uid).collection('transactions').doc(id).delete();
                     await this.loadUserTransactions();
                 } else if (type === 'goal') {
+                    const uid = state.currentUser.uid;
                     await db.collection('users').doc(uid).collection('savingsGoals').doc(id).delete();
                     await this.loadUserSavingsGoals();
                 } else if (type === 'article') {
@@ -1069,6 +1054,16 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                     // Reload the articles and re-render the admin view
                     await this.loadArticles(true);
+                    ui.showArticlesTable();
+                } else if (type === 'trivia') {
+                    if (!state.isAdmin) throw new Error("Admin access required.");
+                    const response = await fetch(`/api/trivia/${id}`, { method: 'DELETE' });
+                    if (!response.ok) {
+                        const err = await response.json();
+                        throw new Error(err.error || 'Failed to delete trivia question.');
+                    }
+                    await this.loadTrivia(true); // Reload and render admin view
+                    ui.showTriviaTable();
                 }
             } catch (error) {
                 console.error(`Error deleting ${type}:`, error);
@@ -1166,14 +1161,22 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         },
 
-        async loadArticles(isAdmin = false) {
+        async loadArticles() {
             try {
                 const response = await fetch('/api/articles');
                 data.articles = await response.json();
                 ui.populateArticles(); // Always update the main view
-                if (isAdmin) ui.renderAdminView();
             } catch (error) {
                 console.error("Failed to load articles:", error);
+            }
+        },
+
+        async loadTrivia() {
+            try {
+                const response = await fetch('/api/trivia');
+                data.triviaQuestions = await response.json();
+            } catch (error) {
+                console.error("Failed to load trivia:", error);
             }
         },
 
@@ -1236,6 +1239,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
                 if (!response.ok) throw new Error('Failed to save article.');
                 await this.loadArticles(true); // Reload and render admin view
+                ui.showArticlesTable();
                 ui.hideModal(elements.articleModal);
             } catch (error) {
                 alert(error.message);
@@ -1244,6 +1248,46 @@ document.addEventListener('DOMContentLoaded', function () {
                 // Restore the original text
                 saveButton.textContent = 'Save Article';
                 // Re-enable the button
+                saveButton.disabled = false;
+            }
+        },
+
+        async handleTriviaFormSubmit(e) {
+            e.preventDefault();
+            const saveButton = elements.triviaForm.querySelector('button[type="submit"]');
+            saveButton.disabled = true;
+            saveButton.innerHTML = `<svg class="animate-spin h-5 w-5 mr-3 inline-block" ...></svg> Saving...`;
+
+            const id = document.getElementById('trivia-id').value;
+            const triviaData = {
+                question: document.getElementById('trivia-question-text').value,
+                options: [
+                    document.getElementById('trivia-option-0').value,
+                    document.getElementById('trivia-option-1').value,
+                    document.getElementById('trivia-option-2').value,
+                    document.getElementById('trivia-option-3').value,
+                ],
+                correct: parseInt(document.getElementById('trivia-correct-answer').value),
+                explanation: document.getElementById('trivia-explanation').value,
+            };
+
+            const url = id ? `/api/trivia/${id}` : '/api/trivia';
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(triviaData)
+                });
+                if (!response.ok) throw new Error('Failed to save trivia question.');
+                await this.loadTrivia(true); // Reload and render admin view
+                ui.showTriviaTable();
+                ui.hideModal(elements.triviaModal);
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                saveButton.textContent = 'Save Question';
                 saveButton.disabled = false;
             }
         },
@@ -1604,6 +1648,25 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else if (target.classList.contains('delete-article-btn')) {
                     ui.showDeleteConfirmModal(articleId, 'article');
                 }
+                app.showAdminView('articles');
+            });
+            // --- Trivia Admin Events ---
+            elements.adminViewToggleButtons.forEach(btn => {
+                btn.addEventListener('click', () => app.showAdminView(btn.dataset.view));
+            });
+            elements.addTriviaButton.addEventListener('click', () => ui.showTriviaModal());
+            elements.closeTriviaModal.addEventListener('click', () => ui.hideModal(elements.triviaModal));
+            elements.triviaForm.addEventListener('submit', (e) => app.handleTriviaFormSubmit(e));
+
+            elements.adminTriviaTableBody.addEventListener('click', (e) => {
+                const target = e.target;
+                const triviaId = target.dataset.id;
+                if (target.classList.contains('edit-trivia-btn')) {
+                    const question = data.triviaQuestions.find(q => q.id === triviaId);
+                    if (question) ui.showTriviaModal(question);
+                } else if (target.classList.contains('delete-trivia-btn')) {
+                    ui.showDeleteConfirmModal(triviaId, 'trivia');
+                }
             });
         },
 
@@ -1612,6 +1675,7 @@ document.addEventListener('DOMContentLoaded', function () {
             app.bindEvents();
             app.initializeBudgetModal();
             app.loadArticles();
+            app.loadTrivia();
             ui.populateSavingsGoals();
             ui.populateArticles();
             ui.populateBadges();

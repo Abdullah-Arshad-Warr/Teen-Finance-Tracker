@@ -206,5 +206,63 @@ def delete_article(article_id):
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/trivia", methods=["GET"])
+def get_trivia():
+    if not db:
+        return jsonify({"error": "Database not configured"}), 500
+    try:
+        trivia_ref = db.collection("trivia").stream()
+        questions = []
+        for doc in trivia_ref:
+            question_data = doc.to_dict()
+            question_data["id"] = doc.id
+            # Ensure correct is an integer if it's stored differently
+            if "correct" in question_data:
+                question_data["correct"] = int(question_data["correct"])
+            questions.append(question_data)
+        return jsonify(questions), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/trivia", methods=["POST"])
+@admin_required
+def create_trivia():
+    data = request.json
+    try:
+        # Convert correct index to int
+        data["correct"] = int(data["correct"])
+        _, doc_ref = db.collection("trivia").add(data)
+        new_question = doc_ref.get().to_dict()
+        new_question["id"] = doc_ref.id
+        return jsonify(new_question), 201
+    except Exception as e:
+        print(f"🔴 Error creating trivia: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/trivia/<trivia_id>", methods=["PUT"])
+@admin_required
+def update_trivia(trivia_id):
+    data = request.json
+    try:
+        # Convert correct index to int
+        data["correct"] = int(data["correct"])
+        db.collection("trivia").document(trivia_id).set(data)
+        return jsonify({"message": "Trivia updated successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/trivia/<trivia_id>", methods=["DELETE"])
+@admin_required
+def delete_trivia(trivia_id):
+    try:
+        db.collection("trivia").document(trivia_id).delete()
+        return jsonify({"message": "Trivia deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == "__main__":
     app.run(debug=True)

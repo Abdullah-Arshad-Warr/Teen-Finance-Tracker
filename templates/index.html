@@ -537,7 +537,8 @@
                                     Back</button>
                                 <div class="text-center">
                                     <p class="text-sm text-subtle">Question <span id="current-question-num">1</span> of
-                                        <span id="total-questions">5</span></p>
+                                        <span id="total-questions">5</span>
+                                    </p>
                                     <div class="w-48 bg-gray-200 rounded-full h-2 mt-1">
                                         <div id="progress-bar"
                                             class="bg-primary-accent h-2 rounded-full transition-all duration-300"
@@ -668,33 +669,72 @@
 
                     <!-- Admin Content View -->
                     <div id="admin-content-view" class="hidden">
-                        <div class="flex justify-between items-center mb-6">
-                            <h2 class="text-3xl font-bold">Manage Articles</h2>
-                            <button id="add-article-button"
-                                class="bg-primary-accent text-white py-2 px-4 rounded-lg font-semibold shadow-md hover:bg-emerald-600 transition-all">
-                                + Add New Article
-                            </button>
+                        <div class="mb-6 border-b border-gray-200">
+                            <nav class="flex space-x-4">
+                                <button class="admin-view-toggle py-3 px-4 font-semibold border-b-2"
+                                    data-view="articles">Manage Articles</button>
+                                <button class="admin-view-toggle py-3 px-4 font-semibold border-b-2"
+                                    data-view="trivia">Manage Trivia</button>
+                            </nav>
                         </div>
-                        <div class="bg-card p-6 rounded-xl shadow-lg">
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left">
-                                    <thead>
-                                        <tr class="border-b border-gray-200">
-                                            <th class="p-3 font-semibold text-subtle">Title</th>
-                                            <th class="p-3 font-semibold text-subtle">Summary</th>
-                                            <th class="p-3 font-semibold text-subtle text-center">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="admin-articles-table-body">
-                                        <!-- Articles will be populated here -->
-                                    </tbody>
-                                </table>
+
+                        <!-- Admin Articles Management -->
+                        <div id="admin-articles-management">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-3xl font-bold">Manage Articles</h2>
+                                <button id="add-article-button"
+                                    class="bg-primary-accent text-white py-2 px-4 rounded-lg font-semibold shadow-md hover:bg-emerald-600 transition-all">
+                                    + Add New Article
+                                </button>
+                            </div>
+                            <div class="bg-card p-6 rounded-xl shadow-lg">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left">
+                                        <thead>
+                                            <tr class="border-b border-gray-200">
+                                                <th class="p-3 font-semibold text-subtle">Title</th>
+                                                <th class="p-3 font-semibold text-subtle">Summary</th>
+                                                <th class="p-3 font-semibold text-subtle text-center">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-articles-table-body">
+                                            <!-- Articles will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Admin Trivia Management -->
+                        <div id="admin-trivia-management" class="hidden">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-3xl font-bold">Manage Trivia</h2>
+                                <button id="add-trivia-button"
+                                    class="bg-primary-accent text-white py-2 px-4 rounded-lg font-semibold shadow-md hover:bg-emerald-600 transition-all">
+                                    + Add New Question
+                                </button>
+                            </div>
+                            <div class="bg-card p-6 rounded-xl shadow-lg">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left">
+                                        <thead>
+                                            <tr class="border-b border-gray-200">
+                                                <th class="p-3 font-semibold text-subtle">Question</th>
+                                                <th class="p-3 font-semibold text-subtle">Correct Answer</th>
+                                                <th class="p-3 font-semibold text-subtle text-center">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-trivia-table-body">
+                                            <!-- Trivia will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </main>
         </div>
+        </main>
+    </div>
     </div>
 
     <!-- Chatbot Modal -->
@@ -760,6 +800,73 @@
                     <button type="submit"
                         class="w-full bg-primary-accent text-white py-3 rounded-lg text-lg font-semibold hover:bg-emerald-600 transition-colors">
                         Save Article
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Trivia Modal -->
+    <div id="trivia-modal"
+        class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 id="trivia-modal-title" class="text-3xl font-bold text-main-heading">Add Trivia Question</h2>
+                    <button id="close-trivia-modal" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+                </div>
+            </div>
+            <form id="trivia-form" class="space-y-4 p-6 overflow-y-auto">
+                <input type="hidden" id="trivia-id">
+                <div>
+                    <label for="trivia-question-text"
+                        class="block text-sm font-medium text-subtle mb-1">Question</label>
+                    <textarea id="trivia-question-text" required rows="3"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent"></textarea>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="trivia-option-0" class="block text-sm font-medium text-subtle mb-1">Option A</label>
+                        <input type="text" id="trivia-option-0" required
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent">
+                    </div>
+                    <div>
+                        <label for="trivia-option-1" class="block text-sm font-medium text-subtle mb-1">Option B</label>
+                        <input type="text" id="trivia-option-1" required
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent">
+                    </div>
+                    <div>
+                        <label for="trivia-option-2" class="block text-sm font-medium text-subtle mb-1">Option C</label>
+                        <input type="text" id="trivia-option-2" required
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent">
+                    </div>
+                    <div>
+                        <label for="trivia-option-3" class="block text-sm font-medium text-subtle mb-1">Option D</label>
+                        <input type="text" id="trivia-option-3" required
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent">
+                    </div>
+                </div>
+                <div>
+                    <label for="trivia-correct-answer" class="block text-sm font-medium text-subtle mb-1">Correct
+                        Answer</label>
+                    <select id="trivia-correct-answer" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent">
+                        <option value="0">Option A</option>
+                        <option value="1">Option B</option>
+                        <option value="2">Option C</option>
+                        <option value="3">Option D</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="trivia-explanation"
+                        class="block text-sm font-medium text-subtle mb-1">Explanation</label>
+                    <textarea id="trivia-explanation" required rows="3"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent"></textarea>
+                </div>
+                <div class="p-6 border-t mt-auto">
+                    <button type="submit"
+                        class="w-full bg-primary-accent text-white py-3 rounded-lg text-lg font-semibold hover:bg-emerald-600 transition-colors">
+                        Save Question
                     </button>
                 </div>
             </form>
