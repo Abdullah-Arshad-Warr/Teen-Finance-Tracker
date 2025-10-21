@@ -306,3 +306,50 @@
  .bg-gradient-to-r {
      background: linear-gradient(135deg, #20C997 0%, #10B981 100%);
  }
+ /* User Dropdown Styles */
+#user-dropdown-menu {
+    animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#user-dropdown-button:hover {
+    background-color: #f3f4f6;
+}
+
+#dropdown-logout-button:hover svg {
+    transform: translateX(2px);
+    transition: transform 0.2s ease;
+}
+/* Add this to ensure dropdown container is visible */
+#user-dropdown-container {
+    display: block;
+}
+
+#user-dropdown-container.hidden {
+    display: none;
+}
+/* No Data Message Styling */
+.no-data-message {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

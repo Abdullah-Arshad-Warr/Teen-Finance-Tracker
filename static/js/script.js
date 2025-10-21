@@ -40,12 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
             savings: ['Emergency Fund', 'Long-term Savings', 'Investments']
         },
         articles: [],
-        badges: [
-            { name: 'Budget Boss', icon: '👑' },
-            { name: 'Savings Starter', icon: '🌱' },
-            { name: 'Money Logger', icon: '✍️' },
-            { name: 'Trivia Whiz', icon: '🧠' },
-        ],
+       
         triviaQuestions: [],
         triviaProgress: {
             answeredCorrectly: new Set(),
@@ -86,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
         closeAuthButton: document.getElementById('close-auth-button'),
         headerAuthButton: document.getElementById('header-auth-button'),
         logoutButton: document.getElementById('logout-button'),
-        userLevelXp: document.getElementById('user-level-xp'),
+      
 
         // Transaction Form
         transactionForm: document.getElementById('transaction-form'),
@@ -130,10 +125,18 @@ document.addEventListener('DOMContentLoaded', function () {
         topGoalProgressBar: document.getElementById('top-goal-progress-bar'),
         topGoalDetails: document.getElementById('top-goal-details'),
 
-        //Profile Display
-        userNameElement: document.getElementById('user-name'),
-        userAvatarInitial: document.getElementById('user-avatar-initial'),
-        userInfoContainer: document.getElementById('user-info-container'),
+        // FIND THIS SECTION AND ADD THE NEW ELEMENTS:
+     
+
+        // ADD THESE NEW LINES:
+        // User Dropdown Elements
+        userDropdownContainer: document.getElementById('user-dropdown-container'),
+        userDropdownButton: document.getElementById('user-dropdown-button'),
+        userDropdownMenu: document.getElementById('user-dropdown-menu'),
+        userNameDropdown: document.getElementById('user-name-dropdown'),
+        userAvatarDropdown: document.getElementById('user-avatar-dropdown'),
+        userAvatarInitialDropdown: document.getElementById('user-avatar-initial-dropdown'),
+        dropdownLogoutButton: document.getElementById('dropdown-logout-button'),
 
         //Savings Goals
         goalModal: document.getElementById('goal-modal'),
@@ -269,32 +272,42 @@ document.addEventListener('DOMContentLoaded', function () {
             elements.authMessage.classList.toggle('text-green-500', !isError);
         },
 
-        updateHeaderForAuthState(user) {
-            if (user && user.firestoreData) {
-                // Logged In State
-                const { name, level, xp } = user.firestoreData;
-                elements.userNameElement.textContent = name || 'User';
-                elements.userLevelXp.textContent = `Level ${level} | ${xp} XP`;
-                elements.userAvatarInitial.textContent = name?.trim().charAt(0).toUpperCase() || '?';
+       // REPLACE THIS ENTIRE FUNCTION:
+updateHeaderForAuthState(user) {
+    if (user && user.firestoreData) {
+        // Logged In State
+        const { name } = user.firestoreData;
+        const displayName = name || 'User';
+        const initial = displayName.trim().charAt(0).toUpperCase() || '?';
 
-                elements.headerAuthButton.classList.add('hidden');
-                elements.userInfoContainer.classList.remove('hidden');
-                elements.userInfoContainer.classList.add('flex');
-                elements.logoutButton.classList.remove('hidden');
+        // Update dropdown with user info
+        elements.userNameDropdown.textContent = displayName;
+        elements.userAvatarInitialDropdown.textContent = initial;
 
-            } else {
-                // Logged Out State
-                elements.userInfoContainer.classList.add('hidden');
-                elements.logoutButton.classList.add('hidden');
-                elements.headerAuthButton.classList.remove('hidden');
-            }
-        },
+        // Show dropdown, hide login button
+        elements.userDropdownContainer.classList.remove('hidden');
+        elements.headerAuthButton.classList.add('hidden');
 
+    } else {
+        // Logged Out State
+        elements.userDropdownContainer.classList.add('hidden');
+        elements.headerAuthButton.classList.remove('hidden');
+    }
+},
         updateTransactionControls(isLoggedIn) {
-            const displayStyle = isLoggedIn ? 'flex' : 'none';
-            elements.addTransactionButton.style.display = displayStyle;
-            elements.dashboardAddTransactionButton.style.display = isLoggedIn ? 'block' : 'none';
-        },
+    const displayStyle = isLoggedIn ? 'flex' : 'none';
+    elements.addTransactionButton.style.display = displayStyle;
+    elements.dashboardAddTransactionButton.style.display = isLoggedIn ? 'block' : 'none';
+    
+    // Ensure header auth elements are visible
+    if (isLoggedIn) {
+        elements.userDropdownContainer.classList.remove('hidden');
+        elements.headerAuthButton.classList.add('hidden');
+    } else {
+        elements.userDropdownContainer.classList.add('hidden');
+        elements.headerAuthButton.classList.remove('hidden');
+    }
+},
 
         updateTopGoalDisplay() {
             if (data.savingsGoals.length === 0) {
@@ -374,100 +387,134 @@ document.addEventListener('DOMContentLoaded', function () {
         // Creates or updates the charts.
         // Enhanced chart creation (replace the existing createOrUpdateCharts function)
         createOrUpdateCharts() {
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
 
-            // --- Enhanced Budget Chart with Budget vs Spending Comparison ---
-            if (data.monthlyBudget) {
-                const spending = data.transactions
-                    .filter(t => {
-                        const d = new Date(t.date);
-                        return t.amount < 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-                    })
-                    .reduce((acc, t) => {
-                        acc[t.cat] = (acc[t.cat] || 0) + Math.abs(t.amount);
-                        return acc;
-                    }, {});
+    // --- Enhanced Budget Chart with Budget vs Spending Comparison ---
+    if (data.monthlyBudget) {
+        const spending = data.transactions
+            .filter(t => {
+                const d = new Date(t.date);
+                return t.amount < 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+            })
+            .reduce((acc, t) => {
+                acc[t.cat] = (acc[t.cat] || 0) + Math.abs(t.amount);
+                return acc;
+            }, {});
 
-                const budgetLabels = [];
-                const budgetData = [];
-                const budgetColors = [];
+        const budgetLabels = [];
+        const budgetData = [];
+        const budgetColors = [];
 
-                Object.entries(data.monthlyBudget.categories).forEach(([category, budgetAmount]) => {
-                    const spent = spending[category] || 0;
-                    const percentage = budgetAmount > 0 ? (spent / budgetAmount) * 100 : 0;
+        Object.entries(data.monthlyBudget.categories).forEach(([category, budgetAmount]) => {
+            const spent = spending[category] || 0;
+            const percentage = budgetAmount > 0 ? (spent / budgetAmount) * 100 : 0;
 
-                    budgetLabels.push(`${category} (${percentage.toFixed(0)}%)`);
-                    budgetData.push(spent);
+            budgetLabels.push(`${category} (${percentage.toFixed(0)}%)`);
+            budgetData.push(spent);
 
-                    // Color based on budget status
-                    if (percentage >= 100) {
-                        budgetColors.push('#EF4444'); // Red - over budget
-                    } else if (percentage >= 80) {
-                        budgetColors.push('#F59E0B'); // Orange - near budget
-                    } else {
-                        budgetColors.push('#20C997'); // Green - under budget
-                    }
-                });
+            // Color based on budget status
+            if (percentage >= 100) {
+                budgetColors.push('#EF4444'); // Red - over budget
+            } else if (percentage >= 80) {
+                budgetColors.push('#F59E0B'); // Orange - near budget
+            } else {
+                budgetColors.push('#20C997'); // Green - under budget
+            }
+        });
 
-                const budgetChartConfig = {
-                    labels: budgetLabels,
-                    datasets: [{
-                        label: 'Spending vs Budget',
-                        data: budgetData,
-                        backgroundColor: budgetColors,
-                        borderColor: '#FFFFFF',
-                        borderWidth: 2
-                    }]
-                };
+        const budgetChartConfig = {
+            labels: budgetLabels,
+            datasets: [{
+                label: 'Spending vs Budget',
+                data: budgetData,
+                backgroundColor: budgetColors,
+                borderColor: '#FFFFFF',
+                borderWidth: 2
+            }]
+        };
 
-                // Create the budget chart
-                const budgetChartCanvas = document.getElementById('budgetDoughnutChart');
-                if (budgetChartCanvas) {
-                    if (state.charts.budgetDoughnut) state.charts.budgetDoughnut.destroy();
-                    state.charts.budgetDoughnut = new Chart(budgetChartCanvas.getContext('2d'), {
-                        type: 'doughnut',
-                        data: budgetChartConfig,
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            cutout: '70%',
-                            plugins: {
-                                legend: {
-                                    position: 'bottom',
-                                    labels: {
-                                        boxWidth: 12,
-                                        padding: 15,
-                                        font: { size: 11 }
-                                    }
-                                },
-                                tooltip: {
-                                    callbacks: {
-                                        label: function (context) {
-                                            const category = context.label.split(' (')[0];
-                                            const spent = context.parsed;
-                                            const budget = data.monthlyBudget.categories[category];
-                                            return `${category}: ${formatCurrency(spent)} of ${formatCurrency(budget)}`;
-                                        }
-                                    }
+        // Create the budget chart
+        const budgetChartCanvas = document.getElementById('budgetDoughnutChart');
+        if (budgetChartCanvas) {
+            if (state.charts.budgetDoughnut) state.charts.budgetDoughnut.destroy();
+            state.charts.budgetDoughnut = new Chart(budgetChartCanvas.getContext('2d'), {
+                type: 'doughnut',
+                data: budgetChartConfig,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15,
+                                font: { size: 11 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const category = context.label.split(' (')[0];
+                                    const spent = context.parsed;
+                                    const budget = data.monthlyBudget.categories[category];
+                                    return `${category}: ${formatCurrency(spent)} of ${formatCurrency(budget)}`;
                                 }
                             }
                         }
-                    });
+                    }
                 }
+            });
+        }
+    }
+
+    // --- Spending Data Calculation (for the spending pie chart) ---
+    const spendingData = data.transactions
+        .filter(t => {
+            const d = new Date(t.date);
+            return t.amount < 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        })
+        .reduce((acc, t) => {
+            acc[t.cat] = (acc[t.cat] || 0) + Math.abs(t.amount);
+            return acc;
+        }, {});
+
+    const spendingCanvas = document.getElementById('spendingPieChart');
+    if (spendingCanvas) {
+        const chartContainer = spendingCanvas.parentElement;
+        
+        // Check if there's no spending data
+        if (Object.keys(spendingData).length === 0) {
+            // Hide canvas and show message
+            spendingCanvas.style.display = 'none';
+            
+            // Remove existing message if any
+            const existingMessage = chartContainer.querySelector('.no-data-message');
+            if (existingMessage) existingMessage.remove();
+            
+            // Add no data message
+            const noDataMessage = document.createElement('div');
+            noDataMessage.className = 'no-data-message text-center py-12';
+            noDataMessage.innerHTML = `
+                <div class="text-6xl mb-4">📊</div>
+                <p class="text-subtle text-lg font-medium mb-2">No spending data yet</p>
+                <p class="text-subtle text-sm">Add some outflow transactions to see your spending breakdown!</p>
+            `;
+            chartContainer.appendChild(noDataMessage);
+            
+            // Destroy existing chart
+            if (state.charts.spendingPie) {
+                state.charts.spendingPie.destroy();
+                state.charts.spendingPie = null;
             }
-
-            // --- Spending Data Calculation (for the spending pie chart) ---
-            const spendingData = data.transactions
-                .filter(t => {
-                    const d = new Date(t.date);
-                    return t.amount < 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-                })
-                .reduce((acc, t) => {
-                    acc[t.cat] = (acc[t.cat] || 0) + Math.abs(t.amount);
-                    return acc;
-                }, {});
-
+        } else {
+            // Show canvas and remove message
+            spendingCanvas.style.display = 'block';
+            const existingMessage = chartContainer.querySelector('.no-data-message');
+            if (existingMessage) existingMessage.remove();
+            
             const spendingChartConfig = {
                 labels: Object.keys(spendingData),
                 datasets: [{
@@ -478,17 +525,73 @@ document.addEventListener('DOMContentLoaded', function () {
                 }]
             };
 
-            // --- Income Data Calculation ---
-            const incomeData = data.transactions
-                .filter(t => {
-                    const d = new Date(t.date);
-                    return t.amount > 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-                })
-                .reduce((acc, t) => {
-                    acc[t.cat] = (acc[t.cat] || 0) + t.amount;
-                    return acc;
-                }, {});
+            if (state.charts.spendingPie) state.charts.spendingPie.destroy();
+            state.charts.spendingPie = new Chart(spendingCanvas.getContext('2d'), {
+                type: 'pie',
+                data: spendingChartConfig,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    borderWidth: 2,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
 
+    // --- Income Data Calculation ---
+    const incomeData = data.transactions
+        .filter(t => {
+            const d = new Date(t.date);
+            return t.amount > 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        })
+        .reduce((acc, t) => {
+            acc[t.cat] = (acc[t.cat] || 0) + t.amount;
+            return acc;
+        }, {});
+
+    const incomeCanvas = document.getElementById('incomeSourcesChart');
+    if (incomeCanvas) {
+        const chartContainer = incomeCanvas.parentElement;
+        
+        // Check if there's no income data
+        if (Object.keys(incomeData).length === 0) {
+            // Hide canvas and show message
+            incomeCanvas.style.display = 'none';
+            
+            // Remove existing message if any
+            const existingMessage = chartContainer.querySelector('.no-data-message');
+            if (existingMessage) existingMessage.remove();
+            
+            // Add no data message
+            const noDataMessage = document.createElement('div');
+            noDataMessage.className = 'no-data-message text-center py-12';
+            noDataMessage.innerHTML = `
+                <div class="text-6xl mb-4">💰</div>
+                <p class="text-subtle text-lg font-medium mb-2">No income data yet</p>
+                <p class="text-subtle text-sm">Add some inflow transactions to see your income sources!</p>
+            `;
+            chartContainer.appendChild(noDataMessage);
+            
+            // Destroy existing chart
+            if (state.charts.incomeSources) {
+                state.charts.incomeSources.destroy();
+                state.charts.incomeSources = null;
+            }
+        } else {
+            // Show canvas and remove message
+            incomeCanvas.style.display = 'block';
+            const existingMessage = chartContainer.querySelector('.no-data-message');
+            if (existingMessage) existingMessage.remove();
+            
             const incomeChartConfig = {
                 labels: Object.keys(incomeData),
                 datasets: [{
@@ -499,53 +602,28 @@ document.addEventListener('DOMContentLoaded', function () {
                 }]
             };
 
-            // --- Chart Rendering ---
-            const spendingCanvas = document.getElementById('spendingPieChart');
-            if (spendingCanvas) {
-                if (state.charts.spendingPie) state.charts.spendingPie.destroy();
-                state.charts.spendingPie = new Chart(spendingCanvas.getContext('2d'), {
-                    type: 'pie',
-                    data: spendingChartConfig,
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        borderWidth: 2,
-                        plugins: {
-                            legend: {
-                                position: 'right',
-                                labels: {
-                                    boxWidth: 12,
-                                    padding: 15
-                                }
+            if (state.charts.incomeSources) state.charts.incomeSources.destroy();
+            state.charts.incomeSources = new Chart(incomeCanvas.getContext('2d'), {
+                type: 'pie',
+                data: incomeChartConfig,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    borderWidth: 2,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15
                             }
                         }
                     }
-                });
-            }
-
-            const incomeCanvas = document.getElementById('incomeSourcesChart');
-            if (incomeCanvas) {
-                if (state.charts.incomeSources) state.charts.incomeSources.destroy();
-                state.charts.incomeSources = new Chart(incomeCanvas.getContext('2d'), {
-                    type: 'pie',
-                    data: incomeChartConfig,
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        borderWidth: 2,
-                        plugins: {
-                            legend: {
-                                position: 'right',
-                                labels: {
-                                    boxWidth: 12,
-                                    padding: 15
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        },
+                }
+            });
+        }
+    }
+},
 
         // Populates other sections of the UI.
         populateSavingsGoals() {
@@ -598,9 +676,7 @@ document.addEventListener('DOMContentLoaded', function () {
             </div>`).join('');
             }
         },
-        populateBadges() {
-            document.getElementById('badges-container').innerHTML = data.badges.map(badge => `<div class="text-center p-2 rounded-xl bg-gray-100 shadow-sm"><div class="text-4xl">${badge.icon}</div><p class="text-xs font-medium mt-1">${badge.name}</p></div>`).join('');
-        },
+
         showGoalModal(goal = null) {
             elements.goalForm.reset();
             if (goal) {
@@ -634,7 +710,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 initialMessageHTML = `
             <div class="flex justify-start">
                 <div class="bg-gray-200 text-main-heading p-3 rounded-lg max-w-xs">
-                    Hi there! I'm FinFlow AI. Please <strong>log in</strong> to get personalized advice based on your financial data. I can help you understand your spending and reach your goals! 🚀
+                    Hi there! I'm Trackee AI. Please <strong>log in</strong> to get personalized advice based on your financial data. I can help you understand your spending and reach your goals! 🚀
                 </div>
             </div>`;
             }
@@ -853,29 +929,31 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         async handleSignup(e) {
-            e.preventDefault();
-            setFormLoading(elements.signupForm, true);
+    e.preventDefault();
+    setFormLoading(elements.signupForm, true);
 
-            try {
-                const name = document.getElementById('signup-name').value;
-                const email = document.getElementById('signup-email').value;
-                const password = document.getElementById('signup-password').value;
-                const confirmPassword = document.getElementById('signup-confirm-password').value;
-                if (!name || !email || !password || !confirmPassword) throw new Error('Please fill in all fields.');
-                if (password !== confirmPassword) throw new Error('Passwords do not match.');
+    try {
+        const name = document.getElementById('signup-name').value;
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        const confirmPassword = document.getElementById('signup-confirm-password').value;
+        if (!name || !email || !password || !confirmPassword) throw new Error('Please fill in all fields.');
+        if (password !== confirmPassword) throw new Error('Passwords do not match.');
 
-                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                await db.collection("users").doc(userCredential.user.uid).set({
-                    name, level: 1, xp: 0, email
-                });
-                ui.showAuthMessage('Signup successful!', false);
-                setTimeout(() => ui.hideModal(elements.authModal), 1500);
-            } catch (error) {
-                ui.showAuthMessage(error.message);
-            } finally {
-                setFormLoading(elements.signupForm, false);
-            }
-        },
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        // CHANGE THIS LINE - REMOVE level and xp:
+        await db.collection("users").doc(userCredential.user.uid).set({
+            name, 
+            email
+        });
+        ui.showAuthMessage('Signup successful!', false);
+        setTimeout(() => ui.hideModal(elements.authModal), 1500);
+    } catch (error) {
+        ui.showAuthMessage(error.message);
+    } finally {
+        setFormLoading(elements.signupForm, false);
+    }
+},
 
         handleLogout() {
             auth.signOut();
@@ -1519,7 +1597,16 @@ document.addEventListener('DOMContentLoaded', function () {
             elements.toggleAuthButton.addEventListener('click', () => elements.loginForm.classList.contains('hidden') ? ui.showLoginPage() : ui.showSignupPage());
             elements.loginForm.addEventListener('submit', app.handleLogin); // Connect to new async function
             elements.signupForm.addEventListener('submit', app.handleSignup); // Connect to new async function
-            elements.logoutButton.addEventListener('click', app.handleLogout); // Connect to new Firebase function
+            elements.dropdownLogoutButton.addEventListener('click', app.handleLogout);
+            elements.userDropdownButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                elements.userDropdownMenu.classList.toggle('hidden');
+            });
+            document.addEventListener('click', (e) => {
+                if (!elements.userDropdownContainer.contains(e.target)) {
+                    elements.userDropdownMenu.classList.add('hidden');
+                }
+            });
             elements.closeAuthButton.addEventListener('click', () => ui.hideModal(elements.authModal));
 
             // Transactions
@@ -1678,7 +1765,6 @@ document.addEventListener('DOMContentLoaded', function () {
             app.loadTrivia();
             ui.populateSavingsGoals();
             ui.populateArticles();
-            ui.populateBadges();
             app.updateAll();
             app.initTriviaGame();
             if (!auth.currentUser) {
