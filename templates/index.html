@@ -123,11 +123,13 @@
                     <input type="text" id="transaction-desc" required maxlength="100"
                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
-                <div>
-                    <label for="transaction-cat" class="block text-sm font-medium text-subtle mb-1">Category</label>
-                    <input type="text" id="transaction-cat" required maxlength="30"
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
-                </div>
+               <div>
+    <label for="transaction-cat" class="block text-sm font-medium text-subtle mb-1">Category</label>
+    <input list="category-suggestions" type="text" id="transaction-cat" required maxlength="30"
+        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none"
+        placeholder="Select from budget or type new...">
+    <datalist id="category-suggestions"></datalist>
+</div>
                 <div>
                     <label for="transaction-amount" class="block text-sm font-medium text-subtle mb-1">Amount</label>
                     <input type="number" id="transaction-amount" step="0.01" required
@@ -329,6 +331,10 @@
 
                 <!-- Dashboard Page -->
                 <div id="dashboard-page" class="page-content">
+                    <!-- Smart Alerts -->
+<div id="smart-alerts" class="mb-6 space-y-3">
+    <!-- Alerts will be populated by JavaScript -->
+</div>
                     <p class="text-subtle mb-6">Welcome back! Here's a quick look at your financial world. This
                         dashboard gives you a snapshot of your income, spending, and progress towards your savings
                         goals, helping you stay on top of your money.</p>

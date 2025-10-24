@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
             savings: ['Emergency Fund', 'Long-term Savings', 'Investments']
         },
         articles: [],
-       
+
         triviaQuestions: [],
         triviaProgress: {
             answeredCorrectly: new Set(),
@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
         closeAuthButton: document.getElementById('close-auth-button'),
         headerAuthButton: document.getElementById('header-auth-button'),
         logoutButton: document.getElementById('logout-button'),
-      
+
 
         // Transaction Form
         transactionForm: document.getElementById('transaction-form'),
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
         topGoalDetails: document.getElementById('top-goal-details'),
 
         // FIND THIS SECTION AND ADD THE NEW ELEMENTS:
-     
+
 
         // ADD THESE NEW LINES:
         // User Dropdown Elements
@@ -223,23 +223,29 @@ document.addEventListener('DOMContentLoaded', function () {
             ui.showModal(elements.authModal);
         },
 
-        showTransactionModal(transaction = null) {
-            elements.transactionForm.reset();
-            if (transaction) {
-                elements.transactionTitle.textContent = 'Edit Transaction';
-                document.getElementById('transaction-id').value = transaction.id;
-                document.getElementById('transaction-desc').value = transaction.desc;
-                document.getElementById('transaction-cat').value = transaction.cat;
-                document.getElementById('transaction-amount').value = Math.abs(transaction.amount);
-                document.getElementById('transaction-date').value = transaction.date;
-                document.querySelector(`input[name="transaction-type"][value="${transaction.amount > 0 ? 'inflow' : 'outflow'}"]`).checked = true;
-            } else {
-                elements.transactionTitle.textContent = 'Add Transaction';
-                document.getElementById('transaction-id').value = '';
-                document.getElementById('transaction-date').valueAsDate = new Date();
-            }
-            ui.showModal(elements.transactionModal);
-        },
+       showTransactionModal(transaction = null) {
+    elements.transactionForm.reset();
+    const categorySelect = document.getElementById('transaction-cat');
+    
+    if (transaction) {
+        elements.transactionTitle.textContent = 'Edit Transaction';
+        document.getElementById('transaction-id').value = transaction.id;
+        document.getElementById('transaction-desc').value = transaction.desc;
+        document.getElementById('transaction-cat').value = transaction.cat;
+        document.getElementById('transaction-amount').value = Math.abs(transaction.amount);
+        document.getElementById('transaction-date').value = transaction.date;
+        document.querySelector(`input[name="transaction-type"][value="${transaction.amount > 0 ? 'inflow' : 'outflow'}"]`).checked = true;
+    } else {
+        elements.transactionTitle.textContent = 'Add Transaction';
+        document.getElementById('transaction-id').value = '';
+        document.getElementById('transaction-date').valueAsDate = new Date();
+    }
+    
+    // Populate category dropdown with budget categories and savings goals
+    app.populateCategoryRecommendations(categorySelect);
+    
+    ui.showModal(elements.transactionModal);
+},
 
         showDeleteConfirmModal(id, type) {
             state.itemToDelete = { id, type };
@@ -272,42 +278,42 @@ document.addEventListener('DOMContentLoaded', function () {
             elements.authMessage.classList.toggle('text-green-500', !isError);
         },
 
-       // REPLACE THIS ENTIRE FUNCTION:
-updateHeaderForAuthState(user) {
-    if (user && user.firestoreData) {
-        // Logged In State
-        const { name } = user.firestoreData;
-        const displayName = name || 'User';
-        const initial = displayName.trim().charAt(0).toUpperCase() || '?';
+        // REPLACE THIS ENTIRE FUNCTION:
+        updateHeaderForAuthState(user) {
+            if (user && user.firestoreData) {
+                // Logged In State
+                const { name } = user.firestoreData;
+                const displayName = name || 'User';
+                const initial = displayName.trim().charAt(0).toUpperCase() || '?';
 
-        // Update dropdown with user info
-        elements.userNameDropdown.textContent = displayName;
-        elements.userAvatarInitialDropdown.textContent = initial;
+                // Update dropdown with user info
+                elements.userNameDropdown.textContent = displayName;
+                elements.userAvatarInitialDropdown.textContent = initial;
 
-        // Show dropdown, hide login button
-        elements.userDropdownContainer.classList.remove('hidden');
-        elements.headerAuthButton.classList.add('hidden');
+                // Show dropdown, hide login button
+                elements.userDropdownContainer.classList.remove('hidden');
+                elements.headerAuthButton.classList.add('hidden');
 
-    } else {
-        // Logged Out State
-        elements.userDropdownContainer.classList.add('hidden');
-        elements.headerAuthButton.classList.remove('hidden');
-    }
-},
+            } else {
+                // Logged Out State
+                elements.userDropdownContainer.classList.add('hidden');
+                elements.headerAuthButton.classList.remove('hidden');
+            }
+        },
         updateTransactionControls(isLoggedIn) {
-    const displayStyle = isLoggedIn ? 'flex' : 'none';
-    elements.addTransactionButton.style.display = displayStyle;
-    elements.dashboardAddTransactionButton.style.display = isLoggedIn ? 'block' : 'none';
-    
-    // Ensure header auth elements are visible
-    if (isLoggedIn) {
-        elements.userDropdownContainer.classList.remove('hidden');
-        elements.headerAuthButton.classList.add('hidden');
-    } else {
-        elements.userDropdownContainer.classList.add('hidden');
-        elements.headerAuthButton.classList.remove('hidden');
-    }
-},
+            const displayStyle = isLoggedIn ? 'flex' : 'none';
+            elements.addTransactionButton.style.display = displayStyle;
+            elements.dashboardAddTransactionButton.style.display = isLoggedIn ? 'block' : 'none';
+
+            // Ensure header auth elements are visible
+            if (isLoggedIn) {
+                elements.userDropdownContainer.classList.remove('hidden');
+                elements.headerAuthButton.classList.add('hidden');
+            } else {
+                elements.userDropdownContainer.classList.add('hidden');
+                elements.headerAuthButton.classList.remove('hidden');
+            }
+        },
 
         updateTopGoalDisplay() {
             if (data.savingsGoals.length === 0) {
@@ -336,6 +342,75 @@ updateHeaderForAuthState(user) {
             <span>${percentage}%</span>`;
         },
 
+        updateSmartAlerts() {
+    const alertsContainer = document.getElementById('smart-alerts');
+    if (!alertsContainer) return;
+    
+    const alerts = [];
+    
+    // Check for savings goals without budget allocation
+    if (data.savingsGoals.length > 0 && data.monthlyBudget) {
+        data.savingsGoals.forEach(goal => {
+            const hasCategory = Object.keys(data.monthlyBudget.categories).some(cat => 
+                cat.toLowerCase().includes(goal.name.toLowerCase())
+            );
+            
+            if (!hasCategory && goal.saved < goal.target) {
+                alerts.push({
+                    type: 'info',
+                    icon: '💡',
+                    message: `Consider adding "${goal.name}" to your budget to track savings progress!`,
+                    action: () => {
+                        document.getElementById('manage-budget-button').click();
+                    }
+                });
+            }
+        });
+    }
+    
+    // Check for budget categories with no transactions
+    if (data.monthlyBudget) {
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        
+        Object.keys(data.monthlyBudget.categories).forEach(category => {
+            const hasTransactions = data.transactions.some(t => {
+                const d = new Date(t.date);
+                return t.cat === category && 
+                       d.getMonth() === currentMonth && 
+                       d.getFullYear() === currentYear;
+            });
+            
+            if (!hasTransactions) {
+                alerts.push({
+                    type: 'warning',
+                    icon: '📊',
+                    message: `No transactions yet for "${category}". Add one to track your budget!`,
+                    action: () => {
+                        elements.dashboardAddTransactionButton.click();
+                    }
+                });
+            }
+        });
+    }
+    
+    // Render alerts
+    if (alerts.length === 0) {
+        alertsContainer.innerHTML = '';
+        return;
+    }
+    
+    alertsContainer.innerHTML = alerts.slice(0, 3).map(alert => `
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-lg flex items-start gap-3 cursor-pointer hover:bg-blue-100 transition-colors"
+             onclick="this.remove()">
+            <span class="text-2xl">${alert.icon}</span>
+            <div class="flex-1">
+                <p class="text-sm text-gray-700">${alert.message}</p>
+            </div>
+            <button class="text-gray-400 hover:text-gray-600">&times;</button>
+        </div>
+    `).join('');
+},
         // Populates the transaction table with data.
         populateTransactions() {
             if (data.transactions.length === 0) {
@@ -387,243 +462,243 @@ updateHeaderForAuthState(user) {
         // Creates or updates the charts.
         // Enhanced chart creation (replace the existing createOrUpdateCharts function)
         createOrUpdateCharts() {
-    const currentMonth = new Date().getMonth();
-    const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
 
-    // --- Enhanced Budget Chart with Budget vs Spending Comparison ---
-    if (data.monthlyBudget) {
-        const spending = data.transactions
-            .filter(t => {
-                const d = new Date(t.date);
-                return t.amount < 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-            })
-            .reduce((acc, t) => {
-                acc[t.cat] = (acc[t.cat] || 0) + Math.abs(t.amount);
-                return acc;
-            }, {});
+            // --- Enhanced Budget Chart with Budget vs Spending Comparison ---
+            if (data.monthlyBudget) {
+                const spending = data.transactions
+                    .filter(t => {
+                        const d = new Date(t.date);
+                        return t.amount < 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+                    })
+                    .reduce((acc, t) => {
+                        acc[t.cat] = (acc[t.cat] || 0) + Math.abs(t.amount);
+                        return acc;
+                    }, {});
 
-        const budgetLabels = [];
-        const budgetData = [];
-        const budgetColors = [];
+                const budgetLabels = [];
+                const budgetData = [];
+                const budgetColors = [];
 
-        Object.entries(data.monthlyBudget.categories).forEach(([category, budgetAmount]) => {
-            const spent = spending[category] || 0;
-            const percentage = budgetAmount > 0 ? (spent / budgetAmount) * 100 : 0;
+                Object.entries(data.monthlyBudget.categories).forEach(([category, budgetAmount]) => {
+                    const spent = spending[category] || 0;
+                    const percentage = budgetAmount > 0 ? (spent / budgetAmount) * 100 : 0;
 
-            budgetLabels.push(`${category} (${percentage.toFixed(0)}%)`);
-            budgetData.push(spent);
+                    budgetLabels.push(`${category} (${percentage.toFixed(0)}%)`);
+                    budgetData.push(spent);
 
-            // Color based on budget status
-            if (percentage >= 100) {
-                budgetColors.push('#EF4444'); // Red - over budget
-            } else if (percentage >= 80) {
-                budgetColors.push('#F59E0B'); // Orange - near budget
-            } else {
-                budgetColors.push('#20C997'); // Green - under budget
-            }
-        });
+                    // Color based on budget status
+                    if (percentage >= 100) {
+                        budgetColors.push('#EF4444'); // Red - over budget
+                    } else if (percentage >= 80) {
+                        budgetColors.push('#F59E0B'); // Orange - near budget
+                    } else {
+                        budgetColors.push('#20C997'); // Green - under budget
+                    }
+                });
 
-        const budgetChartConfig = {
-            labels: budgetLabels,
-            datasets: [{
-                label: 'Spending vs Budget',
-                data: budgetData,
-                backgroundColor: budgetColors,
-                borderColor: '#FFFFFF',
-                borderWidth: 2
-            }]
-        };
+                const budgetChartConfig = {
+                    labels: budgetLabels,
+                    datasets: [{
+                        label: 'Spending vs Budget',
+                        data: budgetData,
+                        backgroundColor: budgetColors,
+                        borderColor: '#FFFFFF',
+                        borderWidth: 2
+                    }]
+                };
 
-        // Create the budget chart
-        const budgetChartCanvas = document.getElementById('budgetDoughnutChart');
-        if (budgetChartCanvas) {
-            if (state.charts.budgetDoughnut) state.charts.budgetDoughnut.destroy();
-            state.charts.budgetDoughnut = new Chart(budgetChartCanvas.getContext('2d'), {
-                type: 'doughnut',
-                data: budgetChartConfig,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '70%',
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                boxWidth: 12,
-                                padding: 15,
-                                font: { size: 11 }
-                            }
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    const category = context.label.split(' (')[0];
-                                    const spent = context.parsed;
-                                    const budget = data.monthlyBudget.categories[category];
-                                    return `${category}: ${formatCurrency(spent)} of ${formatCurrency(budget)}`;
+                // Create the budget chart
+                const budgetChartCanvas = document.getElementById('budgetDoughnutChart');
+                if (budgetChartCanvas) {
+                    if (state.charts.budgetDoughnut) state.charts.budgetDoughnut.destroy();
+                    state.charts.budgetDoughnut = new Chart(budgetChartCanvas.getContext('2d'), {
+                        type: 'doughnut',
+                        data: budgetChartConfig,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '70%',
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                    labels: {
+                                        boxWidth: 12,
+                                        padding: 15,
+                                        font: { size: 11 }
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const category = context.label.split(' (')[0];
+                                            const spent = context.parsed;
+                                            const budget = data.monthlyBudget.categories[category];
+                                            return `${category}: ${formatCurrency(spent)} of ${formatCurrency(budget)}`;
+                                        }
+                                    }
                                 }
                             }
                         }
-                    }
+                    });
                 }
-            });
-        }
-    }
+            }
 
-    // --- Spending Data Calculation (for the spending pie chart) ---
-    const spendingData = data.transactions
-        .filter(t => {
-            const d = new Date(t.date);
-            return t.amount < 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-        })
-        .reduce((acc, t) => {
-            acc[t.cat] = (acc[t.cat] || 0) + Math.abs(t.amount);
-            return acc;
-        }, {});
+            // --- Spending Data Calculation (for the spending pie chart) ---
+            const spendingData = data.transactions
+                .filter(t => {
+                    const d = new Date(t.date);
+                    return t.amount < 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+                })
+                .reduce((acc, t) => {
+                    acc[t.cat] = (acc[t.cat] || 0) + Math.abs(t.amount);
+                    return acc;
+                }, {});
 
-    const spendingCanvas = document.getElementById('spendingPieChart');
-    if (spendingCanvas) {
-        const chartContainer = spendingCanvas.parentElement;
-        
-        // Check if there's no spending data
-        if (Object.keys(spendingData).length === 0) {
-            // Hide canvas and show message
-            spendingCanvas.style.display = 'none';
-            
-            // Remove existing message if any
-            const existingMessage = chartContainer.querySelector('.no-data-message');
-            if (existingMessage) existingMessage.remove();
-            
-            // Add no data message
-            const noDataMessage = document.createElement('div');
-            noDataMessage.className = 'no-data-message text-center py-12';
-            noDataMessage.innerHTML = `
+            const spendingCanvas = document.getElementById('spendingPieChart');
+            if (spendingCanvas) {
+                const chartContainer = spendingCanvas.parentElement;
+
+                // Check if there's no spending data
+                if (Object.keys(spendingData).length === 0) {
+                    // Hide canvas and show message
+                    spendingCanvas.style.display = 'none';
+
+                    // Remove existing message if any
+                    const existingMessage = chartContainer.querySelector('.no-data-message');
+                    if (existingMessage) existingMessage.remove();
+
+                    // Add no data message
+                    const noDataMessage = document.createElement('div');
+                    noDataMessage.className = 'no-data-message text-center py-12';
+                    noDataMessage.innerHTML = `
                 <div class="text-6xl mb-4">📊</div>
                 <p class="text-subtle text-lg font-medium mb-2">No spending data yet</p>
                 <p class="text-subtle text-sm">Add some outflow transactions to see your spending breakdown!</p>
             `;
-            chartContainer.appendChild(noDataMessage);
-            
-            // Destroy existing chart
-            if (state.charts.spendingPie) {
-                state.charts.spendingPie.destroy();
-                state.charts.spendingPie = null;
-            }
-        } else {
-            // Show canvas and remove message
-            spendingCanvas.style.display = 'block';
-            const existingMessage = chartContainer.querySelector('.no-data-message');
-            if (existingMessage) existingMessage.remove();
-            
-            const spendingChartConfig = {
-                labels: Object.keys(spendingData),
-                datasets: [{
-                    data: Object.values(spendingData),
-                    backgroundColor: ['#F87171', '#FBBF24', '#60A5FA', '#A78BFA', '#34D399'],
-                    borderColor: '#FFFFFF',
-                    borderWidth: 2
-                }]
-            };
+                    chartContainer.appendChild(noDataMessage);
 
-            if (state.charts.spendingPie) state.charts.spendingPie.destroy();
-            state.charts.spendingPie = new Chart(spendingCanvas.getContext('2d'), {
-                type: 'pie',
-                data: spendingChartConfig,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    borderWidth: 2,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                boxWidth: 12,
-                                padding: 15
+                    // Destroy existing chart
+                    if (state.charts.spendingPie) {
+                        state.charts.spendingPie.destroy();
+                        state.charts.spendingPie = null;
+                    }
+                } else {
+                    // Show canvas and remove message
+                    spendingCanvas.style.display = 'block';
+                    const existingMessage = chartContainer.querySelector('.no-data-message');
+                    if (existingMessage) existingMessage.remove();
+
+                    const spendingChartConfig = {
+                        labels: Object.keys(spendingData),
+                        datasets: [{
+                            data: Object.values(spendingData),
+                            backgroundColor: ['#F87171', '#FBBF24', '#60A5FA', '#A78BFA', '#34D399'],
+                            borderColor: '#FFFFFF',
+                            borderWidth: 2
+                        }]
+                    };
+
+                    if (state.charts.spendingPie) state.charts.spendingPie.destroy();
+                    state.charts.spendingPie = new Chart(spendingCanvas.getContext('2d'), {
+                        type: 'pie',
+                        data: spendingChartConfig,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            borderWidth: 2,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: {
+                                        boxWidth: 12,
+                                        padding: 15
+                                    }
+                                }
                             }
                         }
-                    }
+                    });
                 }
-            });
-        }
-    }
+            }
 
-    // --- Income Data Calculation ---
-    const incomeData = data.transactions
-        .filter(t => {
-            const d = new Date(t.date);
-            return t.amount > 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-        })
-        .reduce((acc, t) => {
-            acc[t.cat] = (acc[t.cat] || 0) + t.amount;
-            return acc;
-        }, {});
+            // --- Income Data Calculation ---
+            const incomeData = data.transactions
+                .filter(t => {
+                    const d = new Date(t.date);
+                    return t.amount > 0 && d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+                })
+                .reduce((acc, t) => {
+                    acc[t.cat] = (acc[t.cat] || 0) + t.amount;
+                    return acc;
+                }, {});
 
-    const incomeCanvas = document.getElementById('incomeSourcesChart');
-    if (incomeCanvas) {
-        const chartContainer = incomeCanvas.parentElement;
-        
-        // Check if there's no income data
-        if (Object.keys(incomeData).length === 0) {
-            // Hide canvas and show message
-            incomeCanvas.style.display = 'none';
-            
-            // Remove existing message if any
-            const existingMessage = chartContainer.querySelector('.no-data-message');
-            if (existingMessage) existingMessage.remove();
-            
-            // Add no data message
-            const noDataMessage = document.createElement('div');
-            noDataMessage.className = 'no-data-message text-center py-12';
-            noDataMessage.innerHTML = `
+            const incomeCanvas = document.getElementById('incomeSourcesChart');
+            if (incomeCanvas) {
+                const chartContainer = incomeCanvas.parentElement;
+
+                // Check if there's no income data
+                if (Object.keys(incomeData).length === 0) {
+                    // Hide canvas and show message
+                    incomeCanvas.style.display = 'none';
+
+                    // Remove existing message if any
+                    const existingMessage = chartContainer.querySelector('.no-data-message');
+                    if (existingMessage) existingMessage.remove();
+
+                    // Add no data message
+                    const noDataMessage = document.createElement('div');
+                    noDataMessage.className = 'no-data-message text-center py-12';
+                    noDataMessage.innerHTML = `
                 <div class="text-6xl mb-4">💰</div>
                 <p class="text-subtle text-lg font-medium mb-2">No income data yet</p>
                 <p class="text-subtle text-sm">Add some inflow transactions to see your income sources!</p>
             `;
-            chartContainer.appendChild(noDataMessage);
-            
-            // Destroy existing chart
-            if (state.charts.incomeSources) {
-                state.charts.incomeSources.destroy();
-                state.charts.incomeSources = null;
-            }
-        } else {
-            // Show canvas and remove message
-            incomeCanvas.style.display = 'block';
-            const existingMessage = chartContainer.querySelector('.no-data-message');
-            if (existingMessage) existingMessage.remove();
-            
-            const incomeChartConfig = {
-                labels: Object.keys(incomeData),
-                datasets: [{
-                    data: Object.values(incomeData),
-                    backgroundColor: ['#20C997', '#48BB78', '#38A169', '#2F855A'],
-                    borderColor: '#FFFFFF',
-                    borderWidth: 2
-                }]
-            };
+                    chartContainer.appendChild(noDataMessage);
 
-            if (state.charts.incomeSources) state.charts.incomeSources.destroy();
-            state.charts.incomeSources = new Chart(incomeCanvas.getContext('2d'), {
-                type: 'pie',
-                data: incomeChartConfig,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    borderWidth: 2,
-                    plugins: {
-                        legend: {
-                            position: 'right',
-                            labels: {
-                                boxWidth: 12,
-                                padding: 15
+                    // Destroy existing chart
+                    if (state.charts.incomeSources) {
+                        state.charts.incomeSources.destroy();
+                        state.charts.incomeSources = null;
+                    }
+                } else {
+                    // Show canvas and remove message
+                    incomeCanvas.style.display = 'block';
+                    const existingMessage = chartContainer.querySelector('.no-data-message');
+                    if (existingMessage) existingMessage.remove();
+
+                    const incomeChartConfig = {
+                        labels: Object.keys(incomeData),
+                        datasets: [{
+                            data: Object.values(incomeData),
+                            backgroundColor: ['#20C997', '#48BB78', '#38A169', '#2F855A'],
+                            borderColor: '#FFFFFF',
+                            borderWidth: 2
+                        }]
+                    };
+
+                    if (state.charts.incomeSources) state.charts.incomeSources.destroy();
+                    state.charts.incomeSources = new Chart(incomeCanvas.getContext('2d'), {
+                        type: 'pie',
+                        data: incomeChartConfig,
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            borderWidth: 2,
+                            plugins: {
+                                legend: {
+                                    position: 'right',
+                                    labels: {
+                                        boxWidth: 12,
+                                        padding: 15
+                                    }
+                                }
                             }
                         }
-                    }
+                    });
                 }
-            });
-        }
-    }
-},
+            }
+        },
 
         // Populates other sections of the UI.
         populateSavingsGoals() {
@@ -881,6 +956,51 @@ updateHeaderForAuthState(user) {
             }
         },
 
+       populateCategoryRecommendations(inputElement) {
+    // Find or create the datalist
+    let datalist = document.getElementById('category-suggestions');
+    if (!datalist) {
+        datalist = document.createElement('datalist');
+        datalist.id = 'category-suggestions';
+        inputElement.parentNode.appendChild(datalist);
+    }
+    
+    // Clear existing options
+    datalist.innerHTML = '';
+    
+    const categories = new Set();
+    
+    // Add budget categories if they exist
+    if (data.monthlyBudget && data.monthlyBudget.categories) {
+        Object.keys(data.monthlyBudget.categories).forEach(cat => {
+            categories.add(`💰 ${cat}`);
+        });
+    }
+    
+    // Add savings goal categories
+    data.savingsGoals.forEach(goal => {
+        categories.add(`🎯 Savings: ${goal.name}`);
+    });
+    
+    // Add common default categories
+    const defaults = ['Income', 'Salary', 'Allowance', 'Gift', 'Side Hustle', 'Other'];
+    defaults.forEach(cat => categories.add(cat));
+    
+    // Add recently used categories from transactions
+    data.transactions.slice(0, 10).forEach(t => {
+        if (t.cat) categories.add(t.cat);
+    });
+    
+    // Convert to sorted array and populate datalist
+    const sortedCategories = Array.from(categories).sort();
+    
+    sortedCategories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat;
+        datalist.appendChild(option);
+    });
+},
+
         showAdminView(viewToShow) {
             elements.adminArticlesView.classList.add('hidden');
             elements.adminTriviaView.classList.add('hidden');
@@ -919,41 +1039,48 @@ updateHeaderForAuthState(user) {
                 if (!email || !password) throw new Error('Please enter both email and password.');
 
                 await auth.signInWithEmailAndPassword(email, password);
-                ui.showAuthMessage('Login successful!', false);
-                setTimeout(() => ui.hideModal(elements.authModal), 1000);
+                ui.showAuthMessage('Login successful! Loading your data...', false);
+
+                // Wait a moment for Firebase auth state to update, then close modal
+                setTimeout(() => {
+                    ui.hideModal(elements.authModal);
+                }, 1000);
             } catch (error) {
                 ui.showAuthMessage(error.message);
-            } finally {
                 setFormLoading(elements.loginForm, false);
             }
+            // Note: Don't reset loading state here - let the auth state handler do it
         },
 
         async handleSignup(e) {
-    e.preventDefault();
-    setFormLoading(elements.signupForm, true);
+            e.preventDefault();
+            setFormLoading(elements.signupForm, true);
 
-    try {
-        const name = document.getElementById('signup-name').value;
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-        const confirmPassword = document.getElementById('signup-confirm-password').value;
-        if (!name || !email || !password || !confirmPassword) throw new Error('Please fill in all fields.');
-        if (password !== confirmPassword) throw new Error('Passwords do not match.');
+            try {
+                const name = document.getElementById('signup-name').value;
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                const confirmPassword = document.getElementById('signup-confirm-password').value;
+                if (!name || !email || !password || !confirmPassword) throw new Error('Please fill in all fields.');
+                if (password !== confirmPassword) throw new Error('Passwords do not match.');
 
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-        // CHANGE THIS LINE - REMOVE level and xp:
-        await db.collection("users").doc(userCredential.user.uid).set({
-            name, 
-            email
-        });
-        ui.showAuthMessage('Signup successful!', false);
-        setTimeout(() => ui.hideModal(elements.authModal), 1500);
-    } catch (error) {
-        ui.showAuthMessage(error.message);
-    } finally {
-        setFormLoading(elements.signupForm, false);
-    }
-},
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                await db.collection("users").doc(userCredential.user.uid).set({
+                    name,
+                    email
+                });
+                ui.showAuthMessage('Signup successful! Setting up your account...', false);
+
+                // Wait a moment then close modal
+                setTimeout(() => {
+                    ui.hideModal(elements.authModal);
+                }, 1500);
+            } catch (error) {
+                ui.showAuthMessage(error.message);
+                setFormLoading(elements.signupForm, false);
+            }
+            // Note: Don't reset loading state here - let the auth state handler do it
+        },
 
         handleLogout() {
             auth.signOut();
@@ -1017,88 +1144,161 @@ updateHeaderForAuthState(user) {
                 ui.updateTopGoalDisplay();
             }
         },
+async handleGoalFormSubmit(e) {
+    e.preventDefault();
+    if (!state.isLoggedIn) return;
 
-        async handleGoalFormSubmit(e) {
-            e.preventDefault();
-            if (!state.isLoggedIn) return;
+    const uid = state.currentUser.uid;
+    const id = document.getElementById('goal-id').value;
 
-            const uid = state.currentUser.uid;
-            const id = document.getElementById('goal-id').value;
+    const goalData = {
+        name: document.getElementById('goal-name').value,
+        icon: document.getElementById('goal-icon').value,
+        target: parseFloat(document.getElementById('goal-target').value) || 0,
+        saved: parseFloat(document.getElementById('goal-saved').value) || 0,
+    };
 
-            const goalData = {
-                name: document.getElementById('goal-name').value,
-                icon: document.getElementById('goal-icon').value,
-                target: parseFloat(document.getElementById('goal-target').value) || 0,
-                saved: parseFloat(document.getElementById('goal-saved').value) || 0,
-            };
+    if (goalData.saved > goalData.target) {
+        goalData.saved = goalData.target;
+    }
 
-            if (goalData.saved > goalData.target) {
-                goalData.saved = goalData.target;
-            }
+    const formButton = elements.goalForm.querySelector('button[type="submit"]');
+    formButton.disabled = true;
+    formButton.textContent = 'Saving...';
 
-            const formButton = elements.goalForm.querySelector('button[type="submit"]');
-            formButton.disabled = true;
-            formButton.textContent = 'Saving...';
-
-            try {
-                const collectionRef = db.collection('users').doc(uid).collection('savingsGoals');
-                if (id) {
-                    await collectionRef.doc(id).update(goalData);
-                } else {
-                    await collectionRef.add(goalData);
+    try {
+        const collectionRef = db.collection('users').doc(uid).collection('savingsGoals');
+        if (id) {
+            await collectionRef.doc(id).update(goalData);
+        } else {
+            await collectionRef.add(goalData);
+            
+            // ADD THIS: Show recommendation to add budget category
+            if (data.monthlyBudget) {
+                const addToBudget = confirm(
+                    `💡 Would you like to add "${goalData.name}" as a budget category to track spending towards this goal?`
+                );
+                
+                if (addToBudget) {
+                    // Suggest 10% of target as monthly budget
+                    const suggestedAmount = (goalData.target * 0.1).toFixed(2);
+                    const amount = prompt(
+                        `How much do you want to budget monthly for "${goalData.name}"?`,
+                        suggestedAmount
+                    );
+                    
+                    if (amount && parseFloat(amount) > 0) {
+                        data.monthlyBudget.categories[goalData.name] = parseFloat(amount);
+                        await app.saveBudget(data.monthlyBudget);
+                        ui.createOrUpdateCharts();
+                        app.updateBudgetDisplay();
+                    }
                 }
-                await this.loadUserSavingsGoals();
-                ui.hideModal(elements.goalModal);
-            } catch (error) {
-                console.error("Error saving goal:", error);
-                alert("There was an error saving your goal.");
-            } finally {
-                formButton.disabled = false;
-                formButton.textContent = 'Save Goal';
             }
-        },
+        }
+        await this.loadUserSavingsGoals();
+        ui.hideModal(elements.goalModal);
+    } catch (error) {
+        console.error("Error saving goal:", error);
+        alert("There was an error saving your goal.");
+    } finally {
+        formButton.disabled = false;
+        formButton.textContent = 'Save Goal';
+    }
+},
+
+        
         // Transaction form submission handler.
-        async handleTransactionFormSubmit(e) {
-            e.preventDefault();
-            if (!state.isLoggedIn) {
-                ui.showAuthModal();
-                return;
-            }
+       async handleTransactionFormSubmit(e) {
+    e.preventDefault();
+    if (!state.isLoggedIn) {
+        ui.showAuthModal();
+        return;
+    }
 
-            const uid = state.currentUser.uid;
-            const formButton = elements.transactionForm.querySelector('button[type="submit"]');
-            formButton.disabled = true;
-            formButton.textContent = 'Saving...';
+    const uid = state.currentUser.uid;
+    const formButton = elements.transactionForm.querySelector('button[type="submit"]');
+    formButton.disabled = true;
+    formButton.textContent = 'Saving...';
 
-            const id = document.getElementById('transaction-id').value;
-            const type = document.querySelector('input[name="transaction-type"]:checked').value;
-            let amount = parseFloat(document.getElementById('transaction-amount').value);
-            if (type === 'outflow') amount = -amount;
+    const id = document.getElementById('transaction-id').value;
+    const type = document.querySelector('input[name="transaction-type"]:checked').value;
+    let amount = parseFloat(document.getElementById('transaction-amount').value);
+    if (type === 'outflow') amount = -amount;
 
-            const transactionData = {
-                date: document.getElementById('transaction-date').value,
-                desc: document.getElementById('transaction-desc').value,
-                cat: document.getElementById('transaction-cat').value,
-                amount: amount,
-            };
+    const category = document.getElementById('transaction-cat').value;
+    
+    const transactionData = {
+        date: document.getElementById('transaction-date').value,
+        desc: document.getElementById('transaction-desc').value,
+        cat: category,
+        amount: amount,
+    };
 
-            try {
-                if (id) {
-                    await db.collection('users').doc(uid).collection('transactions').doc(id).update(transactionData);
-                } else {
-                    await db.collection('users').doc(uid).collection('transactions').add(transactionData);
+    try {
+        if (id) {
+            await db.collection('users').doc(uid).collection('transactions').doc(id).update(transactionData);
+        } else {
+            await db.collection('users').doc(uid).collection('transactions').add(transactionData);
+            
+            // Check if this is a savings goal transaction
+            const matchingGoal = data.savingsGoals.find(g => 
+                category.toLowerCase().includes(g.name.toLowerCase())
+            );
+            
+            if (matchingGoal && amount > 0) {
+                const updateGoal = confirm(
+                    `💡 This looks like it's for your "${matchingGoal.name}" goal!\n\nWould you like to add $${amount.toFixed(2)} to your saved amount?`
+                );
+                
+                if (updateGoal) {
+                    const newSaved = Math.min(matchingGoal.saved + amount, matchingGoal.target);
+                    await db.collection('users').doc(uid).collection('savingsGoals').doc(matchingGoal.id).update({
+                        saved: newSaved
+                    });
+                    await app.loadUserSavingsGoals();
                 }
-                await app.loadUserTransactions(); // Reload all data and update UI
-                ui.hideModal(elements.transactionModal);
-            } catch (error) {
-                console.error("Error saving transaction: ", error);
-                alert("There was an error saving your transaction.");
-            } finally {
-                formButton.disabled = false;
-                formButton.textContent = 'Save Transaction';
             }
-        },
-
+            
+            // Check budget warnings for outflows
+            if (amount < 0 && data.monthlyBudget) {
+                const budgetAmount = data.monthlyBudget.categories[category];
+                if (budgetAmount) {
+                    const currentMonth = new Date().getMonth();
+                    const currentYear = new Date().getFullYear();
+                    
+                    const categorySpending = data.transactions
+                        .filter(t => {
+                            const d = new Date(t.date);
+                            return t.cat === category && 
+                                   t.amount < 0 && 
+                                   d.getMonth() === currentMonth && 
+                                   d.getFullYear() === currentYear;
+                        })
+                        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+                    
+                    const newTotal = categorySpending + Math.abs(amount);
+                    const percentage = (newTotal / budgetAmount) * 100;
+                    
+                    if (percentage >= 100) {
+                        alert(`⚠️ Warning: You've exceeded your budget for "${category}"!\n\nBudget: $${budgetAmount.toFixed(2)}\nSpent: $${newTotal.toFixed(2)}`);
+                    } else if (percentage >= 80) {
+                        alert(`⚠️ Heads up: You've used ${percentage.toFixed(0)}% of your "${category}" budget.`);
+                    }
+                }
+            }
+        }
+        
+        await app.loadUserTransactions();
+        ui.hideModal(elements.transactionModal);
+    } catch (error) {
+        console.error("Error saving transaction: ", error);
+        alert("There was an error saving your transaction.");
+    } finally {
+        formButton.disabled = false;
+        formButton.textContent = 'Save Transaction';
+    }
+},
         async confirmDelete() {
             if (!state.itemToDelete) {
                 console.error("confirmDelete called with no item to delete.");
@@ -1156,12 +1356,12 @@ updateHeaderForAuthState(user) {
         },
         // A single function to update all dynamic parts of the UI.
         updateAll() {
-            ui.populateTransactions();
-            ui.updateBalance();
-            ui.createOrUpdateCharts();
-            this.updateBudgetDisplay();
-
-        },
+    ui.populateTransactions();
+    ui.updateBalance();
+    ui.createOrUpdateCharts();
+    this.updateBudgetDisplay();
+    ui.updateSmartAlerts(); // ADD THIS LINE
+},
         async handleChatbotSend() {
             const message = elements.chatbotInput.value.trim();
             if (!message) return;
@@ -1981,69 +2181,112 @@ updateHeaderForAuthState(user) {
             });
         },
 
-        setupCategoriesStep(method) {
-            if (method === '50-30-20') {
-                document.getElementById('rule-categories').classList.remove('hidden');
-                document.getElementById('custom-categories').classList.add('hidden');
-                this.populate50302Categories();
-            } else {
-                document.getElementById('rule-categories').classList.add('hidden');
-                document.getElementById('custom-categories').classList.remove('hidden');
-                this.populateCustomCategories();
-            }
-        },
+       setupCategoriesStep(method) {
+    // Reset the flag first
+    data.includeSavingsGoalsInBudget = false;
+    
+    // Show savings goals suggestion BEFORE populating categories
+    if (data.savingsGoals.length > 0) {
+        const goalNames = data.savingsGoals.map(g => g.name).join(', ');
+        const addGoals = confirm(
+            `💡 You have savings goals: ${goalNames}\n\nWould you like to include these in your budget?`
+        );
+        
+        if (addGoals) {
+            data.includeSavingsGoalsInBudget = true;
+        }
+    }
+    
+    // NOW populate based on method
+    if (method === '50-30-20') {
+        document.getElementById('rule-categories').classList.remove('hidden');
+        document.getElementById('custom-categories').classList.add('hidden');
+        this.populate50302Categories();
+    } else {
+        document.getElementById('rule-categories').classList.add('hidden');
+        document.getElementById('custom-categories').classList.remove('hidden');
+        this.populateCustomCategories();
+    }
+},
 
-        populate50302Categories() {
-            const income = parseFloat(document.getElementById('monthly-income').value) || 0;
+       populate50302Categories() {
+    const income = parseFloat(document.getElementById('monthly-income').value) || 0;
 
-            const categoryTypes = {
-                needs: { amount: income * 0.5, container: 'needs-categories' },
-                wants: { amount: income * 0.3, container: 'wants-categories' },
-                savings: { amount: income * 0.2, container: 'savings-categories' }
-            };
+    const categoryTypes = {
+        needs: { amount: income * 0.5, container: 'needs-categories' },
+        wants: { amount: income * 0.3, container: 'wants-categories' },
+        savings: { amount: income * 0.2, container: 'savings-categories' }
+    };
 
-            Object.entries(categoryTypes).forEach(([type, config]) => {
-                const container = document.getElementById(config.container);
-                const categories = data.budgetCategories[type];
-                const amountPerCategory = config.amount / categories.length;
+    Object.entries(categoryTypes).forEach(([type, config]) => {
+        const container = document.getElementById(config.container);
+        let categories = [...data.budgetCategories[type]];
+        
+        // Add savings goals to savings category
+        if (type === 'savings' && data.includeSavingsGoalsInBudget) {
+            data.savingsGoals.forEach(goal => {
+                categories.push(goal.name);
+            });
+        }
+        
+        const amountPerCategory = config.amount / categories.length;
 
-                container.innerHTML = categories.map(category => `
+        container.innerHTML = categories.map(category => `
             <div class="flex items-center gap-2">
                 <input type="text" value="${category}" class="flex-1 p-2 border border-gray-300 rounded category-name" readonly>
                 <input type="number" value="${amountPerCategory.toFixed(2)}" step="0.01" min="0" class="w-24 p-2 border border-gray-300 rounded category-amount">
                 <button class="remove-category text-red-500 hover:text-red-700">&times;</button>
             </div>
         `).join('');
-            });
+    });
 
-            this.bindCategoryEvents();
-        },
+    this.bindCategoryEvents();
+},
 
-        populateCustomCategories() {
-            const container = document.getElementById('custom-categories-container');
-            container.innerHTML = `
+       populateCustomCategories() {
+    const container = document.getElementById('custom-categories-container');
+    
+    // Start with one empty row
+    let initialHTML = `
         <div class="flex items-center gap-2">
             <input type="text" placeholder="Category name" class="flex-1 p-2 border border-gray-300 rounded category-name">
             <input type="number" placeholder="Amount" step="0.01" min="0" class="w-24 p-2 border border-gray-300 rounded category-amount">
             <button class="remove-category text-red-500 hover:text-red-700">&times;</button>
         </div>
     `;
+    
+    // Add savings goals if the flag is set
+    if (data.includeSavingsGoalsInBudget && data.savingsGoals.length > 0) {
+        const income = parseFloat(document.getElementById('monthly-income').value) || 0;
+        const suggestedAmountPerGoal = income > 0 ? (income * 0.15) / data.savingsGoals.length : 50;
+        
+        data.savingsGoals.forEach(goal => {
+            initialHTML += `
+                <div class="flex items-center gap-2">
+                    <input type="text" value="${goal.name}" class="flex-1 p-2 border border-gray-300 rounded category-name">
+                    <input type="number" value="${suggestedAmountPerGoal.toFixed(2)}" step="0.01" min="0" class="w-24 p-2 border border-gray-300 rounded category-amount">
+                    <button class="remove-category text-red-500 hover:text-red-700">&times;</button>
+                </div>
+            `;
+        });
+    }
+    
+    container.innerHTML = initialHTML;
 
-            document.getElementById('add-custom-category').addEventListener('click', () => {
-                const newRow = document.createElement('div');
-                newRow.className = 'flex items-center gap-2';
-                newRow.innerHTML = `
+    document.getElementById('add-custom-category').addEventListener('click', () => {
+        const newRow = document.createElement('div');
+        newRow.className = 'flex items-center gap-2';
+        newRow.innerHTML = `
             <input type="text" placeholder="Category name" class="flex-1 p-2 border border-gray-300 rounded category-name">
             <input type="number" placeholder="Amount" step="0.01" min="0" class="w-24 p-2 border border-gray-300 rounded category-amount">
             <button class="remove-category text-red-500 hover:text-red-700">&times;</button>
         `;
-                container.appendChild(newRow);
-                this.bindCategoryEvents();
-            });
+        container.appendChild(newRow);
+        this.bindCategoryEvents();
+    });
 
-            this.bindCategoryEvents();
-        },
-
+    this.bindCategoryEvents();
+},
         bindCategoryEvents() {
             document.querySelectorAll('.remove-category').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -2220,32 +2463,51 @@ updateHeaderForAuthState(user) {
         }
     };
 
-    auth.onAuthStateChanged(async (user) => {
-        try {
-            if (user) {
-                state.isLoggedIn = true;
-                state.currentUser = { uid: user.uid, email: user.email };
-                // Fetch the user's data from Firestore and attach it
-                state.currentUser.firestoreData = await app.fetchUserData(user.uid);
-                await app.loadUserTransactions();
-                await app.loadUserSavingsGoals();
-                await app.loadUserBudget();
-            } else {
-                state.isLoggedIn = false;
-                state.currentUser = null;
-                await app.loadUserTransactions(); // Will clear data and update the UI
-                await app.loadUserSavingsGoals();
-                await app.loadUserBudget();
-            }
+ auth.onAuthStateChanged(async (user) => {
+    try {
+        if (user) {
+            state.isLoggedIn = true;
+            state.currentUser = { uid: user.uid, email: user.email };
+            
+            // IMPORTANT: Fetch Firestore data FIRST before updating UI
+            state.currentUser.firestoreData = await app.fetchUserData(user.uid);
+            
+            // NOW update the header with the correct user data
             ui.updateHeaderForAuthState(state.currentUser);
             ui.updateTransactionControls(state.isLoggedIn);
-        } catch (error) {
-            console.error("Error during auth state processing:", error);
-            // You can add UI feedback here if something goes wrong, e.g., an error message.
-        } finally {
-            ui.hideGlobalLoader();
+            
+            // Load all user-specific data in parallel
+            await Promise.all([
+                app.loadUserTransactions(),
+                app.loadUserSavingsGoals(),
+                app.loadUserBudget()
+            ]);
+            
+            // Force a complete UI refresh
+            app.updateAll();
+            
+        } else {
+            state.isLoggedIn = false;
+            state.currentUser = null;
+            
+            // Clear all data
+            await Promise.all([
+                app.loadUserTransactions(),
+                app.loadUserSavingsGoals(),
+                app.loadUserBudget()
+            ]);
+            
+            // Update UI for logged out state
+            ui.updateHeaderForAuthState(null);
+            ui.updateTransactionControls(state.isLoggedIn);
         }
-    });
+    } catch (error) {
+        console.error("Error during auth state processing:", error);
+        alert('Error loading your data. Please refresh the page.');
+    } finally {
+        ui.hideGlobalLoader();
+    }
+});
 
     // --- Start the App ---
     app.init();
