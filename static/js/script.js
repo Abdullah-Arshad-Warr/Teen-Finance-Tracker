@@ -316,11 +316,26 @@ document.addEventListener('DOMContentLoaded', function () {
         },
 
         updateTopGoalDisplay() {
-            if (data.savingsGoals.length === 0) {
-                elements.topGoalContent.classList.add('hidden');
-                elements.topGoalEmptyState.classList.remove('hidden');
-                return;
-            }
+            // Always hide content if not logged in
+if (!state.isLoggedIn) {
+    elements.topGoalContent.classList.add('hidden');
+    elements.topGoalEmptyState.classList.remove('hidden');
+    elements.topGoalEmptyState.innerHTML = `
+        <p class="mb-2">Please log in to view your savings goals!</p>
+        <button class="font-semibold text-primary-accent hover:underline" onclick="document.getElementById('header-auth-button').click()">Login Now</button>
+    `;
+    return;
+}
+
+if (data.savingsGoals.length === 0) {
+    elements.topGoalContent.classList.add('hidden');
+    elements.topGoalEmptyState.classList.remove('hidden');
+    elements.topGoalEmptyState.innerHTML = `
+        <p>No savings goals yet!</p>
+        <a href="#savings" class="font-semibold text-primary-accent hover:underline mt-2 inline-block">Create one now</a>
+    `;
+    return;
+}
 
             elements.topGoalContent.classList.remove('hidden');
             elements.topGoalEmptyState.classList.add('hidden');
@@ -702,6 +717,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Populates other sections of the UI.
         populateSavingsGoals() {
+
             elements.addGoalButton.classList.toggle('hidden', !state.isLoggedIn);
 
             if (data.savingsGoals.length === 0) {
@@ -1129,6 +1145,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!state.isLoggedIn) {
                 data.savingsGoals = [];
                 ui.populateSavingsGoals();
+                ui.updateTopGoalDisplay(); // Also update dashboard display
                 return;
             }
             const uid = state.currentUser.uid;
