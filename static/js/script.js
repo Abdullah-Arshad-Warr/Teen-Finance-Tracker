@@ -958,9 +958,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             elements.navLinks.forEach(link => {
-                const isActive = link.getAttribute('href') === hash;
-                link.classList.toggle('active', isActive);
-                if (isActive) elements.pageTitle.textContent = link.querySelector('span').textContent;
+                if (link.getAttribute('href') === hash) {
+                    link.classList.add('active');
+                    elements.pageTitle.textContent = link.querySelector('span').textContent;
+                } else {
+                    link.classList.remove('active');
+                }
             });
 
             elements.sidebar.classList.add('-translate-x-full');
