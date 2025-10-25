@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Trackee | Teen Financial Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -49,7 +49,7 @@
     <!-- Login/Signup Modal -->
     <div id="auth-modal"
         class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-40 hidden opacity-0">
-        <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-8">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-4 md:p-8 mx-2">
             <div class="flex justify-between items-center mb-6">
                 <h2 id="auth-title" class="text-3xl font-bold text-main-heading">Login</h2>
                 <button id="close-auth-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
@@ -110,7 +110,7 @@
     <!-- Add/Edit Transaction Modal -->
     <div id="transaction-modal"
         class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
-        <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-8">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-4 md:p-8 mx-2">
             <div class="flex justify-between items-center mb-6">
                 <h2 id="transaction-title" class="text-3xl font-bold text-main-heading">Add Transaction</h2>
                 <button id="close-transaction-button"
@@ -123,13 +123,13 @@
                     <input type="text" id="transaction-desc" required maxlength="100"
                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
-               <div>
-    <label for="transaction-cat" class="block text-sm font-medium text-subtle mb-1">Category</label>
-    <input list="category-suggestions" type="text" id="transaction-cat" required maxlength="30"
-        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none"
-        placeholder="Select from budget or type new...">
-    <datalist id="category-suggestions"></datalist>
-</div>
+                <div>
+                    <label for="transaction-cat" class="block text-sm font-medium text-subtle mb-1">Category</label>
+                    <input list="category-suggestions" type="text" id="transaction-cat" required maxlength="30"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none"
+                        placeholder="Select from budget or type new...">
+                    <datalist id="category-suggestions"></datalist>
+                </div>
                 <div>
                     <label for="transaction-amount" class="block text-sm font-medium text-subtle mb-1">Amount</label>
                     <input type="number" id="transaction-amount" step="0.01" required
@@ -159,14 +159,13 @@
     <!-- Delete Confirmation Modal -->
     <div id="delete-confirm-modal"
         class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
-        <div class="bg-card rounded-lg shadow-xl w-full max-w-sm p-8 text-center">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-sm p-4 md:p-8 text-center mx-2">
             <h2 class="text-2xl font-bold text-main-heading mb-4">Are you sure?</h2>
             <p class="text-subtle mb-6">This action cannot be undone.</p>
-            <div class="flex justify-center gap-4">
-                <button id="cancel-delete-btn"
-                    class="bg-gray-300 text-gray-800 py-2 px-6 rounded-lg font-semibold hover:bg-gray-400 transition-colors">Cancel</button>
+            <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-4"> <button id="cancel-delete-btn"
+                    class="w-full md:w-auto bg-gray-300 text-gray-800 py-2 px-6 rounded-lg font-semibold hover:bg-gray-400 transition-colors">Cancel</button>
                 <button id="confirm-delete-btn"
-                    class="bg-red-500 text-white py-2 px-6 rounded-lg font-semibold hover:bg-red-600 transition-colors">Delete</button>
+                    class="w-full md:w-auto bg-red-500 text-white py-2 px-6 rounded-lg font-semibold hover:bg-red-600 transition-colors">Delete</button>
             </div>
         </div>
     </div>
@@ -174,7 +173,7 @@
     <!-- Add/Edit Goal Modal -->
     <div id="goal-modal"
         class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
-        <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-8">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-4 md:p-8 mx-2">
             <div class="flex justify-between items-center mb-6">
                 <h2 id="goal-title" class="text-3xl font-bold text-main-heading">Add Savings Goal</h2>
                 <button id="close-goal-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
@@ -190,6 +189,7 @@
                     <label for="goal-icon" class="block text-sm font-medium text-subtle mb-1">Icon (Emoji)</label>
                     <input type="text" id="goal-icon" placeholder="📱" required maxlength="15"
                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                    <p class="text-xs text-gray-500 mt-1">Tap to select emoji from your keyboard</p>
                 </div>
                 <div>
                     <label for="goal-target" class="block text-sm font-medium text-subtle mb-1">Target Amount
@@ -215,7 +215,7 @@
     <div id="main-app-container" class="flex flex-1">
         <!-- Sidebar Navigation -->
         <aside id="sidebar"
-            class="bg-card w-64 p-4 flex-shrink-0 flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative absolute inset-y-0 left-0 z-30 shadow-lg">
+            class="bg-card w-64 p-4 flex-shrink-0 flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 fixed inset-y-0 left-0 z-30 shadow-lg overflow-y-auto">
             <div>
                 <div class="flex items-center gap-3 mb-8 pl-2">
                     <div class="bg-primary-accent p-2 rounded-lg shadow-md">
@@ -263,7 +263,7 @@
                         </svg>
                         <span>Learn & Play</span>
                     </a>
-                    
+
                 </nav>
             </div>
             <div class="mt-8">
@@ -280,8 +280,7 @@
         </aside>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col min-h-0">
-            <!-- Header -->
+        <div class="flex-1 flex flex-col min-h-0 md:ml-64"> <!-- Header -->
             <header class="bg-card p-4 flex justify-between items-center border-b border-gray-200 shadow-sm">
                 <button id="menu-button" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
@@ -290,40 +289,49 @@
                             d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
-                <h2 id="page-title" class="text-xl font-semibold text-main-heading">Dashboard</h2>
-                <!-- REPLACE THE ENTIRE <div class="flex items-center gap-4"> SECTION WITH THIS: -->
-<!-- REPLACE THE ENTIRE USER DROPDOWN SECTION WITH THIS: -->
-<div class="flex items-center gap-4">
-    <!-- User Dropdown (visible when logged in) -->
-    <div id="user-dropdown-container" class="hidden relative">
-        <button id="user-dropdown-button" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors">
-            <div class="text-right">
-                <p id="user-name-dropdown" class="font-semibold text-main-heading">Guest</p>
-            </div>
-            <div id="user-avatar-dropdown" class="w-10 h-10 rounded-full bg-primary-accent flex items-center justify-center">
-                <span id="user-avatar-initial-dropdown" class="text-white font-semibold text-lg"></span>
-            </div>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-        </button>
-        
-        <!-- Dropdown Menu -->
-        <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
-            <button id="dropdown-logout-button" class="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-2 text-subtle hover:text-red-500">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Logout
-            </button>
-        </div>
-    </div>
-    
-    <!-- Login/Signup Button (visible when logged out) -->
-    <button id="header-auth-button" class="bg-primary-accent text-white py-2 px-4 rounded-lg text-sm shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">
-        Login/Signup
-    </button>
-</div>
+               <h2 id=" page-title"
+                    class="text-base md:text-xl font-semibold text-main-heading truncate">Dashboard</h2>
+
+                <div class="flex items-center gap-4">
+                    <!-- User Dropdown (visible when logged in) -->
+                    <div id="user-dropdown-container" class="hidden relative">
+                        <button id="user-dropdown-button"
+                            class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div class="text-right">
+                                <p id="user-name-dropdown" class="font-semibold text-main-heading">Guest</p>
+                            </div>
+                            <div id="user-avatar-dropdown"
+                                class="w-10 h-10 rounded-full bg-primary-accent flex items-center justify-center">
+                                <span id="user-avatar-initial-dropdown" class="text-white font-semibold text-lg"></span>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="user-dropdown-menu"
+                            class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                            <button id="dropdown-logout-button"
+                                class="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-2 text-subtle hover:text-red-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Login/Signup Button (visible when logged out) -->
+                    <button id="header-auth-button"
+                        class="bg-primary-accent text-white py-2 px-4 rounded-lg text-sm shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">
+                        Login/Signup
+                    </button>
+                </div>
             </header>
 
             <!-- Page Content -->
@@ -332,13 +340,13 @@
                 <!-- Dashboard Page -->
                 <div id="dashboard-page" class="page-content">
                     <!-- Smart Alerts -->
-<div id="smart-alerts" class="mb-6 space-y-3">
-    <!-- Alerts will be populated by JavaScript -->
-</div>
+                    <div id="smart-alerts" class="mb-6 space-y-3">
+                        <!-- Alerts will be populated by JavaScript -->
+                    </div>
                     <p class="text-subtle mb-6">Welcome back! Here's a quick look at your financial world. This
                         dashboard gives you a snapshot of your income, spending, and progress towards your savings
                         goals, helping you stay on top of your money.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                         <div
                             class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
                             <h3 class="font-semibold mb-4 text-lg">Financial Snapshot</h3>
@@ -433,12 +441,13 @@
                                 All Goals</button>
                         </div>
                     </div>
-                    <div class="mt-8 flex flex-col md:flex-row justify-center items-center gap-4">
+                    <div
+                        class="mt-8 flex flex-col justify-center items-stretch gap-3 md:flex-row md:items-center md:gap-4">
                         <button id="explore-articles-button"
-                            class="bg-secondary-accent text-main-heading py-3 px-6 rounded-3xl text-lg font-semibold shadow-md hover:bg-amber-500 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Explore
+                            class="w-full md:w-auto bg-secondary-accent text-main-heading py-3 px-6 rounded-3xl text-lg font-semibold shadow-md hover:bg-amber-500 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Explore
                             Our Latest Articles</button>
                         <button id="explore-trivia-button"
-                            class="bg-gray-700 text-white py-3 px-6 rounded-3xl text-lg font-semibold shadow-md hover:bg-gray-800 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Play
+                            class="w-full md:w-auto bg-gray-700 text-white py-3 px-6 rounded-3xl text-lg font-semibold shadow-md hover:bg-gray-800 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Play
                             Trivia Game</button>
                     </div>
                 </div>
@@ -510,8 +519,8 @@
                         be at
                         managing your finances.</p>
                     <div class="border-b border-gray-200 mb-6 bg-card rounded-t-xl shadow-sm">
-                        <nav class="flex space-x-2 md:space-x-4 justify-center">
-                            <button class="tab-button active px-4 py-3 border-b-2 font-semibold"
+                        <nav class="flex space-x-1 md:space-x-4 justify-center"> <button
+                                class="tab-button active px-2 md:px-4 py-3 border-b-2 font-semibold text-sm md:text-base"
                                 data-tab-target="articles-tab-content" id="articles-tab-button">Articles</button>
                             <button
                                 class="tab-button px-4 py-3 border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-all duration-200 ease-in-out"
@@ -528,15 +537,14 @@
                             </h3>
                             <p class="text-subtle mb-6">Test your money knowledge! How many questions do you want to
                                 tackle?</p>
-                            <div class="flex justify-center gap-4 mb-6">
-                                <button
-                                    class="question-count-btn bg-primary-accent text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-emerald-600 transition-all duration-300"
+                            <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-4 mb-6"> <button
+                                    class="question-count-btn w-full md:w-auto bg-primary-accent text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-emerald-600 transition-all duration-300"
                                     data-count="5">5 Questions</button>
                                 <button
-                                    class="question-count-btn bg-secondary-accent text-main-heading px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-amber-500 transition-all duration-300"
+                                    class="question-count-btn w-full md:w-auto bg-secondary-accent text-main-heading px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-amber-500 transition-all duration-300"
                                     data-count="10">10 Questions</button>
                                 <button
-                                    class="question-count-btn bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-gray-700 transition-all duration-300"
+                                    class="question-count-btn w-full md:w-auto bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-gray-700 transition-all duration-300"
                                     data-count="15">15 Questions</button>
                             </div>
                             <button id="reset-progress-btn"
@@ -546,7 +554,8 @@
 
                         <!-- Game Playing Screen -->
                         <div id="trivia-game" class="hidden">
-                            <div class="flex justify-between items-center mb-6">
+                            <div
+                                class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-0 mb-6">
                                 <button id="back-to-setup"
                                     class="bg-gray-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-600 transition-colors">←
                                     Back</button>
@@ -554,10 +563,16 @@
                                     <p class="text-sm text-subtle">Question <span id="current-question-num">1</span> of
                                         <span id="total-questions">5</span>
                                     </p>
-                                    <div class="w-48 bg-gray-200 rounded-full h-2 mt-1">
-                                        <div id="progress-bar"
-                                            class="bg-primary-accent h-2 rounded-full transition-all duration-300"
-                                            style="width: 0%"></div>
+                                    <div class="text-center w-full md:w-auto">
+                                        <p class="text-sm text-subtle">Question <span id="current-question-num">1</span>
+                                            of
+                                            <span id="total-questions">5</span>
+                                        </p>
+                                        <div class="w-full md:w-48 bg-gray-200 rounded-full h-2 mt-1">
+                                            <div id="progress-bar"
+                                                class="bg-primary-accent h-2 rounded-full transition-all duration-300"
+                                                style="width: 0%"></div>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="text-right">
@@ -567,8 +582,9 @@
                             </div>
 
                             <div
-                                class="bg-gradient-to-r from-primary-accent to-emerald-400 p-6 rounded-xl text-white mb-6 shadow-lg">
-                                <p id="trivia-question" class="text-xl font-semibold text-center">Loading question...
+                                class="bg-gradient-to-r from-primary-accent to-emerald-400 p-4 md:p-6 rounded-xl text-white mb-6 shadow-lg">
+                                <p id="trivia-question" class="text-base md:text-xl font-semibold text-center">Loading
+                                    question...
                                 </p>
                             </div>
 
@@ -576,8 +592,7 @@
                                 <!-- Options will be populated by JavaScript -->
                             </div>
 
-                            <div id="trivia-feedback" class="hidden bg-gray-50 p-4 rounded-xl">
-                                <p id="feedback-text" class="font-semibold mb-2"></p>
+<div id="trivia-feedback" class="hidden bg-gray-50 p-3 md:p-4 rounded-xl">                                <p id="feedback-text" class="font-semibold mb-2"></p>
                                 <p id="correct-answer" class="text-sm text-subtle mb-4"></p>
                                 <button id="next-question-btn"
                                     class="bg-primary-accent text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-600 transition-colors">Next
@@ -595,12 +610,12 @@
                                 <p class="text-4xl font-bold" id="final-score">0/5</p>
                                 <p class="text-lg" id="score-percentage">0%</p>
                             </div>
-                            <div class="space-y-3">
+                            <div class="space-y-3 w-full px-4">
                                 <button id="play-again-btn"
-                                    class="bg-primary-accent text-white px-8 py-3 rounded-xl font-semibold shadow-md hover:bg-emerald-600 transition-all duration-300">🎮
+                                    class="w-full bg-primary-accent text-white px-8 py-3 rounded-xl font-semibold shadow-md hover:bg-emerald-600 transition-all duration-300">🎮
                                     Play Again</button>
                                 <button id="back-to-setup-btn"
-                                    class="bg-secondary-accent text-main-heading px-8 py-3 rounded-xl font-semibold shadow-md hover:bg-amber-500 transition-all duration-300">⚙️
+                                    class="w-full bg-secondary-accent text-main-heading px-8 py-3 rounded-xl font-semibold shadow-md hover:bg-amber-500 transition-all duration-300">⚙️
                                     Change Settings</button>
                             </div>
                         </div>
@@ -618,10 +633,10 @@
                         Back to Articles
                     </button>
                     <h2 id="article-reader-title" class="text-3xl font-bold text-main-heading mb-4"></h2>
-                    <div id="article-reader-content" class="text-subtle leading-relaxed text-lg"></div>
+                    <div id="article-reader-content" class="text-subtle leading-relaxed text-base md:text-lg"></div>
                 </div>
 
-               
+
                 <!-- Admin Page -->
                 <div id="admin-page" class="page-content hidden">
                     <!-- Admin Login View -->
@@ -718,7 +733,7 @@
     <!-- Chatbot Modal -->
     <div id="chatbot-modal"
         class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-40 hidden opacity-0">
-        <div class="bg-card rounded-lg shadow-xl w-full max-w-lg flex flex-col h-[80vh] p-6">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-lg flex flex-col h-[80vh] p-4 md:p-6 mx-2">
             <div class="p-4 border-b flex justify-between items-center">
                 <h3 class="text-lg font-semibold">Financial Advice Chatbot</h3>
                 <button id="close-chatbot-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
@@ -749,7 +764,7 @@
     <!-- Add/Edit Article Modal -->
     <div id="article-modal"
         class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
-        <div class="bg-card rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col mx-2">
             <div class="p-6 border-b">
                 <div class="flex justify-between items-center">
                     <h2 id="article-modal-title" class="text-3xl font-bold text-main-heading">Add Article</h2>
@@ -802,7 +817,7 @@
                     <textarea id="trivia-question-text" required rows="3"
                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent"></textarea>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 gap-3 md:gap-4">
                     <div>
                         <label for="trivia-option-0" class="block text-sm font-medium text-subtle mb-1">Option A</label>
                         <input type="text" id="trivia-option-0" required
@@ -854,8 +869,8 @@
     <!-- Budget Management Modal -->
     <div id="budget-modal"
         class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
-        <div class="bg-card rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div class="sticky top-0 bg-card p-6 border-b border-gray-200 rounded-t-lg">
+        <div class="bg-card rounded-lg shadow-xl w-[95vw] md:w-full md:max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-card p-4 md:p-6 border-b border-gray-200 rounded-t-lg">
                 <div class="flex justify-between items-center">
                     <h2 class="text-3xl font-bold text-main-heading">Budget Management</h2>
                     <button id="close-budget-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
@@ -867,7 +882,7 @@
                 <!-- Step 1: Choose Method -->
                 <div id="budget-step-1">
                     <h3 class="text-xl font-semibold mb-4">Choose Your Budgeting Method</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="grid grid-cols-1 gap-3 mb-6">
                         <div class="budget-method-card border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-primary-accent transition-colors"
                             data-method="50-30-20">
                             <div class="text-4xl mb-2">📊</div>
@@ -883,11 +898,11 @@
                             <p class="text-xs text-gray-500 mt-2">Full control over your budget</p>
                         </div>
                     </div>
-                    <button id="next-to-step-2"
-                        class="w-full bg-primary-accent text-white py-3 rounded-lg font-semibold opacity-50 cursor-not-allowed transition-all duration-300"
-                        disabled>
-                        Continue
-                    </button>
+                  <button id="next-to-step-2"
+    class="w-full bg-primary-accent text-white py-3 rounded-lg text-base md:text-lg font-semibold opacity-50 cursor-not-allowed transition-all duration-300"
+    disabled>
+    Continue
+</button>
                 </div>
 
                 <!-- Step 2: Income Input -->
@@ -961,9 +976,9 @@
                             Category</button>
                     </div>
 
-                    <div class="flex gap-4">
+                    <div class="flex flex-col md:flex-row gap-3 md:gap-4">
                         <button id="save-budget"
-                            class="flex-1 bg-primary-accent text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition-colors">
+                            class="w-full md:flex-1 bg-primary-accent text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition-colors">
                             Save Budget
                         </button>
                     </div>
@@ -973,13 +988,12 @@
                 <div id="budget-edit-mode" class="hidden">
                     <h3 class="text-xl font-semibold mb-4">Edit Budget</h3>
                     <div id="edit-categories-container" class="space-y-3 mb-6"></div>
-                    <div class="flex gap-4">
-                        <button id="update-budget"
-                            class="flex-1 bg-primary-accent text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition-colors">
+                    <div class="flex flex-col md:flex-row gap-3 md:gap-4"> <button id="update-budget"
+                            class="w-full md:flex-1 bg-primary-accent text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition-colors">
                             Update Budget
                         </button>
                         <button id="delete-budget"
-                            class="bg-red-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-600 transition-colors">
+                            class="w-full md:w-auto bg-red-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-600 transition-colors">
                             Delete Budget
                         </button>
                     </div>
