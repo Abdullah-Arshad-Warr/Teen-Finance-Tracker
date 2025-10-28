@@ -38,3 +38,9 @@ Desktop.ini
 .DS_Store
 *.swp
 *.swo
+
+# Environment variables
+.env
+
+# Firebase/Service account keys
+serviceAccountKey.json

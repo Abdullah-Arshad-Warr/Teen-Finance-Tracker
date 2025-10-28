@@ -1,85 +1,769 @@
  /* --- Custom Color Palette: "Vibrant Growth" --- */
-        .bg-primary-accent {
-            background-color: #20C997; /* Vibrant Green */
-        }
-        .text-primary-accent {
-            color: #20C997;
-        }
-        .border-primary-accent {
-            border-color: #20C997;
-        }
-        .bg-secondary-accent {
-            background-color: #FFC107; /* Energetic Amber */
-        }
-        .text-secondary-accent {
-            color: #FFC107;
-        }
-        .bg-main {
-            background-color: #F0F2F5; /* Light Grey BG */
-        }
-        .bg-card {
-            background-color: #FFFFFF; /* White Card BG */
-        }
-        .text-main-heading {
-            color: #343A40; /* Dark Charcoal Text */
-        }
-        .text-subtle {
-            color: #6C757D; /* Medium Grey Text */
-        }
+ .bg-primary-accent {
+     background-color: #20C997;
+     /* Vibrant Green */
+ }
 
-        /* --- Custom Styles --- */
-        html,
-        body {
-            height: 100%;
-            font-family: 'Inter', sans-serif;
-        }
-        .modal {
-            transition: opacity 0.3s ease;
-        }
-        .sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 20;
-            display: none;
-        }
-        main {
-            will-change: transform, scroll-position;
-        }
-        .chart-container {
-            position: relative;
-            width: 100%;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-            height: 250px;
-            max-height: 400px;
-        }
-        .nav-item.active {
-            background-color: #e9ecef;
-            color: #20C997;
-            font-weight: 600;
-        }
-        .tab-button.active {
-            border-bottom-color: #20C997;
-            color: #20C997;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 300px;
-            }
-        }
-        @media (min-width: 1024px) {
-            .chart-container {
-                height: 350px;
-            }
-        }
+ .text-primary-accent {
+     color: #20C997;
+ }
+
+ .border-primary-accent {
+     border-color: #20C997;
+ }
+
+ .bg-secondary-accent {
+     background-color: #FFC107;
+     /* Energetic Amber */
+ }
+
+ .text-secondary-accent {
+     color: #FFC107;
+ }
+
+ .bg-main {
+     background-color: #F0F2F5;
+     /* Light Grey BG */
+ }
+
+ .bg-card {
+     background-color: #FFFFFF;
+     /* White Card BG */
+ }
+
+ .text-main-heading {
+     color: #343A40;
+     /* Dark Charcoal Text */
+ }
+
+ .text-subtle {
+     color: #6C757D;
+     /* Medium Grey Text */
+ }
+
+ /* --- Custom Styles --- */
+ html,
+ body {
+     height: 100%;
+     font-family: 'Inter', sans-serif;
+ }
+
+ .modal {
+     transition: opacity 0.3s ease;
+ }
+
+ .sidebar-overlay {
+     position: fixed;
+     top: 0;
+     left: 0;
+     right: 0;
+     bottom: 0;
+     background-color: rgba(0, 0, 0, 0.5);
+     z-index: 20;
+     display: none;
+ }
+
+ /* Prevent body scroll when sidebar is open on mobile */
+ body.sidebar-open {
+     overflow: hidden;
+ }
+
+ /* Sidebar Fixed Scrolling */
+ #sidebar {
+     max-height: 100vh;
+ }
+
+ @media (min-width: 768px) {
+     #sidebar {
+         position: fixed;
+         height: 100vh;
+     }
+ }
+
+ main {
+     will-change: transform, scroll-position;
+ }
+
+ .chart-container {
+     position: relative;
+     width: 100%;
+     max-width: 400px;
+     margin-left: auto;
+     margin-right: auto;
+     height: 250px;
+     max-height: 400px;
+ }
+
+ .nav-item.active {
+     background-color: #e9ecef;
+     color: #20C997;
+     font-weight: 600;
+ }
+
+ .tab-button.active {
+     border-bottom-color: #20C997;
+     color: #20C997;
+ }
+
+ .tab-content {
+     display: none;
+ }
+
+ .tab-content.active {
+     display: block;
+ }
+
+ @media (min-width: 768px) {
+     .chart-container {
+         height: 300px;
+     }
+ }
+
+ @media (min-width: 1024px) {
+     .chart-container {
+         height: 350px;
+     }
+ }
+
+ .truncate-text {
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
+ }
+
+ .line-clamp-2 {
+     overflow: hidden;
+     display: -webkit-box;
+     -webkit-box-orient: vertical;
+     -webkit-line-clamp: 2;
+     line-clamp: 2;
+ }
+
+ /* Budget Management Styles */
+ .budget-method-card {
+     transition: all 0.3s ease;
+ }
+
+ .budget-method-card:hover {
+     transform: translateY(-2px);
+     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+ }
+
+ .budget-method-card.selected {
+     border-color: #20C997 !important;
+     background-color: #f0f9ff;
+ }
+
+ .category-group {
+     border: 1px solid #e5e7eb;
+     border-radius: 8px;
+     padding: 16px;
+     margin-bottom: 16px;
+ }
+
+ .category-row {
+     margin-bottom: 8px;
+ }
+
+ .category-row:last-child {
+     margin-bottom: 0;
+ }
+
+ .budget-progress-bar {
+     transition: all 0.5s ease;
+ }
+
+ /* Status Colors */
+ .status-green {
+     background-color: #20C997;
+     color: #20C997;
+ }
+
+ .status-orange {
+     background-color: #f59e0b;
+     color: #f59e0b;
+ }
+
+ .status-red {
+     background-color: #ef4444;
+     color: #ef4444;
+ }
+
+ /* Modal scroll styling */
+ .modal .overflow-y-auto {
+     scrollbar-width: thin;
+     scrollbar-color: #cbd5e0 #f7fafc;
+ }
+
+ .modal .overflow-y-auto::-webkit-scrollbar {
+     width: 6px;
+ }
+
+ .modal .overflow-y-auto::-webkit-scrollbar-track {
+     background: #f7fafc;
+     border-radius: 3px;
+ }
+
+ .modal .overflow-y-auto::-webkit-scrollbar-thumb {
+     background: #cbd5e0;
+     border-radius: 3px;
+ }
+
+ .modal .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+     background: #a0aec0;
+ }
+
+ @keyframes typing-bubble {
+
+     0%,
+     100% {
+         transform: translateY(0);
+     }
+
+     50% {
+         transform: translateY(-3px);
+     }
+ }
+
+ .typing-dot {
+     width: 6px;
+     height: 6px;
+     background-color: #6b7280;
+     /* gray-500 */
+     border-radius: 50%;
+     animation: typing-bubble 1s infinite ease-in-out;
+ }
+
+ .typing-dot:nth-child(2) {
+     animation-delay: 0.15s;
+ }
+
+ .typing-dot:nth-child(3) {
+     animation-delay: 0.3s;
+ }
+
+ @keyframes blink {
+     50% {
+         opacity: 0;
+     }
+ }
+
+ .typing-cursor {
+     display: inline-block;
+     width: 8px;
+     height: 1.2em;
+     background-color: #4b5563;
+     /* gray-600 */
+     animation: blink 1s step-end infinite;
+     vertical-align: text-bottom;
+ }
+
+ /* Trivia Game Styles */
+ .trivia-option {
+     cursor: pointer;
+     transform: translateY(0);
+ }
+
+ .trivia-option:hover {
+     transform: translateY(-2px);
+     box-shadow: 0 4px 12px rgba(32, 201, 151, 0.15);
+ }
+
+ .trivia-option:disabled {
+     cursor: not-allowed;
+     transform: none;
+ }
+
+ .trivia-option:disabled:hover {
+     transform: none;
+     box-shadow: none;
+ }
+
+ .question-count-btn {
+     transform: translateY(0);
+ }
+
+ .question-count-btn:hover {
+     transform: translateY(-3px);
+     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+ }
+
+ #trivia-feedback {
+     animation: slideDown 0.3s ease-out;
+ }
+
+ @keyframes slideDown {
+     from {
+         opacity: 0;
+         transform: translateY(-10px);
+     }
+
+     to {
+         opacity: 1;
+         transform: translateY(0);
+     }
+ }
+
+ #trivia-results {
+     animation: fadeIn 0.5s ease-out;
+ }
+
+ @keyframes fadeIn {
+     from {
+         opacity: 0;
+         transform: scale(0.95);
+     }
+
+     to {
+         opacity: 1;
+         transform: scale(1);
+     }
+ }
+
+ .bg-gradient-to-r {
+     background: linear-gradient(135deg, #20C997 0%, #10B981 100%);
+ }
+
+ /* User Dropdown Styles */
+ #user-dropdown-menu {
+     animation: slideDown 0.2s ease-out;
+ }
+
+ @keyframes slideDown {
+     from {
+         opacity: 0;
+         transform: translateY(-10px);
+     }
+
+     to {
+         opacity: 1;
+         transform: translateY(0);
+     }
+ }
+
+ #user-dropdown-button:hover {
+     background-color: #f3f4f6;
+ }
+
+ #dropdown-logout-button:hover svg {
+     transform: translateX(2px);
+     transition: transform 0.2s ease;
+ }
+
+ /* Add this to ensure dropdown container is visible */
+ #user-dropdown-container {
+     display: block;
+ }
+
+ #user-dropdown-container.hidden {
+     display: none;
+ }
+
+ /* No Data Message Styling */
+ .no-data-message {
+     animation: fadeIn 0.5s ease-in;
+ }
+
+ @keyframes fadeIn {
+     from {
+         opacity: 0;
+         transform: translateY(10px);
+     }
+
+     to {
+         opacity: 1;
+         transform: translateY(0);
+     }
+ }
+
+ /* Prevent zoom on mobile when focusing inputs */
+ @media screen and (max-width: 768px) {
+
+     input[type="text"],
+     input[type="email"],
+     input[type="password"],
+     input[type="number"],
+     input[type="date"],
+     textarea,
+     select {
+         font-size: 16px !important;
+     }
+ }
+
+ /* Mobile table fixes */
+ @media screen and (max-width: 640px) {
+     .overflow-x-auto table {
+         font-size: 14px;
+     }
+
+     .overflow-x-auto td,
+     .overflow-x-auto th {
+         padding: 8px 4px;
+     }
+
+     .truncate-text {
+         max-width: 120px !important;
+     }
+ }
+
+ /* Budget category inputs mobile fix */
+ @media screen and (max-width: 640px) {
+
+     .category-name,
+     .category-amount {
+         font-size: 14px;
+         padding: 8px !important;
+     }
+
+     .remove-category {
+         min-width: 32px;
+         font-size: 24px;
+     }
+ }
+
+ /* Mobile button fixes */
+ @media screen and (max-width: 640px) {
+     button {
+         min-height: 44px;
+         /* iOS touch target size */
+     }
+
+     .nav-item {
+         padding: 12px !important;
+     }
+ }
+
+ /* Modal responsive padding */
+ @media screen and (max-width: 640px) {
+     .modal form {
+         padding: 16px !important;
+     }
+
+     .modal .p-6 {
+         padding: 16px !important;
+     }
+ }
+
+ /* Trivia options mobile spacing */
+ @media screen and (max-width: 640px) {
+     .trivia-option {
+         padding: 12px !important;
+         font-size: 14px;
+     }
+
+     #trivia-question {
+         font-size: 16px !important;
+     }
+ }
+
+ /* Savings goals mobile fix */
+ @media screen and (max-width: 640px) {
+     #savings-goals-container .text-4xl {
+         font-size: 2rem;
+     }
+
+     #savings-goals-container h3 {
+         font-size: 1.125rem;
+     }
+ }
+
+ /* Budget step buttons mobile */
+ @media screen and (max-width: 640px) {
+
+     #budget-step-1 .budget-method-card,
+     #budget-step-2,
+     #budget-step-3 {
+         font-size: 14px;
+     }
+
+     .budget-method-card {
+         padding: 12px !important;
+     }
+ }
+
+ .chart-container {
+     position: relative;
+     width: 100%;
+     max-width: 400px;
+     margin-left: auto;
+     margin-right: auto;
+     height: 200px;
+     /* Changed from 250px */
+     max-height: 400px;
+ }
+
+ @media (min-width: 640px) {
+     .chart-container {
+         height: 250px;
+     }
+ }
+
+ @media (min-width: 768px) {
+     .chart-container {
+         height: 300px;
+     }
+ }
+
+ @media (min-width: 1024px) {
+     .chart-container {
+         height: 350px;
+     }
+ }
+
+ /* Smart alerts mobile */
+ @media screen and (max-width: 640px) {
+     #smart-alerts>div {
+         padding: 12px !important;
+         font-size: 13px;
+     }
+
+     #smart-alerts .text-2xl {
+         font-size: 1.25rem;
+     }
+ }
+
+ /* Admin tables mobile */
+ @media screen and (max-width: 640px) {
+
+     #admin-articles-table-body td,
+     #admin-trivia-table-body td {
+         font-size: 13px;
+         padding: 8px 4px !important;
+     }
+
+     #admin-articles-table-body button,
+     #admin-trivia-table-body button {
+         font-size: 12px;
+         padding: 4px 8px;
+     }
+ }
+
+ /* Budget overview mobile */
+ @media screen and (max-width: 640px) {
+     #budget-overview .grid-cols-2>div {
+         padding: 8px;
+     }
+
+     #budget-overview .text-xl {
+         font-size: 1.125rem;
+     }
+ }
+
+ /* Budget overview mobile */
+ @media screen and (max-width: 640px) {
+     #budget-overview .grid-cols-2>div {
+         padding: 8px;
+     }
+
+     #budget-overview .text-xl {
+         font-size: 1.125rem;
+     }
+ }
+
+ /* Datalist mobile fix */
+ @media screen and (max-width: 640px) {
+     input[list] {
+         font-size: 16px;
+     }
+ }
+
+ /* Top goal mobile */
+ @media screen and (max-width: 640px) {
+     #top-goal-name {
+         font-size: 1rem;
+     }
+
+     #top-goal-details {
+         font-size: 0.875rem;
+     }
+ }
+
+ /* Form labels mobile */
+ @media screen and (max-width: 640px) {
+     label {
+         font-size: 14px !important;
+     }
+ }
+
+ /* Chatbot mobile */
+ @media screen and (max-width: 640px) {
+     #chatbot-messages>div {
+         font-size: 14px;
+     }
+
+     #chatbot-messages .bg-gray-200,
+     #chatbot-messages .bg-primary-accent {
+         padding: 10px !important;
+         max-width: 80% !important;
+     }
+ }
+
+ /* Trivia results mobile */
+ @media screen and (max-width: 640px) {
+     #results-emoji {
+         font-size: 3rem !important;
+     }
+
+     #results-title {
+         font-size: 1.5rem !important;
+     }
+
+     #final-score {
+         font-size: 2rem !important;
+     }
+ }
+
+ /* Sidebar nav mobile */
+ @media screen and (max-width: 768px) {
+     .nav-item span {
+         font-size: 14px;
+     }
+
+     .nav-item svg {
+         width: 20px;
+         height: 20px;
+     }
+ }
+
+ /* Article cards mobile */
+ @media screen and (max-width: 640px) {
+     #articles-container>div {
+         padding: 12px !important;
+     }
+
+     #articles-container h4 {
+         font-size: 1rem;
+     }
+
+     #articles-container p {
+         font-size: 0.875rem;
+     }
+ }
+
+ /* Transaction amounts mobile */
+ @media screen and (max-width: 640px) {
+
+     #money-in,
+     #money-out,
+     #current-balance {
+         font-size: 1rem !important;
+     }
+
+     .text-xl {
+         font-size: 1.125rem !important;
+     }
+ }
+
+ /* Modal header mobile */
+ @media screen and (max-width: 640px) {
+     .modal .flex.justify-between.items-center {
+         margin-bottom: 16px !important;
+     }
+
+     .modal h2 {
+         font-size: 1.25rem !important;
+         padding-right: 8px;
+     }
+ }
+
+ /* Progress bars mobile */
+ @media screen and (max-width: 640px) {
+     .h-2 {
+         height: 6px !important;
+     }
+
+     .h-3 {
+         height: 8px !important;
+     }
+
+     .h-4 {
+         height: 10px !important;
+     }
+ }
+
+ /* Landscape mobile fix */
+ @media screen and (max-height: 500px) and (orientation: landscape) {
+     .modal .max-h-\[90vh\] {
+         max-height: 95vh !important;
+     }
+
+     #chatbot-modal .h-\[80vh\] {
+         height: 90vh !important;
+     }
+ }
+
+ /* Safe area for notch devices */
+ @supports (padding: max(0px)) {
+     body {
+         padding-left: max(0px, env(safe-area-inset-left));
+         padding-right: max(0px, env(safe-area-inset-right));
+     }
+
+     #sidebar {
+         padding-left: max(16px, env(safe-area-inset-left));
+     }
+ }
+
+ /* Prevent text selection on interactive elements */
+ button,
+ .nav-item,
+ .tab-button,
+ .trivia-option {
+     -webkit-user-select: none;
+     -moz-user-select: none;
+     -ms-user-select: none;
+     user-select: none;
+     -webkit-tap-highlight-color: transparent;
+ }
+
+ /* Budget income breakdown mobile */
+ @media screen and (max-width: 640px) {
+     #income-breakdown {
+         padding: 12px !important;
+     }
+
+     #income-breakdown .text-sm {
+         font-size: 13px;
+     }
+ }
+
+ /* All modals comprehensive fix */
+ @media screen and (max-width: 640px) {
+     .modal>div {
+         max-width: 95vw !important;
+         margin: 0 8px;
+     }
+
+     .modal input,
+     .modal textarea,
+     .modal select {
+         font-size: 16px !important;
+     }
+
+     .modal h2 {
+         font-size: 1.25rem !important;
+     }
+
+     .modal h3 {
+         font-size: 1.125rem !important;
+     }
+ }
+
+ /* Budget category inputs mobile fix */
+ @media screen and (max-width: 640px) {
+
+     .category-name,
+     .category-amount {
+         font-size: 14px;
+         padding: 8px !important;
+     }
+
+     .remove-category {
+         min-width: 40px;
+         min-height: 40px;
+         font-size: 28px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+     }
+ }

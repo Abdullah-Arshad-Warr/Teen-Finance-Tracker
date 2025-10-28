@@ -3,8 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoneyFlow | Teen Financial Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Trackee | Teen Financial Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -32,10 +32,24 @@
 
 
 <body class="bg-main text-main-heading min-h-screen flex flex-col">
+
+    <!-- Global Loading Overlay -->
+    <div id="global-loader"
+        class="fixed inset-0 bg-card z-50 flex flex-col justify-center items-center transition-opacity duration-300">
+        <svg class="animate-spin h-10 w-10 text-primary-accent mb-4" xmlns="http://www.w3.org/2000/svg" fill="none"
+            viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+            </path>
+        </svg>
+        <p class="text-xl font-semibold text-main-heading">Getting things ready...</p>
+    </div>
+
     <!-- Login/Signup Modal -->
     <div id="auth-modal"
         class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-40 hidden opacity-0">
-        <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-8">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-4 md:p-8 mx-2">
             <div class="flex justify-between items-center mb-6">
                 <h2 id="auth-title" class="text-3xl font-bold text-main-heading">Login</h2>
                 <button id="close-auth-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
@@ -62,7 +76,7 @@
                 <div>
                     <label for="signup-name" class="block text-sm font-medium text-subtle mb-1">Full Name</label>
 
-                    <input type="text" id="signup-name"
+                    <input type="text" id="signup-name" maxlength="70"
                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
                 <div>
@@ -96,7 +110,7 @@
     <!-- Add/Edit Transaction Modal -->
     <div id="transaction-modal"
         class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
-        <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-8">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-4 md:p-8 mx-2">
             <div class="flex justify-between items-center mb-6">
                 <h2 id="transaction-title" class="text-3xl font-bold text-main-heading">Add Transaction</h2>
                 <button id="close-transaction-button"
@@ -106,13 +120,15 @@
                 <input type="hidden" id="transaction-id">
                 <div>
                     <label for="transaction-desc" class="block text-sm font-medium text-subtle mb-1">Description</label>
-                    <input type="text" id="transaction-desc" required
+                    <input type="text" id="transaction-desc" required maxlength="100"
                         class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                 </div>
                 <div>
                     <label for="transaction-cat" class="block text-sm font-medium text-subtle mb-1">Category</label>
-                    <input type="text" id="transaction-cat" required
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                    <input list="category-suggestions" type="text" id="transaction-cat" required maxlength="30"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none"
+                        placeholder="Select from budget or type new...">
+                    <datalist id="category-suggestions"></datalist>
                 </div>
                 <div>
                     <label for="transaction-amount" class="block text-sm font-medium text-subtle mb-1">Amount</label>
@@ -143,15 +159,53 @@
     <!-- Delete Confirmation Modal -->
     <div id="delete-confirm-modal"
         class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
-        <div class="bg-card rounded-lg shadow-xl w-full max-w-sm p-8 text-center">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-sm p-4 md:p-8 text-center mx-2">
             <h2 class="text-2xl font-bold text-main-heading mb-4">Are you sure?</h2>
             <p class="text-subtle mb-6">This action cannot be undone.</p>
-            <div class="flex justify-center gap-4">
-                <button id="cancel-delete-btn"
-                    class="bg-gray-300 text-gray-800 py-2 px-6 rounded-lg font-semibold hover:bg-gray-400 transition-colors">Cancel</button>
+            <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-4"> <button id="cancel-delete-btn"
+                    class="w-full md:w-auto bg-gray-300 text-gray-800 py-2 px-6 rounded-lg font-semibold hover:bg-gray-400 transition-colors">Cancel</button>
                 <button id="confirm-delete-btn"
-                    class="bg-red-500 text-white py-2 px-6 rounded-lg font-semibold hover:bg-red-600 transition-colors">Delete</button>
+                    class="w-full md:w-auto bg-red-500 text-white py-2 px-6 rounded-lg font-semibold hover:bg-red-600 transition-colors">Delete</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Goal Modal -->
+    <div id="goal-modal"
+        class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-md p-4 md:p-8 mx-2">
+            <div class="flex justify-between items-center mb-6">
+                <h2 id="goal-title" class="text-3xl font-bold text-main-heading">Add Savings Goal</h2>
+                <button id="close-goal-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+            </div>
+            <form id="goal-form" class="space-y-4">
+                <input type="hidden" id="goal-id">
+                <div>
+                    <label for="goal-name" class="block text-sm font-medium text-subtle mb-1">Goal Name</label>
+                    <input type="text" id="goal-name" placeholder="e.g., New Gaming Phone" required maxlength="50"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                </div>
+                <div>
+                    <label for="goal-icon" class="block text-sm font-medium text-subtle mb-1">Icon (Emoji)</label>
+                    <input type="text" id="goal-icon" placeholder="📱" required maxlength="15"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                    <p class="text-xs text-gray-500 mt-1">Tap to select emoji from your keyboard</p>
+                </div>
+                <div>
+                    <label for="goal-target" class="block text-sm font-medium text-subtle mb-1">Target Amount
+                        ($)</label>
+                    <input type="number" id="goal-target" step="0.01" min="0" required placeholder="500"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                </div>
+                <div>
+                    <label for="goal-saved" class="block text-sm font-medium text-subtle mb-1">Amount Saved ($)</label>
+                    <input type="number" id="goal-saved" step="0.01" min="0" required placeholder="0"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
+                </div>
+                <button type="submit"
+                    class="w-full bg-primary-accent text-white py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Save
+                    Goal</button>
+            </form>
         </div>
     </div>
 
@@ -161,7 +215,7 @@
     <div id="main-app-container" class="flex flex-1">
         <!-- Sidebar Navigation -->
         <aside id="sidebar"
-            class="bg-card w-64 p-4 flex-shrink-0 flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 md:relative absolute inset-y-0 left-0 z-30 shadow-lg">
+            class="bg-card w-64 p-4 flex-shrink-0 flex flex-col justify-between transition-transform duration-300 -translate-x-full md:translate-x-0 fixed inset-y-0 left-0 z-30 shadow-lg overflow-y-auto">
             <div>
                 <div class="flex items-center gap-3 mb-8 pl-2">
                     <div class="bg-primary-accent p-2 rounded-lg shadow-md">
@@ -171,7 +225,7 @@
                                 d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                     </div>
-                    <h1 class="text-2xl font-bold text-main-heading">MoneyFlow</h1>
+                    <h1 class="text-2xl font-bold text-main-heading">Trackee</h1>
                 </div>
                 <nav class="flex flex-col gap-2">
                     <a href="#dashboard"
@@ -209,15 +263,7 @@
                         </svg>
                         <span>Learn & Play</span>
                     </a>
-                    <a href="#profile"
-                        class="nav-item flex items-center gap-3 p-3 rounded-xl text-subtle hover:bg-gray-100 hover:translate-x-1 transition-all duration-200 ease-in-out">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                        <span>Profile & Settings</span>
-                    </a>
+
                 </nav>
             </div>
             <div class="mt-8">
@@ -234,8 +280,7 @@
         </aside>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col min-h-0">
-            <!-- Header -->
+        <div class="flex-1 flex flex-col min-h-0 md:ml-64"> <!-- Header -->
             <header class="bg-card p-4 flex justify-between items-center border-b border-gray-200 shadow-sm">
                 <button id="menu-button" class="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
@@ -244,33 +289,47 @@
                             d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
-                <h2 id="page-title" class="text-xl font-semibold text-main-heading">Dashboard</h2>
+                <h2 id="page-title" class="text-base md:text-xl font-semibold text-main-heading truncate">Dashboard</h2>
+
                 <div class="flex items-center gap-4">
-                    <!-- User Info Container (hidden by default) -->
-                    <div id="user-info-container" class="hidden items-center gap-4">
-                        <div class="text-right">
-                            <p id="user-name" class="font-semibold text-main-heading">Guest</p>
-                            <p id="user-level-xp" class="text-sm text-secondary-accent font-medium">Level N/A | N/A XP
-                            </p>
-                        </div>
-                        <div id="user-avatar"
-                            class="w-10 h-10 rounded-full bg-primary-accent flex items-center justify-center">
-                            <span id="user-avatar-initial" class="text-white font-semibold text-lg"></span>
+                    <!-- User Dropdown (visible when logged in) -->
+                    <div id="user-dropdown-container" class="hidden relative">
+                        <button id="user-dropdown-button"
+                            class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                            <div class="text-right">
+                                <p id="user-name-dropdown" class="font-semibold text-main-heading">Guest</p>
+                            </div>
+                            <div id="user-avatar-dropdown"
+                                class="w-10 h-10 rounded-full bg-primary-accent flex items-center justify-center">
+                                <span id="user-avatar-initial-dropdown" class="text-white font-semibold text-lg"></span>
+                            </div>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-subtle" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7" />
+                            </svg>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div id="user-dropdown-menu"
+                            class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 z-50">
+                            <button id="dropdown-logout-button"
+                                class="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors flex items-center gap-2 text-subtle hover:text-red-500">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                Logout
+                            </button>
                         </div>
                     </div>
-                    <!-- Loading Spinner (visible by default) -->
-                    <div id="auth-loading-spinner" class="w-10 h-10 flex justify-center items-center">
-                        <svg class="animate-spin h-5 w-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none"
-                            viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                            </circle>
-                            <path class="opacity-75" fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                            </path>
-                        </svg>
-                    </div>
+
+                    <!-- Login/Signup Button (visible when logged out) -->
                     <button id="header-auth-button"
-                        class="hidden bg-primary-accent text-white py-2 px-4 rounded-lg text-sm ml-2 shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Login/Signup</button>
+                        class="bg-primary-accent text-white py-2 px-4 rounded-lg text-sm shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">
+                        Login/Signup
+                    </button>
                 </div>
             </header>
 
@@ -279,10 +338,14 @@
 
                 <!-- Dashboard Page -->
                 <div id="dashboard-page" class="page-content">
-                    <p class="text-subtle mb-6">Welcome back, Alex! Here's a quick look at your financial world. This
+                    <!-- Smart Alerts -->
+                    <div id="smart-alerts" class="mb-6 space-y-3">
+                        <!-- Alerts will be populated by JavaScript -->
+                    </div>
+                    <p class="text-subtle mb-6">Welcome back! Here's a quick look at your financial world. This
                         dashboard gives you a snapshot of your income, spending, and progress towards your savings
                         goals, helping you stay on top of your money.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                         <div
                             class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
                             <h3 class="font-semibold mb-4 text-lg">Financial Snapshot</h3>
@@ -299,36 +362,91 @@
                                         class="font-bold text-main-heading text-xl">$0.00</span></div>
                             </div>
                             <button id="dashboard-add-transaction-button"
-                                class="w-full mt-6 bg-primary-accent text-white py-2 rounded-lg text-md font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Add
+                                class="w-full mt-6 bg-primary-accent text-white py-2 rounded-lg text-md font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out hidden">Add
                                 New Transaction</button>
                         </div>
+                        <!-- Budget Summary -->
                         <div
                             class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
-                            <h3 class="font-semibold mb-4 text-lg">Budget Summary</h3>
-                            <div class="chart-container"><canvas id="budgetDoughnutChart"></canvas></div>
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="font-semibold text-lg">Budget Summary</h3>
+                                <button id="manage-budget-button"
+                                    class="text-sm bg-secondary-accent text-main-heading px-3 py-1 rounded-lg hover:bg-amber-500 transition-colors">
+                                    Manage Budget
+                                </button>
+                            </div>
+
+                            <!-- No Budget State -->
+                            <div id="no-budget-state" class="text-center py-8">
+                                <div class="text-6xl mb-4">💰</div>
+                                <p class="text-subtle mb-4">No budget set for this month</p>
+                                <button id="create-first-budget-button"
+                                    class="bg-primary-accent text-white px-4 py-2 rounded-lg font-semibold shadow-md hover:bg-emerald-600 transition-all duration-300">
+                                    Create Your First Budget
+                                </button>
+                            </div>
+
+                            <!-- Budget Overview -->
+                            <div id="budget-overview" class="hidden">
+                                <div class="grid grid-cols-2 gap-4 mb-4">
+                                    <div class="text-center">
+                                        <p class="text-subtle text-sm">Total Budget</p>
+                                        <p id="total-budget-amount" class="font-bold text-xl text-main-heading">$0</p>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-subtle text-sm">Spent</p>
+                                        <p id="total-spent-amount" class="font-bold text-xl">$0</p>
+                                    </div>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
+                                    <div id="overall-budget-progress"
+                                        class="h-3 rounded-full transition-all duration-500" style="width: 0%;"></div>
+                                </div>
+                                <p id="budget-status-text" class="text-center text-sm font-medium">On track</p>
+                                <div class="chart-container">
+                                    <canvas id="budgetDoughnutChart"></canvas>
+                                </div>
+                            </div>
                         </div>
+
                         <div
                             class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
                             <h3 class="font-semibold mb-4 text-lg">Top Savings Goal</h3>
-                            <p class="font-semibold text-lg">New Gaming Phone</p>
-                            <p class="text-subtle mb-4">Saving for the latest model!</p>
-                            <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
-                                <div class="bg-primary-accent h-4 rounded-full transition-all duration-500 ease-in-out"
-                                    style="width: 65%;"></div>
+
+                            <!-- This will show when a goal exists -->
+                            <div id="top-goal-content">
+                                <p id="top-goal-name" class="font-semibold text-lg">New Gaming Phone</p>
+                                <p class="text-subtle mb-4" id="top-goal-saved-text">Saving...</p>
+                                <div class="w-full bg-gray-200 rounded-full h-4 mb-2">
+                                    <div id="top-goal-progress-bar"
+                                        class="bg-primary-accent h-4 rounded-full transition-all duration-500 ease-in-out"
+                                        style="width: 0%;"></div>
+                                </div>
+                                <div id="top-goal-details" class="flex justify-between text-sm font-medium">
+                                    <span class="text-primary-accent">$0 / $0</span><span>0%</span>
+                                </div>
                             </div>
-                            <div class="flex justify-between text-sm font-medium"><span class="text-primary-accent">$325
-                                    / $500</span><span>65%</span></div>
-                            <button
+
+                            <!-- This will show when NO goals exist -->
+                            <div id="top-goal-empty-state" class="hidden text-center text-subtle py-8">
+                                <p>No savings goals yet!</p>
+                                <a href="#savings"
+                                    class="font-semibold text-primary-accent hover:underline mt-2 inline-block">Create
+                                    one now</a>
+                            </div>
+
+                            <button id="view-all-goals-button"
                                 class="w-full mt-4 bg-primary-accent text-white py-2 rounded-lg shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">View
                                 All Goals</button>
                         </div>
                     </div>
-                    <div class="mt-8 flex flex-col md:flex-row justify-center items-center gap-4">
+                    <div
+                        class="mt-8 flex flex-col justify-center items-stretch gap-3 md:flex-row md:items-center md:gap-4">
                         <button id="explore-articles-button"
-                            class="bg-secondary-accent text-main-heading py-3 px-6 rounded-3xl text-lg font-semibold shadow-md hover:bg-amber-500 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Explore
+                            class="w-full md:w-auto bg-secondary-accent text-main-heading py-3 px-6 rounded-3xl text-lg font-semibold shadow-md hover:bg-amber-500 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Explore
                             Our Latest Articles</button>
                         <button id="explore-trivia-button"
-                            class="bg-gray-700 text-white py-3 px-6 rounded-3xl text-lg font-semibold shadow-md hover:bg-gray-800 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Play
+                            class="w-full md:w-auto bg-gray-700 text-white py-3 px-6 rounded-3xl text-lg font-semibold shadow-md hover:bg-gray-800 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Play
                             Trivia Game</button>
                     </div>
                 </div>
@@ -338,7 +456,7 @@
                     <p class="text-subtle mb-6">Track where your money goes. This section helps you understand your
                         spending habits with a detailed breakdown by category and a complete log of all your
                         transactions.</p>
-                    <!-- START: MODIFIED LAYOUT FOR CHARTS -->
+                    <!-- LAYOUT FOR CHARTS -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                         <div
                             class="bg-card p-6 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-3px] transition-all duration-300">
@@ -352,7 +470,6 @@
                         </div>
                     </div>
                     <div class="bg-card p-6 rounded-xl shadow-lg">
-                        <!-- END: MODIFIED LAYOUT FOR CHARTS -->
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="font-semibold text-lg">Transaction Log</h3>
                             <button id="add-transaction-button"
@@ -365,7 +482,6 @@
                                     <tr class="border-b border-gray-200">
                                         <th class="p-3 text-sm font-semibold text-subtle">Date</th>
                                         <th class="p-3 text-sm font-semibold text-subtle">Description</th>
-                                        <th class="p-3 text-sm font-semibold text-subtle">Category</th>
                                         <th class="p-3 text-sm font-semibold text-subtle text-right">Amount</th>
                                         <th class="p-3 text-sm font-semibold text-subtle text-center">Actions</th>
                                     </tr>
@@ -378,21 +494,32 @@
 
                 <!-- Savings Goals Page -->
                 <div id="savings-page" class="page-content hidden">
-                    <p class="text-subtle mb-6">Turn your dreams into reality by saving for them. Create goals for
-                        things you want, track your progress visually, and celebrate when you reach them. Seeing your
-                        savings grow is the best motivation!</p>
+                    <div class="flex justify-between items-center mb-6">
+                        <p class="text-subtle mb-6">Turn your dreams into reality by saving for them. Create
+                            goals
+                            for
+                            things you want, track your progress visually, and celebrate when you reach them. Seeing
+                            your
+                            savings grow is the best motivation!</p>
+                        <button id="add-goal-button"
+                            class="hidden bg-primary-accent text-white py-2 px-4 rounded-lg font-semibold shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out flex-shrink-0">Add
+                            Goal</button>
+                    </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="savings-goals-container">
+                        <!-- Savings goals will be populated here by JavaScript -->
                     </div>
                 </div>
 
                 <!-- Learn & Play Page -->
                 <div id="learn-page" class="page-content hidden">
-                    <p class="text-subtle mb-6">Boost your financial IQ! Read short articles to learn key money concepts
-                        and then test your knowledge with a fun trivia game. The more you learn, the better you'll be at
+                    <p class="text-subtle mb-6">Boost your financial IQ! Read short articles to learn key money
+                        concepts
+                        and then test your knowledge with a fun trivia game. The more you learn, the better you'll
+                        be at
                         managing your finances.</p>
                     <div class="border-b border-gray-200 mb-6 bg-card rounded-t-xl shadow-sm">
-                        <nav class="flex space-x-2 md:space-x-4 justify-center">
-                            <button class="tab-button active px-4 py-3 border-b-2 font-semibold"
+                        <nav class="flex space-x-1 md:space-x-4 justify-center"> <button
+                                class="tab-button active px-2 md:px-4 py-3 border-b-2 font-semibold text-sm md:text-base"
                                 data-tab-target="articles-tab-content" id="articles-tab-button">Articles</button>
                             <button
                                 class="tab-button px-4 py-3 border-b-2 border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition-all duration-200 ease-in-out"
@@ -403,21 +530,94 @@
                         <div class="space-y-4" id="articles-container"></div>
                     </div>
                     <div id="trivia-tab-content" class="tab-content bg-card p-6 rounded-b-xl shadow-lg">
-                        <h3 class="text-2xl font-bold mb-4">Trivia Challenge</h3>
-                        <div id="trivia-game">
-                            <p id="trivia-question" class="text-lg font-semibold mb-4">What does 'ROI' stand for?</p>
-                            <div id="trivia-options" class="space-y-3">
+                        <!-- Game Setup Screen -->
+                        <div id="trivia-setup" class="text-center">
+                            <h3 class="text-3xl font-bold mb-4 text-primary-accent">💰 Financial Trivia Challenge 💰
+                            </h3>
+                            <p class="text-subtle mb-6">Test your money knowledge! How many questions do you want to
+                                tackle?</p>
+                            <div class="flex flex-col md:flex-row justify-center gap-3 md:gap-4 mb-6"> <button
+                                    class="question-count-btn w-full md:w-auto bg-primary-accent text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-emerald-600 transition-all duration-300"
+                                    data-count="5">5 Questions</button>
                                 <button
-                                    class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">Return
-                                    on Investment</button>
+                                    class="question-count-btn w-full md:w-auto bg-secondary-accent text-main-heading px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-amber-500 transition-all duration-300"
+                                    data-count="10">10 Questions</button>
                                 <button
-                                    class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">Rate
-                                    of Inflation</button>
-                                <button
-                                    class="w-full text-left p-3 border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors">Risk
-                                    of Insolvency</button>
+                                    class="question-count-btn w-full md:w-auto bg-gray-600 text-white px-6 py-3 rounded-xl font-semibold shadow-md hover:bg-gray-700 transition-all duration-300"
+                                    data-count="15">15 Questions</button>
                             </div>
-                            <p id="trivia-feedback" class="mt-4 font-semibold"></p>
+                            <button id="reset-progress-btn"
+                                class="bg-red-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-600 transition-colors">🔄
+                                Reset All Progress</button>
+                        </div>
+
+                        <!-- Game Playing Screen -->
+                        <div id="trivia-game" class="hidden">
+                            <div
+                                class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 md:gap-0 mb-6">
+                                <button id="back-to-setup"
+                                    class="bg-gray-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-gray-600 transition-colors">←
+                                    Back</button>
+                                <div class="text-center">
+                                    <p class="text-sm text-subtle">Question <span id="current-question-num">1</span> of
+                                        <span id="total-questions">5</span>
+                                    </p>
+                                    <div class="text-center w-full md:w-auto">
+                                        <p class="text-sm text-subtle">Question <span id="current-question-num">1</span>
+                                            of
+                                            <span id="total-questions">5</span>
+                                        </p>
+                                        <div class="w-full md:w-48 bg-gray-200 rounded-full h-2 mt-1">
+                                            <div id="progress-bar"
+                                                class="bg-primary-accent h-2 rounded-full transition-all duration-300"
+                                                style="width: 0%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm text-subtle">Score: <span id="current-score"
+                                            class="font-bold text-primary-accent">0</span></p>
+                                </div>
+                            </div>
+
+                            <div
+                                class="bg-gradient-to-r from-primary-accent to-emerald-400 p-4 md:p-6 rounded-xl text-white mb-6 shadow-lg">
+                                <p id="trivia-question" class="text-base md:text-xl font-semibold text-center">Loading
+                                    question...
+                                </p>
+                            </div>
+
+                            <div id="trivia-options" class="space-y-3 mb-6">
+                                <!-- Options will be populated by JavaScript -->
+                            </div>
+
+                            <div id="trivia-feedback" class="hidden bg-gray-50 p-3 md:p-4 rounded-xl">
+                                <p id="feedback-text" class="font-semibold mb-2"></p>
+                                <p id="correct-answer" class="text-sm text-subtle mb-4"></p>
+                                <button id="next-question-btn"
+                                    class="bg-primary-accent text-white px-6 py-2 rounded-lg font-semibold hover:bg-emerald-600 transition-colors">Next
+                                    Question →</button>
+                            </div>
+                        </div>
+
+                        <!-- Game Results Screen -->
+                        <div id="trivia-results" class="hidden text-center">
+                            <div class="text-6xl mb-4" id="results-emoji">🎉</div>
+                            <h3 class="text-3xl font-bold mb-4" id="results-title">Quiz Complete!</h3>
+                            <div
+                                class="bg-gradient-to-r from-primary-accent to-emerald-400 p-6 rounded-xl text-white mb-6 shadow-lg">
+                                <p class="text-2xl font-bold mb-2">Final Score</p>
+                                <p class="text-4xl font-bold" id="final-score">0/5</p>
+                                <p class="text-lg" id="score-percentage">0%</p>
+                            </div>
+                            <div class="space-y-3 w-full px-4">
+                                <button id="play-again-btn"
+                                    class="w-full bg-primary-accent text-white px-8 py-3 rounded-xl font-semibold shadow-md hover:bg-emerald-600 transition-all duration-300">🎮
+                                    Play Again</button>
+                                <button id="back-to-setup-btn"
+                                    class="w-full bg-secondary-accent text-main-heading px-8 py-3 rounded-xl font-semibold shadow-md hover:bg-amber-500 transition-all duration-300">⚙️
+                                    Change Settings</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -433,63 +633,120 @@
                         Back to Articles
                     </button>
                     <h2 id="article-reader-title" class="text-3xl font-bold text-main-heading mb-4"></h2>
-                    <div id="article-reader-content" class="text-subtle leading-relaxed text-lg"></div>
+                    <div id="article-reader-content" class="text-subtle leading-relaxed text-base md:text-lg"></div>
                 </div>
 
-                <!-- Profile & Settings Page -->
-                <div id="profile-page" class="page-content hidden">
-                    <p class="text-subtle mb-6">This is your command center. Customize your profile, check your
-                        gamification progress and earned badges, and set up helpful reminders to stay on track with your
-                        financial goals.</p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-card p-6 rounded-xl shadow-lg">
-                            <h3 class="font-semibold mb-4 text-lg">Your Badges</h3>
-                            <div class="grid grid-cols-3 sm:grid-cols-4 gap-4" id="badges-container"></div>
-                        </div>
-                        <div class="bg-card p-6 rounded-xl shadow-lg">
-                            <h3 class="font-semibold mb-4 text-lg">Reminders</h3>
-                            <div class="space-y-4">
-                                <div class="flex justify-between items-center">
-                                    <span>Weekly Savings Reminder</span>
-                                    <label class="relative inline-flex items-center cursor-pointer"><input
-                                            type="checkbox" value="" class="sr-only peer" checked>
-                                        <div
-                                            class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-teal-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-accent">
-                                        </div>
-                                    </label>
+
+                <!-- Admin Page -->
+                <div id="admin-page" class="page-content hidden">
+                    <!-- Admin Login View -->
+                    <div id="admin-login-view">
+                        <div class="max-w-md mx-auto mt-10 bg-card p-8 rounded-xl shadow-lg">
+                            <h2 class="text-2xl font-bold text-center mb-6">Admin Access</h2>
+                            <form id="admin-login-form">
+                                <div class="mb-4">
+                                    <label for="admin-password"
+                                        class="block text-subtle text-sm font-medium mb-2">Password</label>
+                                    <input type="password" id="admin-password"
+                                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent"
+                                        required>
                                 </div>
-                                <div class="flex justify-between items-center">
-                                    <span>Budget Review Alert</span>
-                                    <label class="relative inline-flex items-center cursor-pointer"><input
-                                            type="checkbox" value="" class="sr-only peer">
-                                        <div
-                                            class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-4 peer-focus:ring-teal-300 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-accent">
-                                        </div>
-                                    </label>
+                                <p id="admin-login-error" class="text-red-500 text-sm text-center mb-4 hidden"></p>
+                                <button type="submit"
+                                    class="w-full bg-primary-accent text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition-colors">
+                                    Login
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Admin Content View -->
+                    <div id="admin-content-view" class="hidden">
+                        <div class="mb-6 border-b border-gray-200">
+                            <nav class="flex space-x-4">
+                                <button class="admin-view-toggle py-3 px-4 font-semibold border-b-2"
+                                    data-view="articles">Manage Articles</button>
+                                <button class="admin-view-toggle py-3 px-4 font-semibold border-b-2"
+                                    data-view="trivia">Manage Trivia</button>
+                            </nav>
+                        </div>
+
+                        <!-- Admin Articles Management -->
+                        <div id="admin-articles-management">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-3xl font-bold">Manage Articles</h2>
+                                <button id="add-article-button"
+                                    class="bg-primary-accent text-white py-2 px-4 rounded-lg font-semibold shadow-md hover:bg-emerald-600 transition-all">
+                                    + Add New Article
+                                </button>
+                            </div>
+                            <div class="bg-card p-6 rounded-xl shadow-lg">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left">
+                                        <thead>
+                                            <tr class="border-b border-gray-200">
+                                                <th class="p-3 font-semibold text-subtle">Title</th>
+                                                <th class="p-3 font-semibold text-subtle">Summary</th>
+                                                <th class="p-3 font-semibold text-subtle text-center">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-articles-table-body">
+                                            <!-- Articles will be populated here -->
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
-                            <button id="logout-button"
-                                class="w-full mt-6 bg-secondary-accent text-main-heading py-2 rounded-3xl font-semibold shadow-md hover:bg-amber-500 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out hidden">Logout</button>
+                        </div>
+                        <!-- Admin Trivia Management -->
+                        <div id="admin-trivia-management" class="hidden">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-3xl font-bold">Manage Trivia</h2>
+                                <button id="add-trivia-button"
+                                    class="bg-primary-accent text-white py-2 px-4 rounded-lg font-semibold shadow-md hover:bg-emerald-600 transition-all">
+                                    + Add New Question
+                                </button>
+                            </div>
+                            <div class="bg-card p-6 rounded-xl shadow-lg">
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-left">
+                                        <thead>
+                                            <tr class="border-b border-gray-200">
+                                                <th class="p-3 font-semibold text-subtle">Question</th>
+                                                <th class="p-3 font-semibold text-subtle">Correct Answer</th>
+                                                <th class="p-3 font-semibold text-subtle text-center">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="admin-trivia-table-body">
+                                            <!-- Trivia will be populated here -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-
-            </main>
         </div>
+        </main>
+    </div>
     </div>
 
     <!-- Chatbot Modal -->
     <div id="chatbot-modal"
         class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-40 hidden opacity-0">
-        <div class="bg-card rounded-lg shadow-xl w-full max-w-lg flex flex-col h-[80vh] p-6">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-lg flex flex-col h-[80vh] p-4 md:p-6 mx-2">
             <div class="p-4 border-b flex justify-between items-center">
                 <h3 class="text-lg font-semibold">Financial Advice Chatbot</h3>
                 <button id="close-chatbot-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
             </div>
             <div id="chatbot-messages" class="flex-1 p-4 overflow-y-auto space-y-4">
-                <div class="flex justify-start">
-                    <div class="bg-gray-200 text-main-heading p-3 rounded-lg max-w-xs">
-                        Hi Alex! I'm your financial assistant. Ask me anything about saving, budgeting, or investing.
+                <!-- Messages will be dynamically inserted here by JavaScript -->
+
+                <!-- Typing indicator -->
+                <div id="chatbot-typing" class="hidden flex justify-start">
+                    <div class="bg-gray-200 text-main-heading p-3 rounded-lg max-w-xs flex items-center gap-2">
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
+                        <span class="typing-dot"></span>
                     </div>
                 </div>
             </div>
@@ -499,6 +756,247 @@
                         class="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none">
                     <button id="chatbot-send"
                         class="bg-primary-accent text-white px-4 rounded-lg shadow-md hover:bg-emerald-600 hover:translate-y-[-2px] hover:shadow-lg transition-all duration-300 ease-in-out">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Article Modal -->
+    <div id="article-modal"
+        class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col mx-2">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 id="article-modal-title" class="text-3xl font-bold text-main-heading">Add Article</h2>
+                    <button id="close-article-modal" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+                </div>
+            </div>
+            <form id="article-form" class="space-y-4 p-6 overflow-y-auto">
+                <input type="hidden" id="article-id">
+                <div>
+                    <label for="article-title" class="block text-sm font-medium text-subtle mb-1">Title</label>
+                    <input type="text" id="article-title" required maxlength="100"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent">
+                </div>
+                <div>
+                    <label for="article-summary" class="block text-sm font-medium text-subtle mb-1">Summary</label>
+                    <input type="text" id="article-summary" required maxlength="200"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent">
+                </div>
+                <div>
+                    <label for="article-content" class="block text-sm font-medium text-subtle mb-1">Content (HTML
+                        allowed)</label>
+                    <textarea id="article-content" required rows="10"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent font-mono text-sm"></textarea>
+                </div>
+                <div class="p-6 border-t mt-auto">
+                    <button type="submit"
+                        class="w-full bg-primary-accent text-white py-3 rounded-lg text-lg font-semibold hover:bg-emerald-600 transition-colors">
+                        Save Article
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Trivia Modal -->
+    <div id="trivia-modal"
+        class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
+        <div class="bg-card rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 id="trivia-modal-title" class="text-3xl font-bold text-main-heading">Add Trivia Question</h2>
+                    <button id="close-trivia-modal" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+                </div>
+            </div>
+            <form id="trivia-form" class="space-y-4 p-6 overflow-y-auto">
+                <input type="hidden" id="trivia-id">
+                <div>
+                    <label for="trivia-question-text"
+                        class="block text-sm font-medium text-subtle mb-1">Question</label>
+                    <textarea id="trivia-question-text" required rows="3"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent"></textarea>
+                </div>
+                <div class="grid grid-cols-1 gap-3 md:gap-4">
+                    <div>
+                        <label for="trivia-option-0" class="block text-sm font-medium text-subtle mb-1">Option A</label>
+                        <input type="text" id="trivia-option-0" required
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent">
+                    </div>
+                    <div>
+                        <label for="trivia-option-1" class="block text-sm font-medium text-subtle mb-1">Option B</label>
+                        <input type="text" id="trivia-option-1" required
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent">
+                    </div>
+                    <div>
+                        <label for="trivia-option-2" class="block text-sm font-medium text-subtle mb-1">Option C</label>
+                        <input type="text" id="trivia-option-2" required
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent">
+                    </div>
+                    <div>
+                        <label for="trivia-option-3" class="block text-sm font-medium text-subtle mb-1">Option D</label>
+                        <input type="text" id="trivia-option-3" required
+                            class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent">
+                    </div>
+                </div>
+                <div>
+                    <label for="trivia-correct-answer" class="block text-sm font-medium text-subtle mb-1">Correct
+                        Answer</label>
+                    <select id="trivia-correct-answer" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent">
+                        <option value="0">Option A</option>
+                        <option value="1">Option B</option>
+                        <option value="2">Option C</option>
+                        <option value="3">Option D</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="trivia-explanation"
+                        class="block text-sm font-medium text-subtle mb-1">Explanation</label>
+                    <textarea id="trivia-explanation" required rows="3"
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent"></textarea>
+                </div>
+                <div class="p-6 border-t mt-auto">
+                    <button type="submit"
+                        class="w-full bg-primary-accent text-white py-3 rounded-lg text-lg font-semibold hover:bg-emerald-600 transition-colors">
+                        Save Question
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Budget Management Modal -->
+    <div id="budget-modal"
+        class="modal fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50 hidden opacity-0">
+        <div class="bg-card rounded-lg shadow-xl w-[95vw] md:w-full md:max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="sticky top-0 bg-card p-4 md:p-6 border-b border-gray-200 rounded-t-lg">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-3xl font-bold text-main-heading">Budget Management</h2>
+                    <button id="close-budget-button" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+                </div>
+            </div>
+
+            <!-- Budget Setup Steps -->
+            <div class="p-6">
+                <!-- Step 1: Choose Method -->
+                <div id="budget-step-1">
+                    <h3 class="text-xl font-semibold mb-4">Choose Your Budgeting Method</h3>
+                    <div class="grid grid-cols-1 gap-3 mb-6">
+                        <div class="budget-method-card border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-primary-accent transition-colors"
+                            data-method="50-30-20">
+                            <div class="text-4xl mb-2">📊</div>
+                            <h4 class="font-bold text-lg mb-2">50/30/20 Rule</h4>
+                            <p class="text-subtle text-sm">50% Needs • 30% Wants • 20% Savings</p>
+                            <p class="text-xs text-gray-500 mt-2">Perfect for beginners</p>
+                        </div>
+                        <div class="budget-method-card border-2 border-gray-200 rounded-lg p-4 cursor-pointer hover:border-primary-accent transition-colors"
+                            data-method="custom">
+                            <div class="text-4xl mb-2">🎯</div>
+                            <h4 class="font-bold text-lg mb-2">Custom Budget</h4>
+                            <p class="text-subtle text-sm">Create your own categories and amounts</p>
+                            <p class="text-xs text-gray-500 mt-2">Full control over your budget</p>
+                        </div>
+                    </div>
+                    <button id="next-to-step-2"
+                        class="w-full bg-primary-accent text-white py-3 rounded-lg text-base md:text-lg font-semibold opacity-50 cursor-not-allowed transition-all duration-300"
+                        disabled>
+                        Continue
+                    </button>
+                </div>
+
+                <!-- Step 2: Income Input -->
+                <div id="budget-step-2" class="hidden">
+                    <button id="back-to-step-1" class="mb-4 text-primary-accent hover:underline">&larr; Back</button>
+                    <h3 class="text-xl font-semibold mb-4">Enter Your Monthly Income</h3>
+                    <div class="mb-6">
+                        <label for="monthly-income" class="block text-sm font-medium text-subtle mb-2">Monthly Income
+                            ($)</label>
+                        <input type="number" id="monthly-income" step="0.01" min="0"
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-accent focus:outline-none text-lg"
+                            placeholder="e.g., 2000">
+                    </div>
+                    <div id="income-breakdown" class="hidden bg-gray-50 p-4 rounded-lg mb-6">
+                        <h4 class="font-semibold mb-3">Your Budget Breakdown:</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Needs (50%):</span>
+                                <span id="needs-amount" class="font-medium">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Wants (30%):</span>
+                                <span id="wants-amount" class="font-medium">$0</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Savings (20%):</span>
+                                <span id="savings-amount" class="font-medium">$0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="next-to-step-3"
+                        class="w-full bg-primary-accent text-white py-3 rounded-lg font-semibold opacity-50 cursor-not-allowed transition-all duration-300"
+                        disabled>
+                        Set Up Categories
+                    </button>
+                </div>
+
+                <!-- Step 3: Category Setup -->
+                <div id="budget-step-3" class="hidden">
+                    <button id="back-to-step-2" class="mb-4 text-primary-accent hover:underline">&larr; Back</button>
+                    <h3 class="text-xl font-semibold mb-4">Set Budget Categories</h3>
+
+                    <!-- 50/30/20 Categories -->
+                    <div id="rule-categories" class="hidden">
+                        <div class="space-y-4 mb-6">
+                            <div class="category-group">
+                                <h4 class="font-semibold text-primary-accent mb-2">Needs (50%)</h4>
+                                <div id="needs-categories" class="space-y-2"></div>
+                                <button class="add-category-btn text-sm text-primary-accent hover:underline"
+                                    data-type="needs">+ Add Need Category</button>
+                            </div>
+                            <div class="category-group">
+                                <h4 class="font-semibold text-secondary-accent mb-2">Wants (30%)</h4>
+                                <div id="wants-categories" class="space-y-2"></div>
+                                <button class="add-category-btn text-sm text-primary-accent hover:underline"
+                                    data-type="wants">+ Add Want Category</button>
+                            </div>
+                            <div class="category-group">
+                                <h4 class="font-semibold text-green-600 mb-2">Savings (20%)</h4>
+                                <div id="savings-categories" class="space-y-2"></div>
+                                <button class="add-category-btn text-sm text-primary-accent hover:underline"
+                                    data-type="savings">+ Add Savings Category</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom Categories -->
+                    <div id="custom-categories" class="hidden">
+                        <div id="custom-categories-container" class="space-y-2 mb-4"></div>
+                        <button id="add-custom-category" class="text-primary-accent hover:underline">+ Add
+                            Category</button>
+                    </div>
+
+                    <div class="flex flex-col md:flex-row gap-3 md:gap-4">
+                        <button id="save-budget"
+                            class="w-full md:flex-1 bg-primary-accent text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition-colors">
+                            Save Budget
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Edit Existing Budget -->
+                <div id="budget-edit-mode" class="hidden">
+                    <h3 class="text-xl font-semibold mb-4">Edit Budget</h3>
+                    <div id="edit-categories-container" class="space-y-3 mb-6"></div>
+                    <div class="flex flex-col md:flex-row gap-3 md:gap-4"> <button id="update-budget"
+                            class="w-full md:flex-1 bg-primary-accent text-white py-3 rounded-lg font-semibold hover:bg-emerald-600 transition-colors">
+                            Update Budget
+                        </button>
+                        <button id="delete-budget"
+                            class="w-full md:w-auto bg-red-500 text-white py-3 px-6 rounded-lg font-semibold hover:bg-red-600 transition-colors">
+                            Delete Budget
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
