@@ -1,46 +1,75 @@
+# Environment variables file (contains API keys, passwords, secrets)
+.env
+
+# Firebase/Google Cloud service account key
+serviceAccountKey.json
+*/serviceAccountKey.json
+
+
+# ===================================================================
+#  Python
+# ===================================================================
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 
-# C extensions
-*.so
-
 # Distribution / packaging
 .Python
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-*.egg-info/
-dist/
 build/
+develop-eggs/
+dist/
+downloads/
 eggs/
+.eggs/
+lib/
+lib64/
 parts/
 sdist/
-develop-eggs/
-.tox/
-.coverage
-.pytest_cache/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# Flask specific
-instance/
-.env
-.flaskenv
 
-# VS Code
+# ===================================================================
+#  Python Virtual Environments
+# ===================================================================
+.venv/
+venv/
+ENV/
+env/
+
+
+# ===================================================================
+#  Firebase & Google Cloud
+# ===================================================================
+
+# Firebase cache and emulators
+.firebase/
+
+# Firebase debug logs
+firebase-debug.log*
+.runtimeconfig.json
+
+
+# ===================================================================
+#  IDE / Editor / Operating System Files
+# ===================================================================
+
+# VSCode
 .vscode/
 
-# OS generated files
-Thumbs.db
-Desktop.ini
+# PyCharm / IntelliJ
+.idea/
+
+# macOS
 .DS_Store
-*.swp
-*.swo
 
-# Environment variables
-.env
-
-# Firebase/Service account keys
-serviceAccountKey.json
+# Windows
+Thumbs.db

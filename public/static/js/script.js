@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
 
     const firebaseConfig = {
-        apiKey: "AIzaSyClOs9cRAQWogZE6aJFcyGhxqor7jdqTp8",
-        authDomain: "teen-finance-tracker.firebaseapp.com",
-        projectId: "teen-finance-tracker",
-        storageBucket: "teen-finance-tracker.firebasestorage.app",
-        messagingSenderId: "528082447121",
-        appId: "1:528082447121:web:97ff558a1b5ea893d77ab0",
-        measurementId: "G-T9949ZH2NG"
+        apiKey: "AIzaSyBntcbop773If90UIryC9oQD9M2qf3F-C8",
+        authDomain: "cashiqo.firebaseapp.com",
+        projectId: "cashiqo",
+        storageBucket: "cashiqo.firebasestorage.app",
+        messagingSenderId: "565625912453",
+        appId: "1:565625912453:web:6beeecd810a56f47513dec",
+        measurementId: "G-ZLZ2DNSG0M"
     };
 
     // Initialize Firebase
@@ -793,7 +793,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 initialMessageHTML = `
             <div class="flex justify-start">
                 <div class="bg-gray-200 text-main-heading p-3 rounded-lg max-w-xs">
-                    Hi <strong>${userName}</strong>! I'm FinFlow AI, your personal financial assistant. How can I help you today? Ask me about your budget, savings, or spending! 💡
+                    Hi <strong>${userName}</strong>! I'm Cashiqo AI, your personal financial assistant. How can I help you today? Ask me about your budget, savings, or spending! 💡
                 </div>
             </div>`;
             } else {
@@ -801,7 +801,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 initialMessageHTML = `
             <div class="flex justify-start">
                 <div class="bg-gray-200 text-main-heading p-3 rounded-lg max-w-xs">
-                    Hi there! I'm Trackee AI. Please <strong>log in</strong> to get personalized advice based on your financial data. I can help you understand your spending and reach your goals! 🚀
+                    Hi there! I'm Cashiqo AI. Please <strong>log in</strong> to get personalized advice based on your financial data. I can help you understand your spending and reach your goals! 🚀
                 </div>
             </div>`;
             }

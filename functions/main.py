@@ -1,6 +1,6 @@
 import os
 import json
-from flask import Flask, render_template, request, jsonify, Response, session
+from flask import Flask, request, jsonify, Response, session
 from dotenv import load_dotenv
 import google.generativeai as genai
 import firebase_admin
@@ -42,7 +42,7 @@ except Exception as e:
 
 # System prompt to define the chatbot's personality and rules
 SYSTEM_PROMPT = """
-You are "FinFlow AI", a friendly, knowledgeable financial assistant specifically for teenagers using the MoneyFlow app. 
+You are "Cashiqo AI", a friendly, knowledgeable financial assistant specifically for teenagers using the Cashiqo app. 
 Your goal is to provide simple, encouraging, and easy-to-understand financial advice.
 
 Your Persona:
@@ -78,13 +78,6 @@ def admin_required(f):
     return decorated_function
 
 
-# --- Main Routes ---
-@app.route("/")
-@app.route("/admin")  # The admin URL also serves the main app
-def index():
-    return render_template("index.html")
-
-
 # --- Chatbot API ---
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -102,7 +95,7 @@ def chat():
         {
             "role": "model",
             "parts": [
-                "Got it. I'm FinFlow AI, a friendly financial assistant for teens. I will give simple, encouraging advice based on the user's data. I understand the safety rules. Let's begin! 👍"
+                "Got it. I'm Cashiqo AI, a friendly financial assistant for teens. I will give simple, encouraging advice based on the user's data. I understand the safety rules. Let's begin! 👍"
             ],
         },
     ]
@@ -266,3 +259,17 @@ def delete_trivia(trivia_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+    
+# --- Firebase Cloud Function Entry Point ---
+# The name 'api' MUST match the function name in your firebase.json rewrite rule.
+
+from firebase_functions import https_fn
+
+@https_fn.on_request()
+def api(req: https_fn.Request) -> https_fn.Response:
+    """
+    This is the entry point that Firebase Hosting will call.
+    It passes the incoming request into our Flask app.
+    """
+    with app.request_context(req.environ):
+        return app.full_dispatch_request()
